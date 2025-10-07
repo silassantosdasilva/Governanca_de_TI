@@ -1,0 +1,121 @@
+body {
+    background-color: #f8f9fa; /* Cor de fundo da área de conteúdo */
+}
+
+.page-wrapper {
+    display: flex;
+}
+
+/* --- Estilos da Nova Sidebar --- */
+
+.sidebar-wrapper {
+    width: 80px; /* Largura inicial (retraída) */
+    height: 100vh;
+    background: #1e2229;
+    transition: width 0.3s ease-in-out;
+    position: sticky;
+    top: 0;
+}
+
+    /* Estilo quando a sidebar está expandida */
+    .sidebar-wrapper.expanded {
+        width: 260px;
+    }
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sidebar-menu {
+    flex-grow: 1; /* Faz o menu ocupar o espaço disponível, empurrando o footer para baixo */
+}
+
+    .sidebar-menu ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        height: 50px;
+        padding: 0 25px; /* Padding para centralizar o ícone */
+        text-decoration: none;
+        color: #adb5bd;
+        transition: background 0.3s;
+        overflow: hidden; /* Esconde o texto que vazar */
+        white-space: nowrap; /* Impede a quebra de linha do texto */
+    }
+
+        .sidebar-menu a:hover {
+            background: #3a3f48;
+            color: #fff;
+        }
+
+        /* Ícones */
+        .sidebar-menu a i {
+            font-size: 1.2rem;
+        }
+
+/* Texto de Navegação */
+.nav-text {
+    opacity: 0; /* Começa invisível */
+    margin-left: 1.2rem;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.sidebar-wrapper.expanded .nav-text {
+    opacity: 1; /* Fica visível quando expandido */
+}
+
+/* Item do Toggler no topo */
+.sidebar-toggler-item a {
+    justify-content: center; /* Centraliza o ícone de menu */
+    
+}
+#Img_Logo_Menu {
+  width:70px;
+  padding-left:2.5em;
+}
+.ImgSidebar {
+    width: 30px;
+}
+.sidebar-wrapper.expanded .sidebar-toggler-item a {
+    justify-content: flex-start; /* Alinha à esquerda quando expandido */
+}
+
+/* Pequeno cabeçalho de seção */
+.header-menu {
+    padding: 10px 25px 10px;
+    font-size: 0.8em;
+    color: #6c757d;
+}
+
+.sidebar-wrapper:not(.expanded) .header-menu {
+    display: none; /* Esconde o cabeçalho quando retraído */
+}
+
+
+/* Rodapé da Sidebar */
+.sidebar-footer {
+    border-top: 1px solid #3a3f48;
+}
+
+    .sidebar-footer a {
+        justify-content: center; /* Centraliza o ícone do usuário */
+    }
+
+.sidebar-wrapper.expanded .sidebar-footer a {
+    justify-content: flex-start; /* Alinha à esquerda quando expandido */
+}
+
+
+/* --- Estilo do Conteúdo Principal --- */
+
+.main-content {
+    width: 100%;
+    padding: 1rem;
+}
