@@ -1,121 +1,142 @@
+:root {
+    --sidebar-width: 80px;
+    --header-bg: #ffffff;
+    --content-bg: #f8f9fa;
+    --border-color: #dee2e6;
+}
+
 body {
-    background-color: #f8f9fa; /* Cor de fundo da área de conteúdo */
+    background-color: var(--content-bg);
+    overflow-x: hidden;
 }
 
-.page-wrapper {
+.page-container {
     display: flex;
+    min-height: 100vh;
 }
 
-/* --- Estilos da Nova Sidebar --- */
-
-.sidebar-wrapper {
-    width: 80px; /* Largura inicial (retraída) */
-    height: 100vh;
-    background: #1e2229;
-    transition: width 0.3s ease-in-out;
-    position: sticky;
-    top: 0;
-}
-
-    /* Estilo quando a sidebar está expandida */
-    .sidebar-wrapper.expanded {
-        width: 260px;
-    }
-
-.sidebar-content {
+/* --- Sidebar --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--header-bg);
+    border-right: 1px solid var(--border-color);
+    padding-top: 1.5rem;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    align-items: center;
 }
 
-.sidebar-menu {
-    flex-grow: 1; /* Faz o menu ocupar o espaço disponível, empurrando o footer para baixo */
-}
-
-    .sidebar-menu ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .sidebar-menu a {
-        display: flex;
-        align-items: center;
-        height: 50px;
-        padding: 0 25px; /* Padding para centralizar o ícone */
-        text-decoration: none;
-        color: #adb5bd;
-        transition: background 0.3s;
-        overflow: hidden; /* Esconde o texto que vazar */
-        white-space: nowrap; /* Impede a quebra de linha do texto */
-    }
-
-        .sidebar-menu a:hover {
-            background: #3a3f48;
-            color: #fff;
-        }
-
-        /* Ícones */
-        .sidebar-menu a i {
-            font-size: 1.2rem;
-        }
-
-/* Texto de Navegação */
-.nav-text {
-    opacity: 0; /* Começa invisível */
-    margin-left: 1.2rem;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.sidebar-wrapper.expanded .nav-text {
-    opacity: 1; /* Fica visível quando expandido */
-}
-
-/* Item do Toggler no topo */
-.sidebar-toggler-item a {
-    justify-content: center; /* Centraliza o ícone de menu */
-    
-}
-#Img_Logo_Menu {
-  width:70px;
-  padding-left:2.5em;
-}
-.ImgSidebar {
-    width: 30px;
-}
-.sidebar-wrapper.expanded .sidebar-toggler-item a {
-    justify-content: flex-start; /* Alinha à esquerda quando expandido */
-}
-
-/* Pequeno cabeçalho de seção */
-.header-menu {
-    padding: 10px 25px 10px;
-    font-size: 0.8em;
-    color: #6c757d;
-}
-
-.sidebar-wrapper:not(.expanded) .header-menu {
-    display: none; /* Esconde o cabeçalho quando retraído */
-}
-
-
-/* Rodapé da Sidebar */
-.sidebar-footer {
-    border-top: 1px solid #3a3f48;
-}
-
-    .sidebar-footer a {
-        justify-content: center; /* Centraliza o ícone do usuário */
-    }
-
-.sidebar-wrapper.expanded .sidebar-footer a {
-    justify-content: flex-start; /* Alinha à esquerda quando expandido */
-}
-
-
-/* --- Estilo do Conteúdo Principal --- */
-
-.main-content {
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     width: 100%;
-    padding: 1rem;
+}
+
+.sidebar-nav-item {
+    margin-bottom: 1rem;
+}
+
+.sidebar-nav-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #6c757d;
+    font-size: 1.5rem;
+    text-decoration: none;
+    height: 50px;
+    position: relative;
+}
+
+    .sidebar-nav-link.active,
+    .sidebar-nav-link:hover {
+        color: #0d6efd;
+    }
+
+        .sidebar-nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 80%;
+            background-color: #0d6efd;
+            border-radius: 0 4px 4px 0;
+        }
+
+/* --- Wrapper Principal --- */
+.main-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Header Superior --- */
+.main-header {
+    background: var(--header-bg);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-greeting {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+/* --- Barra de Ferramentas --- */
+.toolbar {
+    background: var(--header-bg);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* --- Área de Conteúdo e Cards --- */
+.content-area {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.metric-card {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: .5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+    .metric-card .icon {
+        font-size: 1.2rem;
+        color: #6c757d;
+    }
+
+    .metric-card .title {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .metric-card .value {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #212529;
+    }
+/*Dashboard*/
+.col-lg-6{
+    width:50em;
+}
+/* --- Responsividade --- */
+@media (max-width: 768px) {
+    .main-header .d-flex, .toolbar .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
 }
