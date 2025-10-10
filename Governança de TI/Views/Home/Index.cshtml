@@ -97,16 +97,17 @@
 
                 <!-- Linha dos Gráficos Inferiores -->
                 <div class="row">
-                    <div class="col-xl-4 col-lg-6">
+                    <div class="col-xl-4 col-lg-6 CardEconomia">
                         <div class="card shadow-sm h-100">
                             <div class="card-body">
                                 <h6 class="card-title text-muted">Economia gerada (R$) - Mês</h6>
+                                <hr />
                                 <canvas id="graficoEconomiaMes"></canvas>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-8 col-lg-6">
-                        <div class="card shadow-sm h-100">
+                    <div class="col-xl-8 col-lg-6 CardConsumo">
+                        <div class="card shadow-sm h-100 CardColor">
                             <div class="card-body">
                                 <h6 class="card-title text-muted">Consumo total (kWh) no Mês</h6>
                                 <canvas id="graficoConsumoMes"></canvas>
@@ -116,16 +117,19 @@
                 </div>
 
                 <div class="row mt-4">
-                    <div class="col-xl-4 col-lg-6">
+                    <div class="col-xl-4 col-lg-6 CardSetor">
                         <div class="card shadow-sm h-100">
                             <div class="card-body">
                                 <h6 class="card-title text-muted">Consumo por Setor</h6>
-                                <canvas id="graficoConsumoSetor"></canvas>
+                                <hr />
+                                <div class="doughnut-chart-container">
+                                    <canvas id="graficoConsumoSetor"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-8 col-lg-6">
-                        <div class="card shadow-sm h-100">
+                    <div class="col-xl-8 col-lg-6 CardTotalAno">
+                        <div class="card shadow-sm h-100 CardColor">
                             <div class="card-body">
                                 <h6 class="card-title text-muted">Consumo total (kWh) no Ano</h6>
                                 <canvas id="graficoConsumoAno"></canvas>
@@ -140,6 +144,8 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
     <!-- CORREÇÃO: Adicionada a referência ao seu arquivo JS local -->
     <script src="~/js/site.js" asp-append-version="true"></script>
 </body>

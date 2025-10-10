@@ -1,32 +1,30 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
 
-    // --- FUNÇÕES DE RENDERIZAÇÃO DO DASHBOARD ---
+    Chart.register(ChartDataLabels);
 
     // 1. Indicadores Superiores (Cards)
     function renderMetricCards() {
         const container = document.getElementById('metric-cards-container');
         if (!container) return;
-
         const metrics = [
             { icon: 'bi-tree', title: 'Emissões de CO₂ Evitadas', value: '132 kg CO₂' },
             { icon: 'bi-recycle', title: 'Equipamentos Reaproveitados ou Reciclados', value: '36.2%' },
             { icon: 'bi-box-seam', title: 'Itens Pendentes de Descarte', value: '36' },
             { icon: 'bi-check2-square', title: 'Equipamentos Descartados Corretamente', value: '29' }
         ];
-
         let html = '';
         metrics.forEach(metric => {
             html += `
-                    <div class="col-xl-3 col-md-6">
-                        <div class="metric-card">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="title">${metric.title}</span>
-                                <i class="icon ${metric.icon}"></i>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="metric-card">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="title">${metric.title}</span>
+                                    <i class="icon ${metric.icon}"></i>
+                                </div>
+                                <h3 class="value">${metric.value}</h3>
                             </div>
-                            <h3 class="value">${metric.value}</h3>
                         </div>
-                    </div>
-                `;
+                    `;
         });
         container.innerHTML = html;
     }
@@ -37,10 +35,10 @@
         if (ctx) new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                datasets: [{ data: [36.2, 63.8, 36.2, 63.8, 36.2, 63.8, 36.2, 63.8, 36.2, 63.8, 36.2, 63.8], backgroundColor: ['#8A2BE2', '#E6E6FA'] }]
+                labels: ['Booked', 'Flopped'],
+                datasets: [{ data: [36.2, 63.8], backgroundColor: ['#8A2BE2', '#E6E6FA'], borderWidth: 0 }]
             },
-            options: { responsive: true, plugins: { legend: { position: 'right' } } }
+            options: { responsive: true, plugins: { legend: { display: false } } }
         });
     }
 
@@ -70,16 +68,39 @@
         });
     }
 
-    // 5. Gráfico: Consumo por Setor
+    // 5. Gráfico: Consumo por Setor (Revertido para labels internos)
     function criarGraficoConsumoSetor() {
         const ctx = document.getElementById('graficoConsumoSetor');
         if (ctx) new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                datasets: [{ data: [13.1, 28.6, 28, 30.3], backgroundColor: ['#DDA0DD', '#9370DB', '#8A2BE2', '#4B0082'] }]
+                datasets: [{
+                    data: [13.1, 28.6, 28, 30.3],
+                    backgroundColor: ['#DDA0DD', '#9370DB', '#8A2BE2', '#4B0082'],
+                    borderWidth: 0
+                }]
             },
-            options: { responsive: true, plugins: { legend: { position: 'right' } } }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    datalabels: {
+                        formatter: (value, context) => {
+                            const label = context.chart.data.labels[context.dataIndex];
+                            return `${label}\n${value}%`;
+                        },
+                        color: '#363636',
+                        font: {
+                            weight: '500',
+                            size: 11
+                        },
+                        textAlign: 'center'
+                    }
+                }
+            }
         });
     }
 

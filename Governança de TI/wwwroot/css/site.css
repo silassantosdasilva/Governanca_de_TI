@@ -1,7 +1,7 @@
 :root {
     --sidebar-width: 80px;
     --header-bg: #ffffff;
-    --content-bg: #f8f9fa;
+    --content-bg: #eeeeee;
     --border-color: #dee2e6;
 }
 
@@ -128,9 +128,41 @@ body {
         font-weight: 600;
         color: #212529;
     }
+
+.doughnut-chart-container {
+    max-width: 280px; 
+    margin: 1rem auto; 
+    position: relative;
+}
+
 /*Dashboard*/
+
+
 .col-lg-6{
     width:50em;
+}
+.CardEconomia{
+    width:24em;
+}
+.CardSetor {
+    width: 24em;
+}
+.CardTotalAno {
+    width: 40em;
+    height:25.7em;
+    margin-left: 3.7em;
+    position: relative !important;
+    bottom: 27.2em;
+   /* background-color: var( --content-bg) !important;*/
+    /*margin-bottom*/
+}
+.CardColor {
+   background-color: var( --content-bg) !important;
+/*   color:white !important;*/
+}
+.CardConsumo {
+    width: 40em;
+    margin-left: 47em;
 }
 /* --- Responsividade --- */
 @media (max-width: 768px) {
