@@ -104,6 +104,39 @@
         });
     }
 
+
+    // --- LÓGICA DO MENU EXPANSÍVEL ---
+    const pageContainer = document.querySelector('.page-container');
+    const navItems = document.querySelectorAll('.sidebar-nav-item');
+
+    navItems.forEach(item => {
+        const link = item.querySelector('.sidebar-nav-link');
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const isSubmenuItem = link.classList.contains('has-submenu');
+            const isAlreadyActive = item.classList.contains('active');
+
+            // Remove 'active' de todos os itens primeiro
+            navItems.forEach(i => i.classList.remove('active'));
+
+            if (isSubmenuItem) {
+                // Se clicou num item com submenu que já estava ativo, fecha-o.
+                // Senão, abre-o.
+                if (isAlreadyActive) {
+                    pageContainer.classList.remove('submenu-active');
+                } else {
+                    item.classList.add('active');
+                    pageContainer.classList.add('submenu-active');
+                }
+            } else {
+                // Se clicou num item normal, fecha qualquer submenu aberto e o ativa
+                item.classList.add('active');
+                pageContainer.classList.remove('submenu-active');
+            }
+        });
+    });
+
     // --- INICIALIZAÇÃO DO DASHBOARD ---
     renderMetricCards();
     criarGraficoEconomiaMes();
