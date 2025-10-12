@@ -1,17 +1,21 @@
+ï»¿/* VariÃ¡veis Globais */
 :root {
     --sidebar-width: 80px;
     --header-bg: #ffffff;
     --content-bg: #eeeeee;
-    --border-color: #dee2e6;
+    --border-color: #eeeeee;
+    --submenu-width: 300px;
     --active-color: #8A2BE2;
 }
 
+/* Estilos Gerais do Corpo */
 body {
     background-color: var(--content-bg);
     overflow-x: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
 }
 
-.* Layout Principal */
+/* Layout Principal */
 .page-container {
     display: flex;
     min-height: 100vh;
@@ -26,7 +30,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Centraliza os ícones na vertical */
+    justify-content: center; /* Centraliza os Ã­cones na vertical */
     position: fixed;
     left: 0;
     top: 0;
@@ -54,7 +58,6 @@ body {
     font-size: 1.5rem;
     text-decoration: none;
     height: 50px;
-    position: relative;
 }
 
 .sidebar-nav-item.active > .sidebar-nav-link {
@@ -89,14 +92,12 @@ body {
     z-index: 1029;
 }
 
-
 .sidebar-nav-item.active .submenu-panel {
     transform: translateX(0);
     visibility: visible;
     opacity: 1;
 }
 
-/* AJUSTE: Estilo do título do submenu para corresponder à imagem */
 .submenu-panel h2 {
     font-size: 1rem;
     font-weight: 600;
@@ -137,28 +138,23 @@ body {
     width: 24px;
 }
 
-/* --- Wrapper Principal --- */
+/* --- Wrapper e ConteÃºdo Principal --- */
 .main-wrapper {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    margin-left: var(--sidebar-width); /* Espaço para a sidebar fixa */
+    margin-left: var(--sidebar-width);
     width: calc(100% - var(--sidebar-width));
     transition: margin-left 0.3s ease-in-out;
 }
 
-/* Ajusta o conteúdo quando o submenu está aberto */
 .page-container.submenu-active .main-wrapper {
     margin-left: calc(var(--sidebar-width) + var(--submenu-width));
 }
 
-/* --- Header Superior --- */
-.main-header, .content-area {
-    padding: 1.5rem 2rem;
-}
-
 .main-header {
     background: var(--header-bg);
+    padding: 1.5rem 2rem;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -174,84 +170,32 @@ body {
     margin-right: 12px;
 }
 
-/* --- Barra de Ferramentas --- */
-.toolbar {
-    background: var(--header-bg);
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-/* --- Área de Conteúdo e Cards --- */
 .content-area {
+    padding: 1.5rem 2rem;
     flex-grow: 1;
-    padding: 2rem;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
-.metric-card {
-    background-color: #fff;
-    border: 1px solid var(--border-color);
-    border-radius: .5rem;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+/* --- Estilos da PÃ¡gina de Consulta --- */
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
-    .metric-card .icon {
-        font-size: 1.2rem;
-        color: #6c757d;
-    }
-
-    .metric-card .title {
-        font-size: 0.9rem;
-        color: #6c757d;
-    }
-
-    .metric-card .value {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: #212529;
-    }
-
-.doughnut-chart-container {
-    max-width: 280px; 
-    margin: 1rem auto; 
-    position: relative;
+.table-card {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-/*Dashboard*/
-
-
-.col-lg-6{
-    width:50em;
-}
-.CardEconomia{
-    width:24em;
-}
-.CardSetor {
-    width: 24em;
-}
-.CardTotalAno {
-    width: 40em;
-    height:25.7em;
-    margin-left: 3.7em;
-    position: relative !important;
-    bottom: 27.2em;
-   /* background-color: var( --content-bg) !important;*/
-    /*margin-bottom*/
-}
-.CardColor {
-   background-color: var( --content-bg) !important;
-/*   color:white !important;*/
-}
-.CardConsumo {
-    width: 40em;
-    margin-left: 47em;
-}
-/* --- Responsividade --- */
-@media (max-width: 768px) {
-    .main-header .d-flex, .toolbar .d-flex {
+    .table-card .card-body {
+        flex-grow: 1;
+        display: flex;
         flex-direction: column;
-        align-items: flex-start !important;
-        gap: 1rem;
     }
-}
+
+    .table-card .table-responsive {
+        flex-grow: 1;
+    }

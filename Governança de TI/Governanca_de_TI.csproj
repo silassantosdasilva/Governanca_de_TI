@@ -5,6 +5,24 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Governança_de_TI</RootNamespace>
+    <UserSecretsId>b3a6752f-9b95-45a3-b31f-16c0d85025bd</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Views\Equipamentos\Detalhes.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Equipamentos\Edita.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>

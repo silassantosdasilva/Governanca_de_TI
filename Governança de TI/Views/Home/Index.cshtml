@@ -20,13 +20,14 @@
 <body>
     <div class="page-container">
         <!-- Sidebar Fixa -->
+        <!-- Sidebar Fixa -->
         <nav class="sidebar">
             <ul class="sidebar-nav">
                 <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link" title="Dashboard"><i class="bi bi-house-door"></i></a>
+                    <a asp-controller="Home" asp-action="Index" class="sidebar-nav-link" title="Dashboard"><i class="bi bi-house-door"></i></a>
                 </li>
                 <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link" title="Relatórios"><i class="bi bi-bar-chart-line"></i></a>
+                    <a asp-controller="Relatorios" asp-action="Index" class="sidebar-nav-link" title="Relatórios"><i class="bi bi-bar-chart-line"></i></a>
                 </li>
                 <!-- ITEM COM SUBMENU -->
                 <li class="sidebar-nav-item">
@@ -36,28 +37,23 @@
                         <h2>Ferramentas</h2>
                         <ul class="submenu-list">
                             <li>
-                                <a href="#" class="submenu-link">
+                                <a asp-controller="Equipamentos" asp-action="Consulta" class="submenu-link">
                                     <i class="bi bi-heart-pulse"></i>
-                                    <span>Controle de Vida de Equipamentos</span>                               
+                                    <span>Controle de Vida de Equipamentos</span>
                                 </a>
-                                <hr />
                             </li>
                             <li>
-                                <a href="#" class="submenu-link">
+                                <a asp-controller="Descarte" asp-action="Consulta" class="submenu-link">
                                     <i class="bi bi-trash2"></i>
                                     <span>Gestão de Descarte</span>
-                                 
                                 </a>
-                                <hr />
                             </li>
                             <li>
-                                <a href="#" class="submenu-link">
+                                <a asp-controller="Responsaveis" asp-action="Index" class="submenu-link">
                                     <i class="bi bi-person-check"></i>
                                     <span>Controle de Responsáveis</span>
-                                    
                                 </a>
-                                <hr />
-                            </li>
+                            </li>                           
                         </ul>
                     </div>
                 </li>
@@ -69,6 +65,7 @@
                 </li>
             </ul>
         </nav>
+
 
         <!-- Container para Header e Conteúdo -->
         <div class="main-wrapper">

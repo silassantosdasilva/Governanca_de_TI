@@ -1,0 +1,102 @@
+﻿@model Governança_de_TI.Models.DescarteModel
+
+@{
+    ViewData["Title"] = "Detalhes do Descarte";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 text-muted">Gestão de Descarte Sustentável</h4>
+                    <h5 class="mb-0">Detalhes</h5>
+                </div>
+
+                <div class="row">
+                    <!-- Coluna da Esquerda -->
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Item</label>
+                            <input value="@($"{Model.Equipamento?.CodigoItem} - {Model.Equipamento?.Descricao}")" class="form-control" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Observacao" class="form-label fw-bold"></label>
+                            <textarea asp-for="Observacao" class="form-control" readonly rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <label asp-for="Quantidade" class="form-label fw-bold"></label>
+                                <input asp-for="Quantidade" class="form-control" readonly />
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <label asp-for="DataColeta" class="form-label fw-bold"></label>
+                                <input value="@Model.DataColeta.ToShortDateString()" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="EmpresaColetora" class="form-label fw-bold"></label>
+                            <input asp-for="EmpresaColetora" class="form-control" readonly />
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <label asp-for="CnpjEmpresa" class="form-label fw-bold"></label>
+                                <input asp-for="CnpjEmpresa" class="form-control" readonly />
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <label asp-for="EmailEmpresa" class="form-label fw-bold"></label>
+                                <input asp-for="EmailEmpresa" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PessoaResponsavelColeta" class="form-label fw-bold"></label>
+                            <input asp-for="PessoaResponsavelColeta" class="form-control" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label fw-bold"></label>
+                            <input asp-for="Status" class="form-control" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Certificado</label>
+                            @if (!string.IsNullOrEmpty(Model.CertificadoUrl))
+                            {
+                                <div class="input-group">
+                                    <input type="text" value="@System.IO.Path.GetFileName(Model.CertificadoUrl)" class="form-control" readonly />
+                                    <a href="@Url.Content("~" + Model.CertificadoUrl)" class="btn btn-outline-secondary" target="_blank" title="Baixar Certificado">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="text" value="Nenhum certificado disponível" class="form-control" readonly />
+                            }
+                        </div>
+                        <div class="form-check mb-3">
+                            <input asp-for="EnviarEmail" class="form-check-input" type="checkbox" disabled />
+                            <label asp-for="EnviarEmail" class="form-check-label"></label>
+                        </div>
+                    </div>
+
+                    <!-- Coluna da Direita (Imagem) -->
+                    <div class="col-md-6 d-flex flex-column align-items-center">
+                        <label class="form-label fw-bold">Imagem do Item</label>
+                        <div class="text-center">
+                            <img src="@(string.IsNullOrEmpty(Model.Equipamento?.ImagemUrl) ? "https://placehold.co/250x250/f0f0f0/ccc?text=Imagem" : Url.Content("~" + Model.Equipamento.ImagemUrl))"
+                                 alt="Imagem do Equipamento" class="img-fluid rounded" style="width: 250px; height: 250px; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-end">
+                    <a asp-action="Consulta" class="btn btn-outline-secondary me-2">Voltar</a>
+                    <a asp-controller="Descarte" asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-secondary me-2">Editar</a>
+                    <a asp-controller="Descarte" asp-action="Excluir" asp-route-id="@Model.Id" class="btn btn-danger">Excluir</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

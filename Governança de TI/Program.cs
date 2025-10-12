@@ -1,4 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using Governança_de_TI.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+// Adiciona o contexto do banco de dados
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

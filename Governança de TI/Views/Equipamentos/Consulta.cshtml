@@ -1,0 +1,138 @@
+﻿@model List<Governança_de_TI.Models.EquipamentoModel>
+@{
+    ViewData["Title"] = "Consulta de Equipamentos";
+}
+@section Styles {
+    <!-- CORREÇÃO: Usando a sintaxe Razor correta com '~' para o caminho do CSS -->
+    <link rel="stylesheet" href="~/css/Equipamento.css" asp-append-version="true" />
+}
+
+<!-- Adicionado o bloco para exibir a mensagem de sucesso -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="content-wrapper">
+    <!-- Secção de Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                <h4 class="mb-0">Controle de Vida de Equipamentos</h4>
+                <!-- CORREÇÃO: O botão agora aponta para a Action "Criar" no controller correto (Equipamentos) -->
+                <a asp-action="Criar" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-plus-lg me-2"></i>Novo Registro
+                </a>
+            </div>
+            <!-- CORREÇÃO: A tag <form> agora tem method="get" e os inputs têm o atributo "name" -->
+            <form asp-controller="Equipamentos" asp-action="Consulta" method="get">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="codigoItem" class="form-label">Código do Item</label>
+                        <input type="text" class="form-control form-control-sm" id="codigoItem" name="codigoItem">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select id="status" name="status" class="form-select form-select-sm">
+                            <option value="">Todos...</option>
+                            <option>Ativo</option>
+                            <option>Em Manutenção</option>
+                            <option>Descartado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <input type="text" class="form-control form-control-sm" id="descricao" name="descricao">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dataCompra" class="form-label">Data de Compra</label>
+                        <input type="date" class="form-control form-control-sm" id="dataCompra" name="dataCompra">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dataUltimaManutencao" class="form-label">Data da Última Manutenção</label>
+                        <input type="date" class="form-control form-control-sm" id="dataUltimaManutencao" name="dataUltimaManutencao">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dataDeCriacao" class="form-label">Data de Criação</label>
+                        <input type="date" class="form-control form-control-sm" id="dataDeCriacao" name="dataDeCriacao">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100" style="background-color: #8A2BE2; border-color: #8A2BE2;">
+                            <i class="bi bi-search me-2"></i>Consultar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Secção da Lista de Equipamentos -->
+    <div class="card shadow-sm table-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Código do Item</th>
+                            <th>Descrição</th>
+                            <th>Série</th>
+                            <th>Modelo</th>
+                            <th>Data da Compra</th>
+                            <th>Fim da Garantia</th>
+                            <th>Última Manutenção</th>
+                            <th>Data de Cadastro</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.CodigoItem</td>
+                                    <td>@item.Descricao</td>
+                                    <td>@item.Serie</td>
+                                    <td>@item.Modelo</td>
+                                    <td>@item.DataCompra</td>
+                                    <td>@item.DataFimGarantia</td>
+                                    <td>@item.DataUltimaManutencao</td>
+                                    <td>@item.DataDeCadastro</td>
+                                    <td>@item.Status</td>
+                                    <td>
+                                        <a asp-controller="Equipamentos" asp-action="Detalhes" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Consultar"><i class="bi bi-search"></i></a>
+                                        <!-- CORREÇÃO: O botão agora aponta para a Action "Editar" -->
+                                        <a asp-action="Editar" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center py-4">Nenhum equipamento encontrado.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Adicionado o script para fechar o alerta de sucesso automaticamente -->
+@section Scripts {
+    <script>
+        window.setTimeout(function() {
+            var alert = document.getElementById('success-alert');
+            if (alert) {
+                new bootstrap.Alert(alert).close();
+            }
+        }, 5000);
+    </script>
+}
+

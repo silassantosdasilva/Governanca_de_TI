@@ -1,0 +1,163 @@
+﻿@model Governança_de_TI.Models.EquipamentoModel
+@{
+    ViewData["Title"] = "Cadastro de Equipamento";
+}
+
+<!-- Wrapper para limitar a largura e centralizar o card -->
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 text-muted">Controle de Vida de Equipamentos</h4>
+                    <h5 class="mb-0">Cadastro</h5>
+                </div>
+
+                <form  asp-controller="Equipamentos" asp-action="Criar" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <!-- Coluna da Esquerda: Dados do Equipamento -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="CodigoItem" class="form-label"></label>
+                                <input asp-for="CodigoItem" class="form-control" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Descricao" class="form-label"></label>
+                                <input asp-for="Descricao" class="form-control" />
+                                <span asp-validation-for="Descricao" class="text-danger"></span>
+                            </div>
+                            <!-- Campos Série e Modelo adicionados -->
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label asp-for="Serie" class="form-label"></label>
+                                    <input asp-for="Serie" class="form-control" />
+                                    <span asp-validation-for="Serie" class="text-danger"></span>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <label asp-for="Modelo" class="form-label"></label>
+                                    <input asp-for="Modelo" class="form-control" />
+                                    <span asp-validation-for="Modelo" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="DataCompra" class="form-label"></label>
+                                <input asp-for="DataCompra" class="form-control" />
+                                <span asp-validation-for="DataCompra" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="DataUltimaManutencao" class="form-label"></label>
+                                <input asp-for="DataUltimaManutencao" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label"></label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="">Selecione...</option>
+                                    <option value="Ativo">Ativo</option>
+                                    <option value="Em Manutenção">Em Manutenção</option>
+                                    <option value="Descartado">Descartado</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="FrequenciaManutencao" class="form-label"></label>
+                                <select asp-for="FrequenciaManutencao" class="form-select">
+                                    <option value="">Nenhuma</option>
+                                    <option value="Mensal">Mensal</option>
+                                    <option value="Trimestral">Trimestral</option>
+                                    <option value="Anual">Anual</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="AnexoUpload" class="form-label"></label>
+                                <input asp-for="AnexoUpload" class="form-control" type="file" />
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label asp-for="DiasAlertaManutencao" class="form-label"></label>
+                                    <input asp-for="DiasAlertaManutencao" class="form-control" type="number" />
+                                </div>
+                                <div class="col-sm-6 mb-3 d-flex align-items-end">
+                                    <div class="form-check">
+                                        <input asp-for="EnviarEmailAlerta" class="form-check-input" type="checkbox" />
+                                        <label asp-for="EnviarEmailAlerta" class="form-check-label"></label>
+                                    </div>
+                                </div>
+                                <!-- Coluna da Direita (Imagem e Utilizador) -->
+                                <div class="col-md-6 d-flex flex-column">
+                                    <div class="align-self-center">
+                                        <label class="form-label">Imagem do Item</label>
+                                        <div class="text-center">
+                                            <img id="imagePreview" src="https://placehold.co/250x250/f0f0f0/ccc?text=Imagem" alt="Pré-visualização da Imagem" style="width: 250px; height: 250px; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
+                                        </div>
+                                    </div>
+                                    <div class="mt-auto">
+                                        <label asp-for="UsuarioId" class="form-label"></label>
+                                        <input asp-for="UsuarioId" class="form-control" placeholder="ID do utilizador" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coluna da Direita: Apenas Imagem -->
+                        <div class="col-md-6 d-flex flex-column align-items-center">
+                            <label class="form-label">Pré-visualização da Imagem</label>
+                            <div class="text-center">
+                                <img id="imagePreview" src="https://placehold.co/250x250/f0f0f0/ccc?text=Imagem" alt="Pré-visualização da Imagem" style="width: 250px; height: 250px; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
+                                <label for="ImagemUpload" class="btn btn-sm btn-outline-secondary mt-2">Carregar Imagem</label>
+                                <input asp-for="ImagemUpload" type="file" class="d-none" id="ImagemUpload" accept="image/*" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-action="Consulta" class="btn btn-outline-secondary me-2">Voltar</a>
+                        <button type="submit" class="btn btn-primary px-4" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const equipamentoSelect = document.getElementById('EquipamentoId');
+            const imagePreview = document.getElementById('imagePreview');
+            const placeholderImg = 'https://placehold.co/250x250/f0f0f0/ccc?text=Imagem';
+
+            if (equipamentoSelect && imagePreview) {
+                equipamentoSelect.addEventListener('change', function() {
+                    const equipamentoId = this.value;
+
+                    if (equipamentoId) {
+                        // Faz uma chamada fetch para a Action no EquipamentosController
+                        fetch(`/Equipamentos/GetEquipamentoDados/${equipamentoId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data && data.imageUrl) {
+                                    imagePreview.src = data.imageUrl;
+                                } else {
+                                    imagePreview.src = placeholderImg;
+                                }
+                            })
+                            .catch(() => {
+                                imagePreview.src = placeholderImg;
+                            });
+                    } else {
+                        imagePreview.src = placeholderImg;
+                    }
+                });
+            }
+        });
+    </script>
+}

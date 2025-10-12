@@ -1,0 +1,38 @@
+﻿@model Governança_de_TI.Models.EquipamentoModel
+
+@{
+    ViewData["Title"] = "Excluir Equipamento";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0">Confirmar Exclusão</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="lead">Tem a certeza de que deseja excluir permanentemente o seguinte equipamento?</p>
+
+                <div>
+                    <hr />
+                    <dl class="row">
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Descricao)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Descricao)</dd>
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Modelo)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Modelo)</dd>
+                    </dl>
+
+                    <form asp-action="Excluir">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="CodigoItem" />
+                        <div class="d-flex justify-content-end mt-4">
+                            <a asp-action="Consulta" class="btn btn-outline-secondary me-2">Cancelar</a>
+                            <input type="submit" value="Confirmar Exclusão" class="btn btn-danger" />
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

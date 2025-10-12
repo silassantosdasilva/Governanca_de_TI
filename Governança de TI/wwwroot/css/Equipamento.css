@@ -1,0 +1,118 @@
+﻿:root {
+    --sidebar-width: 80px;
+    --header-bg: #ffffff;
+    --content-bg: #f8f9fa;
+    --border-color: #eeeeee;
+}
+
+body {
+    background-color: #eeeeee;
+    overflow-x: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
+}
+
+.page-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--header-bg);
+    border-right: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    z-index: 1030;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.sidebar-nav-item {
+    margin-bottom: 1rem;
+}
+
+.sidebar-nav-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #6c757d;
+    font-size: 1.5rem;
+    text-decoration: none;
+    height: 50px;
+}
+
+/* --- Wrapper Principal --- */
+.main-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* --- Header Superior --- */
+.main-header {
+    background: var(--header-bg);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-greeting {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+/* --- Área de Conteúdo --- */
+.content-area {
+    padding: 1.5rem 2rem;
+    /* Faz a área de conteúdo usar Flexbox para preencher a altura */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Wrapper do conteúdo da página para controlar o layout vertical */
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+/* Classe para o card da tabela, fazendo-o crescer */
+.table-card {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+   
+}
+
+    .table-card .card-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-card .table-responsive {
+        flex-grow: 1;
+    }
+
+
