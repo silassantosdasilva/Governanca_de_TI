@@ -1,11 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Governança_de_TI.Models // Certifique-se de que o namespace está correto
 {
     public class ConsumoEnergiaModel
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "O campo Mês/Ano de Referência é obrigatório.")]

@@ -47,6 +47,16 @@ namespace Governança_de_TI.Models
         [StringLength(20)]
         public string? Status { get; set; }
 
+        [Required(ErrorMessage = "O campo Vida Útil é obrigatório.")]
+        [Display(Name = "Vida Útil")]
+        [DataType(DataType.Date)]
+        public DateTime? VidaUtil { get; set; }
+
+        [Required(ErrorMessage = "O campo Categoria é obrigatório.")]
+        [StringLength(50)]
+        public string TipoEquipamento { get; set; } // Ex: Notebook, Servidor, Monitor
+
+
         // 🔹 Chave estrangeira
         [Display(Name = "Usuário Responsável")]
         public int? UsuarioId { get; set; }  // nullable se nem todo equipamento precisa de usuário

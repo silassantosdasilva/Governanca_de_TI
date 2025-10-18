@@ -14,7 +14,7 @@
         <!-- Sidebar Fixa com a nova estrutura de submenu -->
         <nav class="sidebar">
             <ul class="sidebar-nav">
-                <a asp-controller="Home" asp-action="Index" target="_blank" class="sidebar-nav-link" title="Dashboard">
+                <a asp-controller="Home" asp-action="Index" class="sidebar-nav-link" title="Dashboard">
                     <i class="bi bi-house-door"></i>
                 </a>
                 <li class="sidebar-nav-item">
@@ -34,7 +34,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a asp-controller="Descarte" asp-action="Index" class="submenu-link">
+                                <a asp-controller="Descarte" asp-action="Consulta" class="submenu-link">
                                     <i class="bi bi-trash2"></i>
                                     <span>Gestão de Descarte</span>
                                 </a>
@@ -43,6 +43,12 @@
                                 <a asp-controller="Responsaveis" asp-action="Index" class="submenu-link">
                                     <i class="bi bi-person-check"></i>
                                     <span>Controle de Responsáveis</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a asp-controller="ConsumoEnergia" asp-action="Criar" class="submenu-link">
+                                    <i class="bi bi-person-check"></i>
+                                    <span>Registro de Consumo</span>
                                 </a>
                             </li>
                         </ul>

@@ -1,128 +1,21 @@
 ﻿document.addEventListener('DOMContentLoaded', () => {
 
-    Chart.register(ChartDataLabels);
-
-    // 1. Indicadores Superiores (Cards)
-    function renderMetricCards() {
-        const container = document.getElementById('metric-cards-container');
-        if (!container) return;
-        const metrics = [
-            { icon: 'bi-tree', title: 'Emissões de CO₂ Evitadas', value: '132 kg CO₂' },
-            { icon: 'bi-recycle', title: 'Equipamentos Reaproveitados ou Reciclados', value: '36.2%' },
-            { icon: 'bi-box-seam', title: 'Itens Pendentes de Descarte', value: '36' },
-            { icon: 'bi-check2-square', title: 'Equipamentos Descartados Corretamente', value: '29' }
-        ];
-        let html = '';
-        metrics.forEach(metric => {
-            html += `
-                        <div class="col-xl-3 col-md-6">
-                            <div class="metric-card">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="title">${metric.title}</span>
-                                    <i class="icon ${metric.icon}"></i>
-                                </div>
-                                <h3 class="value">${metric.value}</h3>
-                            </div>
-                        </div>
-                    `;
-        });
-        container.innerHTML = html;
-    }
-
-    // 2. Gráfico: Economia Gerada (R$) – Mês
-    function criarGraficoEconomiaMes() {
-        const ctx = document.getElementById('graficoEconomiaMes');
-        if (ctx) new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Booked', 'Flopped'],
-                datasets: [{ data: [36.2, 63.8], backgroundColor: ['#8A2BE2', '#E6E6FA'], borderWidth: 0 }]
-            },
-            options: { responsive: true, plugins: { legend: { display: false } } }
-        });
-    }
-
-    // 3. Gráfico: Consumo Total (kWh) no Mês
-    function criarGraficoConsumoMes() {
-        const ctx = document.getElementById('graficoConsumoMes');
-        if (ctx) new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                datasets: [{ data: [7, 12, 3, 6, 10, 11, 7, 13, 19, 26, 8, 14], backgroundColor: '#8A2BE2' }]
-            },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-        });
-    }
-
-    // 4. Gráfico: Consumo Total (kWh) no Ano
-    function criarGraficoConsumoAno() {
-        const ctx = document.getElementById('graficoConsumoAno');
-        if (ctx) new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'],
-                datasets: [{ data: [5000, 15000, 9500, 15500, 12500, 7500, 19000, 17500, 24500, 30500, 14500, 10000], backgroundColor: '#8A2BE2' }]
-            },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-        });
-    }
-
-    // 5. Gráfico: Consumo por Setor (Revertido para labels internos)
-    function criarGraficoConsumoSetor() {
-        const ctx = document.getElementById('graficoConsumoSetor');
-        if (ctx) new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                datasets: [{
-                    data: [13.1, 28.6, 28, 30.3],
-                    backgroundColor: ['#DDA0DD', '#9370DB', '#8A2BE2', '#4B0082'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    datalabels: {
-                        formatter: (value, context) => {
-                            const label = context.chart.data.labels[context.dataIndex];
-                            return `${label}\n${value}%`;
-                        },
-                        color: '#363636',
-                        font: {
-                            weight: '500',
-                            size: 11
-                        },
-                        textAlign: 'center'
-                    }
-                }
-            }
-        });
-    }
-
-
     // --- LÓGICA DO MENU EXPANSÍVEL ---
     const pageContainer = document.querySelector('.page-container');
     const navItems = document.querySelectorAll('.sidebar-nav-item');
-
     navItems.forEach(item => {
         const link = item.querySelector('.sidebar-nav-link');
         link.addEventListener('click', (e) => {
-            e.preventDefault();
+            if (link.classList.contains('has-submenu') || (window.location.pathname === link.getAttribute('href') && !link.classList.contains('has-submenu'))) {
+                e.preventDefault();
+            }
 
             const isSubmenuItem = link.classList.contains('has-submenu');
             const isAlreadyActive = item.classList.contains('active');
 
-            // Remove 'active' de todos os itens primeiro
             navItems.forEach(i => i.classList.remove('active'));
 
             if (isSubmenuItem) {
-                // Se clicou num item com submenu que já estava ativo, fecha-o.
-                // Senão, abre-o.
                 if (isAlreadyActive) {
                     pageContainer.classList.remove('submenu-active');
                 } else {
@@ -130,17 +23,103 @@
                     pageContainer.classList.add('submenu-active');
                 }
             } else {
-                // Se clicou num item normal, fecha qualquer submenu aberto e o ativa
                 item.classList.add('active');
                 pageContainer.classList.remove('submenu-active');
+                if (window.location.pathname !== link.getAttribute('href')) {
+                    window.location.href = link.href;
+                }
             }
         });
     });
 
-    // --- INICIALIZAÇÃO DO DASHBOARD ---
-    renderMetricCards();
-    criarGraficoEconomiaMes();
-    criarGraficoConsumoMes();
-    criarGraficoConsumoAno();
-    criarGraficoConsumoSetor();
+    // --- LÓGICA DO DASHBOARD ---
+    // Verifica se estamos na página do dashboard antes de executar
+    if (document.getElementById('metric-cards-container')) {
+        carregarDashboard();
+    }
+
+    // Função principal que busca os dados da API
+    async function carregarDashboard() {
+        try {
+            const response = await fetch('/api/dashboard');
+            if (!response.ok) {
+                throw new Error('Falha ao buscar dados do dashboard.');
+            }
+            const data = await response.json();
+
+            // Chama as funções para renderizar cada parte do dashboard
+            renderMetricCards(data);
+            renderListaFimVidaUtil(data.equipamentosProximosFimVida);
+            renderListaProximaManutencao(data.equipamentosProximaManutencao);
+            criarGraficoConsumoMes(data.consumoKwhMes);
+            criarGraficoConsumoAno(data.consumoKwhAno);
+
+        } catch (error) {
+            console.error("Erro ao carregar o dashboard:", error);
+        }
+    }
+
+    // --- FUNÇÕES DE RENDERIZAÇÃO DO DASHBOARD ---
+
+    function renderMetricCards(data) {
+        const container = document.getElementById('metric-cards-container');
+        if (!container) return;
+        const metrics = [
+            { icon: 'bi-tree', title: 'Emissões de CO₂ Evitadas', value: data.emissoesCo2Evitadas },
+            { icon: 'bi-recycle', title: 'Equipamentos Reaproveitados ou Reciclados', value: data.equipamentosRecicladosPercentual },
+            { icon: 'bi-box-seam', title: 'Itens Pendentes de Descarte', value: data.itensPendentesDescarte },
+            { icon: 'bi-check2-square', title: 'Equipamentos Descartados Corretamente', value: data.equipamentosDescartadosCorretamente }
+        ];
+        container.innerHTML = metrics.map(m => `
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="metric-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="title text-muted small">${m.title}</span>
+                        <i class="icon ${m.icon} text-muted"></i>
+                    </div>
+                    <h2 class="value mt-2 fw-light">${m.value}</h2>
+                </div>
+            </div>`).join('');
+    }
+
+    function renderListaFimVidaUtil(equipamentos) {
+        const container = document.getElementById('listaFimVidaUtil');
+        if (!container) return;
+        if (!equipamentos || equipamentos.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center mt-4">Nenhum equipamento a vencer nos próximos 5 meses.</p>';
+            return;
+        }
+        let tableHtml = `<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Descrição</th><th>Vencimento</th><th class="text-end">Dias Restantes</th></tr></thead><tbody>`;
+        equipamentos.forEach(item => {
+            tableHtml += `<tr><td>${item.codigoItem}</td><td>${item.descricao}</td><td>${item.dataVencimento}</td><td class="text-end">${item.diasRestantes}</td></tr>`;
+        });
+        tableHtml += `</tbody></table></div>`;
+        container.innerHTML = tableHtml;
+    }
+
+    function renderListaProximaManutencao(equipamentos) {
+        const container = document.getElementById('listaProximaManutencao');
+        if (!container) return;
+        if (!equipamentos || equipamentos.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center mt-4">Nenhuma manutenção agendada para os próximos 30 dias.</p>';
+            return;
+        }
+        let tableHtml = `<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Descrição</th><th>Próx. Manutenção</th><th>Frequência</th></tr></thead><tbody>`;
+        equipamentos.forEach(item => {
+            tableHtml += `<tr><td>${item.codigoItem}</td><td>${item.descricao}</td><td>${item.proximaManutencao}</td><td>${item.frequencia}</td></tr>`;
+        });
+        tableHtml += `</tbody></table></div>`;
+        container.innerHTML = tableHtml;
+    }
+
+    function criarGraficoConsumoMes(chartData) {
+        const ctx = document.getElementById('graficoConsumoMes');
+        if (ctx && chartData) new Chart(ctx, { type: 'bar', data: { labels: chartData.labels, datasets: [{ data: chartData.data, backgroundColor: '#c4b5fd', borderRadius: 6 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+    }
+
+    function criarGraficoConsumoAno(chartData) {
+        const ctx = document.getElementById('graficoConsumoAno');
+        if (ctx && chartData) new Chart(ctx, { type: 'bar', data: { labels: chartData.labels, datasets: [{ data: chartData.data, backgroundColor: '#c4b5fd', borderRadius: 6 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+    }
 });
+
