@@ -1,0 +1,188 @@
+﻿:root {
+    --primary-purple: #8A2BE2;
+    --dark-purple-wave: #6a0dad;
+    --light-purple-bg: #F3F0FD;
+    --text-color: #333;
+    --input-border: #ccc;
+    --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.navbar-login {
+    background-color: white;
+    padding: 1rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    color: var(--primary-purple);
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+    .navbar-logo img {
+        height: 25px;
+        margin-right: 0.5rem;
+    }
+
+.navbar-btn {
+    background-color: var(--primary-purple);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.8rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.register-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.wave-bg {
+    position: absolute;
+    width: 150%;
+    height: 50%;
+    background-color: var(--dark-purple-wave);
+    border-radius: 50%;
+    bottom: -25%;
+    left: -25%;
+    z-index: 1;
+}
+
+.register-card {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    overflow: hidden;
+    max-width: 900px;
+    width: 90%;
+    z-index: 10;
+}
+
+.register-illustration {
+    background-color: var(--light-purple-bg);
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+    .register-illustration img {
+        max-width: 100%;
+        height: auto;
+    }
+
+.register-form-area {
+    padding: 2.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .register-form-area h2 {
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+.input-group-register {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+    .input-group-register .icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+    }
+
+    .input-group-register input {
+        width: 100%;
+        padding: 0.8rem 0.8rem 0.8rem 40px;
+        border: 1px solid var(--input-border);
+        border-radius: 0.5rem;
+        box-sizing: border-box;
+    }
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.8rem;
+}
+
+    .checkbox-label input {
+        margin-right: 0.5rem;
+        accent-color: var(--primary-purple);
+    }
+
+.btn-cadastrar {
+    background-color: var(--primary-purple);
+    color: white;
+    border: none;
+    padding: 0.8rem 0;
+    width: 100%;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.register-links {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+    .register-links a {
+        color: var(--primary-purple);
+        font-weight: 500;
+    }
+
+.text-danger {
+    font-size: 0.8rem;
+}
+
+.validation-summary-errors ul {
+    list-style-type: none;
+    padding: 0;
+    color: #dc3545;
+    font-size: 0.9rem;
+}
+
+/* OBSERVAÇÃO: A media query para responsividade foi completada. */
+@@media (max-width: 768px) {
+    .register-card {
+        flex-direction: column;
+        margin: 2rem 1rem;
+    }
+
+    .register-illustration {
+        order: -1; /* Coloca a imagem no topo em ecrãs pequenos */
+        border-radius: 1rem 1rem 0 0;
+    }
+}

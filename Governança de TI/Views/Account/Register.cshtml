@@ -1,0 +1,73 @@
+﻿@model Governança_de_TI.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Cadastrar";
+    Layout = null; // Layout customizado
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PROSPERA</title>
+    <link rel="stylesheet" href="~/css/Register.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar-login">
+        <a asp-controller="Home" asp-action="Landing" class="navbar-logo">
+            <img src="https://img.icons8.com/ios-filled/50/8A2BE2/diamond.png" alt="Logo Prospera" /> PROSPERA
+        </a>
+        <div>
+            <a asp-controller="Home" asp-action="Landing" class="navbar-btn">INICIO</a>
+        </div>
+    </nav>
+
+    <div class="register-container">
+        <div class="wave-bg"></div>
+        <div class="register-card">
+            <div class="register-illustration">
+                <img src="https://cdni.iconscout.com/illustration/premium/thumb/signing-contract-7324316-5991219.png" alt="Ilustração de cadastro" />
+            </div>
+            <div class="register-form-area">
+                <h2>Cadastrar</h2>
+                <form asp-action="Register" method="post">
+                    <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                    <div class="input-group-register">
+                        <i class="bi bi-person icon"></i>
+                        <input asp-for="Nome" placeholder="Nome completo" />
+                    </div>
+                    <span asp-validation-for="Nome" class="text-danger"></span>
+
+                    <div class="input-group-register">
+                        <i class="bi bi-envelope icon"></i>
+                        <input asp-for="Email" placeholder="E-mail" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+
+                    <!-- OBSERVAÇÃO: O campo de senha foi removido daqui -->
+
+                    <div class="alert alert-info small mt-3" role="alert" style="background-color: var(--light-purple-bg); border-color: #d1c4e9;">
+                        Uma senha aleatória será gerada e enviada para o seu e-mail.
+                    </div>
+
+                    <label class="checkbox-label mt-3">
+                        <input asp-for="AceitaPromocoes" type="checkbox" /> Permito Receber e-mail Promocionais e Novidades.
+                    </label>
+
+                    <button type="submit" class="btn-cadastrar">CADASTRAR</button>
+
+                    <div class="register-links">
+                        Já tem uma conta? <a asp-action="Login">Logar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

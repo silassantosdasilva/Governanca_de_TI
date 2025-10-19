@@ -1,10 +1,13 @@
 ﻿using Governança_de_TI.Data;
 using Governança_de_TI.Models;
+using Governança_de_TI.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System;
 using System.IO;
 using System.Linq;
@@ -16,11 +19,13 @@ namespace Governança_de_TI.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IAuditService _auditService; // Injeta o serviço de auditoria
 
-        public EquipamentosController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public EquipamentosController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, IAuditService auditService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _auditService = auditService;
         }
 
         #region Consulta
@@ -88,9 +93,15 @@ namespace Governança_de_TI.Controllers
                 equipamento.AnexoUrl = await SalvarFicheiro(AnexoUpload, "anexos");
 
             equipamento.DataDeCadastro = DateTime.Now;
-
+            
             _context.Add(equipamento);
             await _context.SaveChangesAsync();
+
+            var userId = await GetCurrentUserId();
+            if (userId.HasValue)
+            {
+                await _auditService.RegistrarAcao(userId.Value, "Criou Equipamento", $"ID: {equipamento.CodigoItem}");
+            }
 
             TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
             return RedirectToAction(nameof(Consulta));
@@ -148,6 +159,12 @@ namespace Governança_de_TI.Controllers
 
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Equipamento atualizado com sucesso!";
+
+                var userId = await GetCurrentUserId();
+                if (userId.HasValue)
+                {
+                    await _auditService.RegistrarAcao(userId.Value, "Editou Equipamento", $"ID: {equipamento.CodigoItem}");
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -183,13 +200,33 @@ namespace Governança_de_TI.Controllers
                 _context.Equipamentos.Remove(equipamento);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Equipamento excluído com sucesso!";
+
+                var userId = await GetCurrentUserId();
+                if (userId.HasValue)
+                {
+                    await _auditService.RegistrarAcao(userId.Value, "Excluiu Equipamento", $"ID: {equipamento.CodigoItem}");
+                }
+
             }
+
 
             return RedirectToAction(nameof(Consulta));
         }
-        #endregion
 
-        #region API / Dados auxiliares
+        // --- MÉTODO AUXILIAR ---
+        private async Task<int?> GetCurrentUserId()
+        {
+            // Obtém o e-mail do utilizador a partir do cookie de autenticação
+            var userEmail = User.Identity.Name;
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return null;
+            }
+            // Busca o utilizador na base de dados pelo e-mail para encontrar o seu ID
+            var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == userEmail);
+            return user?.Id;
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetEquipamentoDados(int id)
         {

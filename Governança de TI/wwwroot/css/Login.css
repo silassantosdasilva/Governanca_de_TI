@@ -1,0 +1,229 @@
+﻿
+:root {
+    --primary-purple: #8A2BE2; /* Roxo principal */
+    --light-purple-bg: #F3F0FD; /* Fundo lilás claro */
+    --dark-purple-wave: #6a0dad; /* Roxo mais escuro para a onda */
+    --text-color: #333;
+    --input-border: #ccc;
+    --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-purple-bg);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar-login {
+    background-color: white;
+    padding: 1rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--box-shadow);
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    color: var(--primary-purple);
+    font-size: 1.2rem;
+}
+
+    .navbar-logo img {
+        height: 25px; /* Ajuste conforme o seu logo */
+        margin-right: 0.5rem;
+    }
+
+.navbar-btn {
+    background-color: var(--primary-purple);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.8rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+    .navbar-btn:hover {
+        background-color: #7A1AD1;
+    }
+
+/* Container Principal do Login */
+.login-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden; /* Para esconder a parte da onda que sai */
+}
+
+.wave-bg {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 50%; /* Ajuste a largura da onda */
+    height: 100%;
+    background-color: var(--dark-purple-wave);
+    border-top-left-radius: 100%; /* Curvatura no canto superior esquerdo */
+    border-bottom-left-radius: 100%; /* Curvatura no canto inferior esquerdo */
+    transform: translateX(40%); /* Ajuste para mover a onda mais para a direita ou esquerda */
+}
+
+.login-card {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    overflow: hidden;
+    max-width: 900px; /* Largura máxima do card */
+    width: 100%;
+    z-index: 10; /* Para ficar acima da onda */
+}
+
+.login-illustration {
+    background-color: var(--primary-purple);
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top-left-radius: 1rem;
+    border-bottom-left-radius: 1rem;
+    flex: 1; /* Ocupa espaço igual */
+}
+
+    .login-illustration img {
+        max-width: 100%;
+        height: auto;
+    }
+
+.login-form-area {
+    padding: 2.5rem;
+    flex: 1; /* Ocupa espaço igual */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .login-form-area h2 {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+    }
+
+.input-group-login {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+    .input-group-login .icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+    }
+
+    .input-group-login input {
+        width: calc(100% - 40px); /* Ajusta a largura para o ícone */
+        padding: 0.8rem 0.8rem 0.8rem 40px; /* Espaçamento para o ícone */
+        border: 1px solid var(--input-border);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        color: var(--text-color);
+    }
+
+        .input-group-login input::placeholder {
+            color: #aaa;
+        }
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+    .checkbox-label input[type="checkbox"] {
+        margin-right: 0.5rem;
+        accent-color: var(--primary-purple); /* Cor do checkbox */
+    }
+
+.btn-logar {
+    background-color: var(--primary-purple);
+    color: white;
+    border: none;
+    padding: 0.8rem 0;
+    width: 100%;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-logar:hover {
+        background-color: #7A1AD1;
+    }
+
+.login-links {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+    .login-links a {
+        color: var(--primary-purple);
+        text-decoration: none;
+        margin: 0 0.5rem;
+        font-weight: 500;
+    }
+
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+
+.validation-summary-errors ul {
+    list-style-type: none;
+    padding: 0;
+    color: #dc3545; /* Cor de erro do Bootstrap */
+    font-size: 0.9rem;
+    margin-top: -1rem; /* Ajuste para não ter muito espaçamento */
+    margin-bottom: 1rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .navbar-login {
+        padding: 1rem 1.5rem;
+    }
+
+    .login-card {
+        flex-direction: column;
+        max-width: 400px;
+    }
+
+    .login-illustration {
+        border-radius: 1rem 1rem 0 0; /* Arredondar topo no mobile */
+        height: 200px;
+    }
+
+    .wave-bg {
+        width: 100%;
+        height: 50%;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        transform: translateY(40%);
+        border-radius: 100% 100% 0 0;
+    }
+}

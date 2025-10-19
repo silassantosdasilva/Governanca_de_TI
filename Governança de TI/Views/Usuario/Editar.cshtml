@@ -1,0 +1,108 @@
+﻿@model Governança_de_TI.Models.UsuarioModel
+@{
+    ViewData["Title"] = "Editar Responsável";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 text-muted">Controle de Responsáveis</h4>
+                    <h5 class="mb-0">Edição</h5>
+                </div>
+
+                <form asp-action="Editar">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Campo oculto para garantir que o ID é enviado de volta para o controller -->
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="Nome" class="form-label"></label>
+                        <input asp-for="Nome" class="form-control" />
+                        <span asp-validation-for="Nome" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Departamento" class="form-label"></label>
+                        <input asp-for="Departamento" class="form-control" />
+                        <span asp-validation-for="Departamento" class="text-danger"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Perfil" class="form-label"></label>
+                            <select asp-for="Perfil" class="form-select">
+                                <option value="">Selecione um perfil...</option>
+                                <option value="Admin">Administrador/TI</option>
+                                <option value="Usuario">Utilizador Comum</option>
+                            </select>
+                            <span asp-validation-for="Perfil" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Status" class="form-label"></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Ativo">Ativo</option>
+                                <option value="Inativo">Inativo</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Botão para acionar o modal de redefinição de senha -->
+                    <div class="mt-3">
+                        <label class="form-label">Gestão da Senha</label>
+                        <button type="button" class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#modalRedefinirSenha">
+                            <i class="bi bi-key me-2"></i>Redefinir Senha e Enviar por E-mail
+                        </button>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação para Redefinir Senha -->
+<div class="modal fade" id="modalRedefinirSenha" tabindex="-1" aria-labelledby="modalRedefinirSenhaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalRedefinirSenhaLabel">Confirmar Redefinição de Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem a certeza de que deseja gerar uma nova senha aleatória e enviá-la para o e-mail <strong>@Model.Email</strong>?</p>
+                <p class="text-muted small">O utilizador <strong>@Model.Nome</strong> receberá a nova senha no seu e-mail.</p>
+            </div>
+            <div class="modal-footer">
+                <!-- O formulário dentro do modal aponta para a Action 'RedefinirSenha' -->
+                <form asp-action="RedefinirSenha" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Sim, Redefinir Senha</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        // Renderiza os scripts de validação para o formulário principal
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+

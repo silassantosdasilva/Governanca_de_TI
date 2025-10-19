@@ -17,6 +17,7 @@ namespace Governança_de_TI.Data
         public DbSet<DescarteModel> Descartes { get; set; }
         public DbSet<ConsumoEnergiaModel> ConsumosEnergia { get; set; }
         public DbSet<TipoEquipamentoModel> TiposEquipamento { get; set; }
+        public DbSet<AuditLogModel> AuditLogs { get; set; }
 
 
 

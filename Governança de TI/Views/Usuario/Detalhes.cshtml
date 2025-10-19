@@ -1,0 +1,126 @@
+﻿@model Governança_de_TI.Models.UsuarioModel
+@inject Governança_de_TI.Data.ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "Detalhes do Responsável";
+
+    // OBSERVAÇÃO: Esta consulta busca na base de dados os 5 logs de auditoria
+    // mais recentes para o utilizador que está a ser visualizado.
+    var atividadesRecentes = _context.AuditLogs
+        .Where(log => log.UsuarioId == Model.Id)
+        .OrderByDescending(log => log.Timestamp)
+        .Take(5)
+        .ToList();
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 text-muted">Controle de Responsáveis</h4>
+                    <h5 class="mb-0">Detalhes</h5>
+                </div>
+
+                <!-- Secção 1: Perfil do Utilizador -->
+                <div class="d-flex align-items-center mb-4">
+                    <img src="https://i.pravatar.cc/80?u=@Model.Email" alt="Avatar do Utilizador" class="rounded-circle me-3" width="80" height="80" />
+                    <div>
+                        <h4 class="mb-0">@Model.Nome</h4>
+                        <p class="text-muted mb-0">@Model.Email</p>
+                    </div>
+                </div>
+                <hr />
+
+                <h6>Informações Gerais</h6>
+                <dl class="row mt-3">
+                    <dt class="col-sm-4">Perfil de Acesso</dt>
+                    <dd class="col-sm-8">@Model.Perfil</dd>
+
+                    <dt class="col-sm-4">Departamento</dt>
+                    <dd class="col-sm-8">@(Model.Departamento ?? "Não informado")</dd>
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.Status == "Ativo")
+                        {
+                            <span class="badge bg-success">@Model.Status</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@Model.Status</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Data de Cadastro</dt>
+                    <dd class="col-sm-8">@Model.DataDeCadastro.ToString("g")</dd>
+                </dl>
+                <hr />
+
+                <!-- Secção 2: Segurança e Acesso -->
+                <h6>Segurança e Acesso</h6>
+                <dl class="row mt-3">
+                    <dt class="col-sm-4">Último Login</dt>
+                    <dd class="col-sm-8">@(Model.DataUltimoLogin?.ToString("g") ?? "Nunca")</dd>
+                </dl>
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalRedefinirSenha">
+                        <i class="bi bi-key me-2"></i>Redefinir Senha e Enviar por E-mail
+                    </button>
+                </div>
+                <hr />
+
+                <!-- OBSERVAÇÃO: A secção de Atividade Recente agora é dinâmica e mostra os dados reais. -->
+                <h6>Atividade Recente</h6>
+                @if (atividadesRecentes.Any())
+                {
+                    <ul class="list-group list-group-flush small mt-3 LogStyle"
+                        style="max-height: 250px; overflow-y: auto; overflow-x: hidden;">
+                        @foreach (var atividade in atividadesRecentes)
+                        {
+                            <li class="list-group-item px-0">
+                                <strong>@atividade.Acao:</strong> @atividade.Detalhes
+                                <span class="text-muted d-block" style="font-size: 0.8rem;">em @atividade.Timestamp.ToString("g")</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mt-3">Nenhuma atividade recente registada para este utilizador.</p>
+                }
+
+                <!-- Botões de Ação -->
+                <div class="d-flex justify-content-end mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary me-2">Voltar</a>
+                    <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-secondary me-2">Editar</a>
+                    <a asp-action="Excluir" asp-route-id="@Model.Id" class="btn btn-danger">Excluir</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação para Redefinir Senha -->
+<div class="modal fade" id="modalRedefinirSenha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Redefinição de Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem a certeza de que deseja gerar uma nova senha e enviá-la para <strong>@Model.Email</strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <form asp-action="RedefinirSenha" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Sim, Redefinir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
