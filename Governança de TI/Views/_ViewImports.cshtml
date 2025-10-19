@@ -1,3 +1,11 @@
-﻿@using Governança_de_TI
+﻿@*
+    OBSERVAÇÃO: Este ficheiro importa os namespaces que serão usados em todas as Views.
+    Isto evita ter de repetir as mesmas diretivas '@using' em cada ficheiro .cshtml.
+*@
+
+@using Governança_de_TI
 @using Governança_de_TI.Models
+@using Governança_de_TI.ViewModels
+
+@* Adiciona os Tag Helpers padrão do ASP.NET Core MVC (ex: asp-for, asp-action) *@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

@@ -2,11 +2,8 @@
 @{
     ViewData["Title"] = "Consulta de Descarte";
 }
-@section Styles {
-    <!-- CORREÇÃO: Usando a sintaxe Razor correta com '~' para o caminho do CSS -->
-    <link rel="stylesheet" href="~/css/Descarte.css" asp-append-version="true" />
-}
 
+<!-- Bloco para exibir mensagens de sucesso (Ex: após criar, editar ou excluir um registo) -->
 @if (TempData["SuccessMessage"] != null)
 {
     <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -15,6 +12,7 @@
     </div>
 }
 
+<!-- Wrapper que garante que o conteúdo ocupe a altura total da tela -->
 <div class="content-wrapper">
     <!-- Formulário de Filtro -->
     <div class="card shadow-sm mb-4">
@@ -67,7 +65,6 @@
                             <th>Quantidade</th>
                             <th>Data da Coleta</th>
                             <th>Empresa Coletora</th>
-                            <th>CNPJ</th>
                             <th>Responsável</th>
                             <th>Data de Cadastro</th>
                             <th>Status</th>
@@ -85,20 +82,20 @@
                                     <td>@item.Quantidade</td>
                                     <td>@item.DataColeta.ToShortDateString()</td>
                                     <td>@item.EmpresaColetora</td>
-                                    <td>@item.CnpjEmpresa</td>
                                     <td>@item.PessoaResponsavelColeta</td>
                                     <td>@item.DataDeCadastro.ToShortDateString()</td>
                                     <td>@item.Status</td>
                                     <td>
-                                        <a asp-controller="Descarte" asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0"><i class="bi bi-search"></i></a>
-                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0"><i class="bi bi-pencil-square"></i></a>
+                                        <a asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0" title="Detalhes"><i class="bi bi-search"></i></a>
+                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                        <a asp-action="Excluir" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-0" title="Excluir"><i class="bi bi-trash"></i></a>
                                     </td>
                                 </tr>
                             }
                         }
                         else
                         {
-                            <tr><td colspan="10" class="text-center py-4">Nenhum registo encontrado.</td></tr>
+                            <tr><td colspan="9" class="text-center py-4">Nenhum registo de descarte encontrado.</td></tr>
                         }
                     </tbody>
                 </table>
@@ -109,6 +106,7 @@
 
 @section Scripts {
     <script>
+        // Script para fechar o alerta de sucesso automaticamente após 5 segundos
         window.setTimeout(function() {
             var alert = document.getElementById('success-alert');
             if (alert) { new bootstrap.Alert(alert).close(); }

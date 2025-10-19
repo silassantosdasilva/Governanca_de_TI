@@ -9,8 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Governança_de_TI.Controllers // Certifique-se de que o namespace está correto
+namespace Governança_de_TI.Controllers
 {
+    /// <summary>
+    /// Controller responsável pela gestão completa dos registos de descarte.
+    /// </summary>
     public class DescarteController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,54 +25,19 @@ namespace Governança_de_TI.Controllers // Certifique-se de que o namespace est�
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: Descarte
-        // Agora esta Action mostra a lista de todos os descartes registados.
-        public async Task<IActionResult> Index()
+        // GET: Descarte/Consulta
+        // OBSERVAÇÃO: Action principal que exibe a lista de descartes e aplica os filtros da pesquisa.
+        public async Task<IActionResult> Consulta(int? id, string equipamento, string empresaColetora, string cnpj, string responsavel, DateTime? dataColeta, DateTime? dataCadastro, string status, string observacao)
         {
-            var descartes = await _context.Descartes.Include(d => d.Equipamento).ToListAsync();
-            return View(descartes);
-        }
+            var query = _context.Descartes.Include(d => d.Equipamento).AsQueryable();
 
-        // GET: Descarte/Detalhes/5
-        public async Task<IActionResult> Detalhes(int? id)
-        {
-            if (id == null)
+            if (id.HasValue)
             {
-                return NotFound();
-            }
-
-            var descarte = await _context.Descartes
-                .Include(d => d.Equipamento)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (descarte == null)
-            {
-                return NotFound();
-            }
-
-            return View(descarte);
-        }
-
-
-        public async Task<IActionResult> Consulta(string equipamento, DateTime? dataColeta, string empresaColetora, string cnpj, string responsavel, DateTime? dataCadastro, string observacao,int id, string status)
-        {
-            var query = _context.Descartes
-                .Include(d => d.Equipamento) // Inclui os dados do equipamento relacionado
-                .Include(d => d.Usuario)     // Inclui os dados do usuário relacionado
-                .AsQueryable();
-
-            if (id > 0)
-            {
-                query = query.Where(d => d.Id == id);
+                query = query.Where(d => d.Id == id.Value);
             }
             if (!string.IsNullOrEmpty(equipamento))
             {
-                query = query.Where(d => d.Equipamento.CodigoItem.ToString().Contains(equipamento) || d.Equipamento.Descricao.Contains(equipamento));
-            }
-            if (dataColeta.HasValue)
-            {
-                var dataFim = dataColeta.Value.AddDays(1);
-                query = query.Where(d => d.DataColeta >= dataColeta.Value && d.DataColeta < dataFim);
+                query = query.Where(d => d.Equipamento.Descricao.Contains(equipamento) || d.Equipamento.CodigoItem.ToString().Contains(equipamento));
             }
             if (!string.IsNullOrEmpty(empresaColetora))
             {
@@ -77,150 +45,123 @@ namespace Governança_de_TI.Controllers // Certifique-se de que o namespace est�
             }
             if (!string.IsNullOrEmpty(cnpj))
             {
-                query = query.Where(d => d.CnpjEmpresa == cnpj);
+                query = query.Where(d => d.CnpjEmpresa.Contains(cnpj));
             }
             if (!string.IsNullOrEmpty(responsavel))
             {
                 query = query.Where(d => d.PessoaResponsavelColeta.Contains(responsavel));
             }
+            if (dataColeta.HasValue)
+            {
+                query = query.Where(d => d.DataColeta.Date == dataColeta.Value.Date);
+            }
             if (dataCadastro.HasValue)
             {
-                var dataFim = dataCadastro.Value.AddDays(1);
-                query = query.Where(d => d.DataDeCadastro >= dataCadastro.Value && d.DataDeCadastro < dataFim);
+                query = query.Where(d => d.DataDeCadastro.Date == dataCadastro.Value.Date);
+            }
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(d => d.Status == status);
             }
             if (!string.IsNullOrEmpty(observacao))
             {
                 query = query.Where(d => d.Observacao.Contains(observacao));
             }
-            if (!string.IsNullOrEmpty(status))
-            {
-                query = query.Where(d => d.Status.Contains(status));
-            }
 
-            var descartes = await query.ToListAsync();
-            return View(descartes);
+            return View(await query.OrderByDescending(d => d.DataDeCadastro).ToListAsync());
+        }
+
+        // GET: Descarte/Detalhes/5
+        public async Task<IActionResult> Detalhes(int? id)
+        {
+            if (id == null) return NotFound();
+            var descarte = await _context.Descartes
+                .Include(d => d.Equipamento)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (descarte == null) return NotFound();
+            return View(descarte);
         }
 
         // GET: Descarte/Criar
         public async Task<IActionResult> Criar()
         {
-            ViewData["EquipamentoId"] = new SelectList(await _context.Equipamentos.ToListAsync(), "CodigoItem", "Descricao");
+            await PopulaEquipamentosViewData();
             return View();
         }
 
         // POST: Descarte/Criar
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Criar([Bind("EquipamentoId,Descricao,Quantidade,DataColeta,EmpresaColetora,CnpjEmpresa,EmailEmpresa,PessoaResponsavelColeta,CertificadoUpload,EnviarEmail,UsuarioId,Status")] DescarteModel descarte)
+        public async Task<IActionResult> Criar(DescarteModel descarte)
         {
-     
+           
+                // Busca a descrição do equipamento selecionado para guardar no registo de descarte
+                var equipamentoSelecionado = await _context.Equipamentos.FindAsync(descarte.EquipamentoId);
+                if (equipamentoSelecionado != null)
+                {
+                    descarte.Observacao = equipamentoSelecionado.Descricao;
+                }
+
                 if (descarte.CertificadoUpload != null)
                 {
-                    string pastaUploads = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "certificados");
-                    string nomeFicheiroUnico = Guid.NewGuid().ToString() + "_" + descarte.CertificadoUpload.FileName;
-                    string caminhoCompleto = Path.Combine(pastaUploads, nomeFicheiroUnico);
-
-                    if (!Directory.Exists(pastaUploads))
-                    {
-                        Directory.CreateDirectory(pastaUploads);
-                    }
-
-                    using (var fileStream = new FileStream(caminhoCompleto, FileMode.Create))
-                    {
-                        await descarte.CertificadoUpload.CopyToAsync(fileStream);
-                    }
-                    descarte.CertificadoUrl = "/uploads/certificados/" + nomeFicheiroUnico;
+                    descarte.CertificadoUrl = await SalvarFicheiro(descarte.CertificadoUpload, "certificados");
                 }
 
                 descarte.DataDeCadastro = DateTime.Now;
                 _context.Add(descarte);
-                await _context.SaveChangesAsync(); // O ID é gerado aqui e atribuído ao objeto 'descarte'
-
-                // CORREÇÃO: A mensagem é criada DEPOIS de salvar, para que o ID esteja disponível.
+                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Registo de descarte ({descarte.Id}) criado com sucesso!";
-
-            return RedirectToAction(nameof(Consulta));
-
+                return RedirectToAction(nameof(Consulta));
+            
+          
         }
 
         // GET: Descarte/Editar/5
         public async Task<IActionResult> Editar(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var descarte = await _context.Descartes.FindAsync(id);
-            if (descarte == null)
-            {
-                return NotFound();
-            }
-            ViewData["EquipamentoId"] = new SelectList(await _context.Equipamentos.ToListAsync(), "CodigoItem", "Descricao", descarte.EquipamentoId);
+            if (id == null) return NotFound();
+            var descarte = await _context.Descartes.Include(d => d.Equipamento).FirstOrDefaultAsync(d => d.Id == id);
+            if (descarte == null) return NotFound();
             return View(descarte);
         }
 
         // POST: Descarte/Editar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(int id, [Bind("Id,EquipamentoId,Observacao,Quantidade,DataColeta,EmpresaColetora,CnpjEmpresa,EmailEmpresa,PessoaResponsavelColeta,CertificadoUpload,EnviarEmail,UsuarioId,DataDeCadastro,CertificadoUrl,Status")] DescarteModel descarte)
+        public async Task<IActionResult> Editar(int id, DescarteModel descarteModel)
         {
-            if (id != descarte.Id)
-            {
-                return NotFound();
-            }
-
-            
+           
                 try
                 {
-                    // Lógica para atualizar o certificado, se um novo for enviado
-                    if (descarte.CertificadoUpload != null)
+                    var descarteOriginal = await _context.Descartes.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
+                    if (descarteModel.CertificadoUpload != null)
                     {
-                        string pastaUploads = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "certificados");
-                        string nomeFicheiroUnico = Guid.NewGuid().ToString() + "_" + descarte.CertificadoUpload.FileName;
-                        string caminhoCompleto = Path.Combine(pastaUploads, nomeFicheiroUnico);
-                        using (var fileStream = new FileStream(caminhoCompleto, FileMode.Create))
-                        {
-                            await descarte.CertificadoUpload.CopyToAsync(fileStream);
-                        }
-                        descarte.CertificadoUrl = "/uploads/certificados/" + nomeFicheiroUnico;
+                        descarteModel.CertificadoUrl = await SalvarFicheiro(descarteModel.CertificadoUpload, "certificados");
+                    }
+                    else
+                    {
+                        descarteModel.CertificadoUrl = descarteOriginal.CertificadoUrl; // Mantém o ficheiro antigo se nenhum novo for enviado
                     }
 
-                    _context.Update(descarte);
+                    _context.Update(descarteModel);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!DescarteExists(descarte.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!DescarteExists(descarteModel.Id)) return NotFound();
+                    else throw;
                 }
                 TempData["SuccessMessage"] = "Registo de descarte atualizado com sucesso!";
                 return RedirectToAction(nameof(Consulta));
-
+          
         }
 
         // GET: Descarte/Excluir/5
         public async Task<IActionResult> Excluir(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var descarte = await _context.Descartes
-                .Include(d => d.Equipamento)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (descarte == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var descarte = await _context.Descartes.Include(d => d.Equipamento).FirstOrDefaultAsync(m => m.Id == id);
+            if (descarte == null) return NotFound();
             return View(descarte);
         }
 
@@ -232,13 +173,42 @@ namespace Governança_de_TI.Controllers // Certifique-se de que o namespace est�
             var descarte = await _context.Descartes.FindAsync(id);
             _context.Descartes.Remove(descarte);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = $"Registo de descarte {descarte.Id} excluído com sucesso!";
+            TempData["SuccessMessage"] = "Registo de descarte excluído com sucesso!";
             return RedirectToAction(nameof(Consulta));
         }
+
+        // --- MÉTODOS AUXILIARES ---
 
         private bool DescarteExists(int id)
         {
             return _context.Descartes.Any(e => e.Id == id);
+        }
+
+        // OBSERVAÇÃO: Método auxiliar para popular o dropdown de equipamentos.
+        private async Task PopulaEquipamentosViewData(object selectedItem = null)
+        {
+            var equipamentos = await _context.Equipamentos.OrderBy(e => e.Descricao).ToListAsync();
+            ViewData["EquipamentoId"] = new SelectList(equipamentos, "CodigoItem", "Descricao", selectedItem);
+        }
+
+        // OBSERVAÇÃO: Método auxiliar para salvar ficheiros de upload.
+        private async Task<string> SalvarFicheiro(IFormFile ficheiro, string subpasta)
+        {
+            string pastaUploads = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", subpasta);
+            if (!Directory.Exists(pastaUploads))
+            {
+                Directory.CreateDirectory(pastaUploads);
+            }
+
+            string nomeUnico = Guid.NewGuid().ToString() + "_" + ficheiro.FileName;
+            string caminhoCompleto = Path.Combine(pastaUploads, nomeUnico);
+
+            using (var fileStream = new FileStream(caminhoCompleto, FileMode.Create))
+            {
+                await ficheiro.CopyToAsync(fileStream);
+            }
+
+            return $"/uploads/{subpasta}/{nomeUnico}";
         }
     }
 }

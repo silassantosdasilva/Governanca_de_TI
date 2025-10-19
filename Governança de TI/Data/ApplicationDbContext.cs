@@ -13,10 +13,9 @@ namespace Governança_de_TI.Data
 
         // Suas tabelas (DbSets)
         public DbSet<EquipamentoModel> Equipamentos { get; set; }
-        public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<UsuarioModel> Usuarios { get; set; }
         public DbSet<DescarteModel> Descartes { get; set; }
         public DbSet<ConsumoEnergiaModel> ConsumosEnergia { get; set; }
-
         public DbSet<TipoEquipamentoModel> TiposEquipamento { get; set; }
 
 

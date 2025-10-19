@@ -7,7 +7,7 @@
 <div class="row justify-content-center">
     <div class="col-lg-8 col-xl-6">
         <div class="card shadow-sm">
-            <div class="card-header">
+            <div class="card-header bg-danger text-white">
                 <h4 class="mb-0">Confirmar Exclusão</h4>
             </div>
             <div class="card-body p-4">
@@ -16,8 +16,12 @@
                 <div>
                     <hr />
                     <dl class="row">
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CodigoItem)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.CodigoItem)</dd>
+
                         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Descricao)</dt>
                         <dd class="col-sm-8">@Html.DisplayFor(model => model.Descricao)</dd>
+
                         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Modelo)</dt>
                         <dd class="col-sm-8">@Html.DisplayFor(model => model.Modelo)</dd>
                     </dl>
@@ -31,8 +35,8 @@
                         </div>
                     </form>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
+

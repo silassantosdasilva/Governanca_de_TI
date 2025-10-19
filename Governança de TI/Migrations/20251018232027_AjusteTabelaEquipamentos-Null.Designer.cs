@@ -4,6 +4,7 @@ using Governança_de_TI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Governança_de_TI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251018232027_AjusteTabelaEquipamentos-Null")]
+    partial class AjusteTabelaEquipamentosNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,13 +123,13 @@ namespace Governança_de_TI.Migrations
                     b.Property<string>("AnexoUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("DataCompra")
+                    b.Property<DateTime>("DataCompra")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DataDeCadastro")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DataFimGarantia")
+                    b.Property<DateTime>("DataFimGarantia")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DataUltimaManutencao")
@@ -151,10 +154,12 @@ namespace Governança_de_TI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Modelo")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Serie")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -169,7 +174,7 @@ namespace Governança_de_TI.Migrations
                     b.Property<int?>("UsuarioId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("VidaUtilAnos")
+                    b.Property<int>("VidaUtilAnos")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("VidaUtilFim")

@@ -1,25 +1,31 @@
-﻿@model ErrorViewModel
+﻿@model Governança_de_TI.Models.ErrorViewModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = "Erro";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="card shadow-sm text-center">
+    <div class="card-header bg-danger text-white">
+        <h1 class="h4 mb-0">Ocorreu um Erro</h1>
+    </div>
+    <div class="card-body">
+        <h2 class="h5 text-danger">Um erro inesperado ocorreu ao processar o seu pedido.</h2>
+        <p>Por favor, tente novamente mais tarde ou contacte o suporte se o problema persistir.</p>
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+        @if (Model.ShowRequestId)
+        {
+            <hr />
+            <p>
+                <strong>ID do Pedido:</strong> <code>@Model.RequestId</code>
+            </p>
+            <p class="text-muted small">
+                Esta informação é útil para a equipa de desenvolvimento para rastrear o erro.
+            </p>
+        }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+        <div class="mt-4">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary" style="background-color: #8A2BE2; border-color: #8A2BE2;">
+                Voltar à Página Principal
+            </a>
+        </div>
+    </div>
+</div>

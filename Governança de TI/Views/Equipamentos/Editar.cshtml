@@ -12,29 +12,38 @@
                     <h5 class="mb-0">Edição</h5>
                 </div>
 
-                <form asp-controller="Equipamentos" asp-action="Editar" method="post" enctype="multipart/form-data">
+                <form asp-action="Editar" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    <!-- Campo oculto para garantir que o ID é enviado de volta para o controller -->
+                    <!-- Campos ocultos -->
                     <input type="hidden" asp-for="CodigoItem" />
-                    <!-- Campos ocultos para manter os URLs de imagem/anexo se não forem alterados -->
+                    <input type="hidden" asp-for="DataDeCadastro" />
                     <input type="hidden" asp-for="ImagemUrl" />
                     <input type="hidden" asp-for="AnexoUrl" />
 
-
                     <div class="row">
-                        <!-- Coluna da Esquerda: Dados do Equipamento -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="CodigoItem" class="form-label"></label>
-                                <input asp-for="CodigoItem" class="form-control" readonly />
-                            </div>
+                        <!-- Coluna Esquerda -->
+                        <div class="col-md-7">
                             <div class="mb-3">
                                 <label asp-for="Descricao" class="form-label"></label>
                                 <input asp-for="Descricao" class="form-control" />
                                 <span asp-validation-for="Descricao" class="text-danger"></span>
                             </div>
+
+                            <div class="mb-3">
+                                <label asp-for="TipoEquipamentoId" class="form-label"></label>
+                                <div class="input-group">
+                                    <select asp-for="TipoEquipamentoId" class="form-select" asp-items="ViewBag.TipoEquipamentoId">
+                                        <option value="">Selecione...</option>
+                                    </select>
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalGerenciarTipos">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="TipoEquipamentoId" class="text-danger"></span>
+                            </div>
+
                             <div class="row">
                                 <div class="col-sm-6 mb-3">
                                     <label asp-for="Serie" class="form-label"></label>
@@ -47,48 +56,51 @@
                                     <span asp-validation-for="Modelo" class="text-danger"></span>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label asp-for="DataCompra" class="form-label"></label>
-                                <input asp-for="DataCompra" class="form-control" />
-                                <span asp-validation-for="DataCompra" class="text-danger"></span>
+
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label asp-for="DataCompra" class="form-label"></label>
+                                    <input asp-for="DataCompra" class="form-control" type="date" />
+                                    <span asp-validation-for="DataCompra" class="text-danger"></span>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <label asp-for="VidaUtilFim" class="form-label"></label>
+                                    <input asp-for="VidaUtilFim" class="form-control" type="date"/>
+                                    <span asp-validation-for="VidaUtilFim" class="text-danger"></span>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label asp-for="DataFimGarantia" class="form-label"></label>
-                                <input asp-for="DataFimGarantia" class="form-control" />
-                                <span asp-validation-for="DataFimGarantia" class="text-danger"></span>
-                            </div>
-                            <div class="mb-3">
-                                <label asp-for="DataUltimaManutencao" class="form-label"></label>
-                                <input asp-for="DataUltimaManutencao" class="form-control" />
-                            </div>
+
                             <div class="mb-3">
                                 <label asp-for="Status" class="form-label"></label>
                                 <select asp-for="Status" class="form-select">
                                     <option value="">Selecione...</option>
-                                    <option value="Ativo">Ativo</option>
-                                    <option value="Em Manutenção">Em Manutenção</option>
-                                    <option value="Descartado">Descartado</option>
+                                    <option>Ativo</option>
+                                    <option>Em Manutenção</option>
+                                    <option>Descartado</option>
                                 </select>
                                 <span asp-validation-for="Status" class="text-danger"></span>
                             </div>
-                            <div class="col-sm-6 mb-3">
-                                <label asp-for="VidaUtil" class="form-label"></label>
-                                <input asp-for="VidaUtil" class="form-control" />
-                                <span asp-validation-for="VidaUtil" class="text-danger"></span>
-                            </div>
+
                             <div class="mb-3">
                                 <label asp-for="FrequenciaManutencao" class="form-label"></label>
                                 <select asp-for="FrequenciaManutencao" class="form-select">
                                     <option value="">Nenhuma</option>
-                                    <option value="Mensal">Mensal</option>
-                                    <option value="Trimestral">Trimestral</option>
-                                    <option value="Anual">Anual</option>
+                                    <option>Mensal</option>
+                                    <option>Trimestral</option>
+                                    <option>Anual</option>
                                 </select>
                             </div>
+
                             <div class="mb-3">
-                                <label asp-for="AnexoUpload" class="form-label"></label>
+                                <label asp-for="DataUltimaManutencao" class="form-label"></label>
+                                <input asp-for="DataUltimaManutencao" class="form-control" type="date"/>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="AnexoUpload" class="form-label">Anexo</label>
                                 <input asp-for="AnexoUpload" class="form-control" type="file" />
                             </div>
+
                             <div class="row">
                                 <div class="col-sm-6 mb-3">
                                     <label asp-for="DiasAlertaManutencao" class="form-label"></label>
@@ -103,12 +115,13 @@
                             </div>
                         </div>
 
-                        <!-- Coluna da Direita: Imagem -->
-                        <div class="col-md-6 d-flex flex-column align-items-center">
+                        <!-- Coluna Direita -->
+                        <div class="col-md-5 d-flex flex-column align-items-center">
                             <label class="form-label">Pré-visualização da Imagem</label>
                             <div class="text-center">
                                 <img id="imagePreview" src="@(string.IsNullOrEmpty(Model.ImagemUrl) ? "https://placehold.co/250x250/f0f0f0/ccc?text=Imagem" : Url.Content("~" + Model.ImagemUrl))"
-                                     alt="Pré-visualização da Imagem" style="width: 250px; height: 250px; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
+                                     alt="Pré-visualização da Imagem"
+                                     style="width: 100%; max-width: 250px; height: auto; aspect-ratio: 1/1; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
                                 <label for="ImagemUpload" class="btn btn-sm btn-outline-secondary mt-2">Alterar Imagem</label>
                                 <input asp-for="ImagemUpload" type="file" class="d-none" id="ImagemUpload" accept="image/*" />
                             </div>
@@ -119,8 +132,6 @@
 
                     <div class="d-flex justify-content-end">
                         <a asp-action="Consulta" class="btn btn-outline-secondary me-2">Cancelar</a>
-
-                        <!-- CORRETO: Usa um <button> para submeter o formulário -->
                         <button type="submit" class="btn btn-primary px-4" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar Alterações</button>
                     </div>
                 </form>
@@ -129,23 +140,105 @@
     </div>
 </div>
 
+<!-- Modal Gerenciar Tipos -->
+<div class="modal fade" id="modalGerenciarTipos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Gerenciar Tipos de Equipamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Adicionar Novo Tipo</h6>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="novoTipoNome" placeholder="Nome do novo tipo...">
+                    <button type="button" class="btn btn-primary" id="btnSalvarNovoTipo" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar</button>
+                </div>
+                <hr/>
+                <h6>Tipos Existentes</h6>
+                <ul id="listaTiposExistentes" class="list-group"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ===== Modal de Gestão de Tipos =====
+            const modalEl = document.getElementById('modalGerenciarTipos');
+            const btnSalvarNovoTipo = document.getElementById('btnSalvarNovoTipo');
+            const novoTipoNomeInput = document.getElementById('novoTipoNome');
+            const tipoEquipamentoSelect = document.getElementById('TipoEquipamentoId');
+            const listaTiposExistentes = document.getElementById('listaTiposExistentes');
+            const modalGerenciarTipos = new bootstrap.Modal(modalEl);
+
+            // Carregar tipos ao abrir modal
+            modalEl.addEventListener('show.bs.modal', () => {
+                fetch('/api/TipoEquipamento')
+                    .then(res => res.json())
+                    .then(tipos => {
+                        listaTiposExistentes.innerHTML = tipos.length
+                            ? tipos.map(tipo => `<li class="list-group-item d-flex justify-content-between align-items-center" data-id="${tipo.id}">
+                                    ${tipo.nome}<button class="btn-close" aria-label="Excluir"></button>
+                                </li>`).join('')
+                            : '<li class="list-group-item">Nenhum tipo cadastrado.</li>';
+                    });
+            });
+
+            // Adicionar novo tipo
+            btnSalvarNovoTipo.addEventListener('click', () => {
+                const nomeNovoTipo = novoTipoNomeInput.value.trim();
+                if (!nomeNovoTipo) return;
+
+                fetch('/api/TipoEquipamento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: nomeNovoTipo })
+                })
+                .then(res => res.ok ? res.json() : res.text().then(t => Promise.reject(t)))
+                .then(novoTipo => {
+                    tipoEquipamentoSelect.add(new Option(novoTipo.nome, novoTipo.id, true, true));
+                    modalGerenciarTipos.hide();
+                    novoTipoNomeInput.value = '';
+                })
+                .catch(err => alert(`Erro: ${err}`));
+            });
+
+            // Excluir tipo
+            listaTiposExistentes.addEventListener('click', e => {
+                if (!e.target.classList.contains('btn-close')) return;
+                const li = e.target.closest('li');
+                const tipoId = li.dataset.id;
+                if (!confirm(`Deseja excluir o tipo "${li.textContent.trim()}"?`)) return;
+
+                fetch(`/api/TipoEquipamento/${tipoId}`, { method: 'DELETE' })
+                    .then(res => {
+                        if (res.ok) {
+                            li.remove();
+                            const optionToRemove = tipoEquipamentoSelect.querySelector(`option[value='${tipoId}']`);
+                            if (optionToRemove) optionToRemove.remove();
+                        } else {
+                            res.text().then(text => alert(`Erro: ${text}`));
+                        }
+                    });
+            });
+
+            // Pré-visualização da imagem
             const imageUploadInput = document.getElementById('ImagemUpload');
             const imagePreview = document.getElementById('imagePreview');
 
             if (imageUploadInput && imagePreview) {
-                imageUploadInput.addEventListener('change', function (event) {
+                imageUploadInput.addEventListener('change', event => {
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = function (e) {
-                            imagePreview.src = e.target.result;
-                        }
+                        reader.onload = e => { imagePreview.src = e.target.result; };
                         reader.readAsDataURL(file);
                     }
                 });

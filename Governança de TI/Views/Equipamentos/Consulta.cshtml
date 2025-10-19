@@ -2,12 +2,13 @@
 @{
     ViewData["Title"] = "Consulta de Equipamentos";
 }
+
 @section Styles {
-    <!-- CORREÇÃO: Usando a sintaxe Razor correta com '~' para o caminho do CSS -->
-    <link rel="stylesheet" href="~/css/Equipamento.css" asp-append-version="true" />
+    <!-- Link para o ficheiro de estilos específico desta página, que faz a tabela ocupar a altura total -->
+    <link rel="stylesheet" href="~/css/equipamento.css" asp-append-version="true" />
 }
 
-<!-- Adicionado o bloco para exibir a mensagem de sucesso -->
+<!-- Bloco para exibir mensagens de sucesso (Ex: após criar, editar ou excluir um registo) -->
 @if (TempData["SuccessMessage"] != null)
 {
     <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -16,23 +17,23 @@
     </div>
 }
 
+<!-- Wrapper que garante que o conteúdo ocupe a altura total da tela -->
 <div class="content-wrapper">
     <!-- Secção de Filtros -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                 <h4 class="mb-0">Controle de Vida de Equipamentos</h4>
-            
-                <a asp-controller="Equipamentos" asp-action="Criar" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-plus-lg me-2"></i>Novo Registro
+                <a asp-action="Criar" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-plus-lg me-2"></i>Novo Registo
                 </a>
             </div>
-            <!-- CORREÇÃO: A tag <form> agora tem method="get" e os inputs têm o atributo "name" -->
-            <form asp-controller="Equipamentos" asp-action="Consulta" method="get">
+
+            <form asp-action="Consulta" method="get">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label for="codigoItem" class="form-label">Código do Item</label>
-                        <input type="text" class="form-control form-control-sm" id="codigoItem" name="codigoItem">
+                        <input type="text" name="codigoItem" class="form-control form-control-sm" id="codigoItem">
                     </div>
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
@@ -45,21 +46,17 @@
                     </div>
                     <div class="col-md-6">
                         <label for="descricao" class="form-label">Descrição</label>
-                        <input type="text" class="form-control form-control-sm" id="descricao" name="descricao">
+                        <input type="text" name="descricao" class="form-control form-control-sm" id="descricao">
                     </div>
                     <div class="col-md-3">
                         <label for="dataCompra" class="form-label">Data de Compra</label>
-                        <input type="date" class="form-control form-control-sm" id="dataCompra" name="dataCompra">
+                        <input type="date" name="dataCompra" class="form-control form-control-sm" id="dataCompra">
                     </div>
                     <div class="col-md-3">
                         <label for="dataUltimaManutencao" class="form-label">Data da Última Manutenção</label>
-                        <input type="date" class="form-control form-control-sm" id="dataUltimaManutencao" name="dataUltimaManutencao">
+                        <input type="date" name="dataUltimaManutencao" class="form-control form-control-sm" id="dataUltimaManutencao">
                     </div>
-                    <div class="col-md-3">
-                        <label for="dataDeCriacao" class="form-label">Data de Criação</label>
-                        <input type="date" class="form-control form-control-sm" id="dataDeCriacao" name="dataDeCriacao">
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end">
+                    <div class="col-md-6 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary w-100" style="background-color: #8A2BE2; border-color: #8A2BE2;">
                             <i class="bi bi-search me-2"></i>Consultar
                         </button>
@@ -76,14 +73,12 @@
                 <table class="table table-hover table-sm align-middle">
                     <thead>
                         <tr>
-                            <th>Código do Item</th>
+                            <th>Código</th>
                             <th>Descrição</th>
                             <th>Série</th>
                             <th>Modelo</th>
                             <th>Data da Compra</th>
                             <th>Fim da Garantia</th>
-                            <th>Última Manutenção</th>
-                            <th>Data de Cadastro</th>
                             <th>Status</th>
                             <th>Ações</th>
                         </tr>
@@ -98,15 +93,13 @@
                                     <td>@item.Descricao</td>
                                     <td>@item.Serie</td>
                                     <td>@item.Modelo</td>
-                                    <td>@item.DataCompra</td>
-                                    <td>@item.DataFimGarantia</td>
-                                    <td>@item.DataUltimaManutencao</td>
-                                    <td>@item.DataDeCadastro</td>
+                                    <td>@item.DataCompra?.ToShortDateString()</td>
+                                    <td>@item.DataFimGarantia?.ToShortDateString()</td>
                                     <td>@item.Status</td>
                                     <td>
-                                        <a asp-controller="Equipamentos" asp-action="Detalhes" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Consultar"><i class="bi bi-search"></i></a>
-                                        <!-- CORREÇÃO: O botão agora aponta para a Action "Editar" -->
-                                        <a asp-action="Editar" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                        <a  asp-action="Detalhes" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Detalhes"><i class="bi bi-search"></i></a>
+                                        <a  asp-action="Editar" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                        <a  asp-action="Excluir" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-danger border-0" title="Excluir"><i class="bi bi-trash"></i></a>
                                     </td>
                                 </tr>
                             }
@@ -114,7 +107,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="9" class="text-center py-4">Nenhum equipamento encontrado.</td>
+                                <td colspan="8" class="text-center py-4">Nenhum equipamento encontrado.</td>
                             </tr>
                         }
                     </tbody>
@@ -124,14 +117,12 @@
     </div>
 </div>
 
-<!-- Adicionado o script para fechar o alerta de sucesso automaticamente -->
 @section Scripts {
     <script>
+        // Script para fechar o alerta de sucesso automaticamente após 5 segundos
         window.setTimeout(function() {
             var alert = document.getElementById('success-alert');
-            if (alert) {
-                new bootstrap.Alert(alert).close();
-            }
+            if (alert) { new bootstrap.Alert(alert).close(); }
         }, 5000);
     </script>
 }

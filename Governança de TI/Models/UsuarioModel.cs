@@ -1,42 +1,47 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Governança_de_TI.Models
 {
-    public class Usuario
+    /// <summary>
+    /// Representa um utilizador do sistema.
+    /// </summary>
+    public class UsuarioModel
     {
+        /// <summary>
+        /// Chave primária do utilizador.
+        /// </summary>
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Código do Usuário")]
-        public int UsuarioId { get; set; }
+        public int Id { get; set; }
 
-        [Required(ErrorMessage = "O nome é obrigatório.")]
-        [StringLength(100, ErrorMessage = "O nome deve ter no máximo 100 caracteres.")]
-        [Display(Name = "Nome Completo")]
+        /// <summary>
+        /// Nome completo do utilizador.
+        /// </summary>
+        [Required(ErrorMessage = "O campo Nome é obrigatório.")]
+        [StringLength(100)]
         public string Nome { get; set; }
 
-        [Required(ErrorMessage = "O e-mail é obrigatório.")]
-        [EmailAddress(ErrorMessage = "E-mail inválido.")]
+        /// <summary>
+        /// Endereço de e-mail do utilizador, que será usado para login.
+        /// </summary>
+        [Required(ErrorMessage = "O campo E-mail é obrigatório.")]
         [StringLength(100)]
-        [Display(Name = "E-mail")]
+        [EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "A senha é obrigatória.")]
-        [StringLength(255, ErrorMessage = "A senha deve ter no máximo 255 caracteres.")]
+        /// <summary>
+        /// Palavra-passe do utilizador.
+        /// </summary>
+        [Required(ErrorMessage = "O campo Senha é obrigatório.")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter no mínimo 6 caracteres.")]
         [DataType(DataType.Password)]
-        [Display(Name = "Senha")]
         public string Senha { get; set; }
 
+        /// <summary>
+        /// Perfil de acesso do utilizador (Ex: "Admin", "Usuario").
+        /// Define as permissões do utilizador no sistema.
+        /// </summary>
+        [Required(ErrorMessage = "O campo Perfil é obrigatório.")]
         [StringLength(50)]
-        [Display(Name = "Cargo / Função")]
-        public string Cargo { get; set; }
-
-        [Display(Name = "Data de Cadastro")]
-        [DataType(DataType.Date)]
-        public DateTime DataCadastro { get; set; } = DateTime.Now;
-
-        [Display(Name = "Ativo")]
-        public bool Ativo { get; set; } = true;
+        public string Perfil { get; set; }
     }
 }

@@ -1,19 +1,19 @@
 ﻿@{
     ViewData["Title"] = "Dashboard Principal";
 }
-
-<!-- Cards Superiores -->
+<!-- Linha dos Indicadores Superiores (Cards de Métricas) -->
 <div class="row" id="metric-cards-container">
-    <!-- Gerado via JavaScript -->
+    <!-- Os cards serão inseridos aqui dinamicamente pelo JavaScript -->
 </div>
 
-<!-- Listas e Gráficos Inferiores -->
+<!-- Linha das Listas e Gráficos Inferiores -->
 <div class="row mt-4">
     <div class="col-lg-6 mb-4">
         <div class="card shadow-sm h-100">
-            <div class="card-body d-flex flex-column">
+            <div class="card-body d-flex flex-column ">
                 <h6 class="card-title text-muted">Equipamentos Próximos do Fim da Vida Útil</h6>
-                <div id="listaFimVidaUtil" class="mt-3 flex-grow-1"></div>
+                <!-- Espaço para a lista dinâmica de equipamentos a vencer -->
+                <div id="listaFimVidaUtil" class="mt-3 flex-grow-1" style="max-height: 200px; overflow-y: auto;padding-right: 5px"></div>
             </div>
         </div>
     </div>
@@ -21,7 +21,8 @@
         <div class="card shadow-sm h-100">
             <div class="card-body d-flex flex-column">
                 <h6 class="card-title text-muted">Equipamentos Próximos da Manutenção</h6>
-                <div id="listaProximaManutencao" class="mt-3 flex-grow-1"></div>
+                <!-- Espaço para a lista dinâmica de próximas manutenções -->
+                <div id="listaProximaManutencao" class="mt-3 flex-grow-1" style="max-height: 200px; overflow-y: auto;padding-right: 5px"></div>
             </div>
         </div>
     </div>

@@ -1,5 +1,4 @@
 ﻿using Governança_de_TI.Data;
-using Governança_de_TI.Models;
 using Governança_de_TI.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +14,8 @@ namespace Governança_de_TI.Controllers
     [ApiController]
     public class DashboardController : ControllerBase
     {
+        // OBSERVAÇÃO: Injetamos a "Fábrica" de DbContext para permitir a criação de múltiplas
+        // instâncias do DbContext, o que é essencial para executar consultas em paralelo.
         private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
         public DashboardController(IDbContextFactory<ApplicationDbContext> contextFactory)
@@ -25,18 +26,20 @@ namespace Governança_de_TI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDadosDashboard()
         {
+            // OBSERVAÇÃO: Todas as tarefas de busca de dados são iniciadas em paralelo.
             var cardDataTask = GetCardDataAsync();
             var fimVidaUtilTask = GetFimVidaUtilDataAsync();
             var proximaManutencaoTask = GetProximaManutencaoDataAsync();
             var consumoMesTask = GetConsumoMesDataAsync();
             var consumoAnoTask = GetConsumoAnoDataAsync();
-            //var tiposDescarteTask = GetTiposDescarteDataAsync(); // Adicionado para completar
 
+            // Aguarda que todas as tarefas terminem a sua execução.
             await Task.WhenAll(cardDataTask, fimVidaUtilTask, proximaManutencaoTask, consumoMesTask, consumoAnoTask);
 
+            // Monta o objeto de resposta com os resultados de todas as tarefas.
             var viewModel = new DashboardViewModel
             {
-                EmissoesCo2Evitadas = "132 kg CO₂",
+                EmissoesCo2Evitadas = "132 kg CO₂", // Valor de exemplo
                 EquipamentosRecicladosPercentual = cardDataTask.Result.EquipamentosRecicladosPercentual,
                 ItensPendentesDescarte = cardDataTask.Result.ItensPendentesDescarte,
                 EquipamentosDescartadosCorretamente = cardDataTask.Result.EquipamentosDescartadosCorretamente,
@@ -44,7 +47,6 @@ namespace Governança_de_TI.Controllers
                 EquipamentosProximaManutencao = proximaManutencaoTask.Result,
                 ConsumoKwhMes = consumoMesTask.Result,
                 ConsumoKwhAno = consumoAnoTask.Result,
-                //TiposDeDescarte = tiposDescarteTask.Result // Adicionado para completar
             };
 
             return Ok(viewModel);
@@ -52,6 +54,45 @@ namespace Governança_de_TI.Controllers
 
         // --- MÉTODOS PRIVADOS PARA CADA MÉTRICA ---
 
+        // Busca os dados para os cards superiores.
+        private async Task<(string EquipamentosRecicladosPercentual, int ItensPendentesDescarte, int EquipamentosDescartadosCorretamente)> GetCardDataAsync()
+        {
+            using (var context = await _contextFactory.CreateDbContextAsync())
+            {
+                var totalDescartes = await context.Descartes.CountAsync();
+                var descartesCorretos = await context.Descartes.CountAsync(d => d.Status == "Reciclado" || d.Status == "Doado");
+                var itensPendentes = await context.Descartes.CountAsync(d => d.Status == "Pendente");
+                var percentual = totalDescartes > 0 ? ((decimal)descartesCorretos / totalDescartes).ToString("P1") : "0,0%";
+                return (percentual, itensPendentes, descartesCorretos);
+            }
+        }
+
+        // Busca os dados para a lista de equipamentos próximos do fim da vida útil.
+        private async Task<List<EquipamentoVencendoViewModel>> GetFimVidaUtilDataAsync()
+        {
+            using (var context = await _contextFactory.CreateDbContextAsync())
+            {
+                var hoje = DateTime.Now.Date;
+                var dataLimite = hoje.AddMonths(5);
+
+                // OBSERVAÇÃO: A consulta foi corrigida para usar o campo 'VidaUtilFim' (que é uma data)
+                // em vez de 'VidaUtilAnos' (que é um número).
+                var equipamentos = await context.Equipamentos
+                    .Where(e => e.VidaUtilFim.HasValue && e.VidaUtilFim.Value >= hoje && e.VidaUtilFim.Value <= dataLimite)
+                    .OrderBy(e => e.VidaUtilFim)
+                    .Select(e => new EquipamentoVencendoViewModel
+                    {
+                        CodigoItem = e.CodigoItem,
+                        Descricao = e.Descricao,
+                        DataVencimento = e.VidaUtilFim.Value.ToShortDateString(),
+                        DiasRestantes = (e.VidaUtilFim.Value - hoje).Days
+                    })
+                    .ToListAsync();
+                return equipamentos;
+            }
+        }
+
+        // Busca os dados para a lista de equipamentos próximos da manutenção.
         private async Task<List<EquipamentoManutencaoViewModel>> GetProximaManutencaoDataAsync()
         {
             using (var context = await _contextFactory.CreateDbContextAsync())
@@ -66,34 +107,18 @@ namespace Governança_de_TI.Controllers
 
                 foreach (var eq in equipamentosComManutencao)
                 {
-                    DateTime dataBase;
+                    // Mudança feita pelos silas 18/10/2025 anterior DateTime dataBase = eq.DataUltimaManutencao ?? eq.DataCompra;
 
-                    if (eq.DataUltimaManutencao.HasValue && eq.DataUltimaManutencao.Value.Year > 1)
-                    {
-                        dataBase = eq.DataUltimaManutencao.Value;
-                    }
-                    else
-                    {
-                        dataBase = (DateTime)eq.DataCompra;
-                    }
-
+                    DateTime dataBase = (eq.DataUltimaManutencao ?? eq.DataCompra).GetValueOrDefault();
                     if (dataBase.Year <= 1) continue;
 
                     DateTime proximaManutencao;
-
                     switch (eq.FrequenciaManutencao)
                     {
-                        case "Mensal":
-                            proximaManutencao = dataBase.AddMonths(1);
-                            break;
-                        case "Trimestral":
-                            proximaManutencao = dataBase.AddMonths(3);
-                            break;
-                        case "Anual":
-                            proximaManutencao = dataBase.AddMonths(12);
-                            break;
-                        default:
-                            continue;
+                        case "Mensal": proximaManutencao = dataBase.AddMonths(1); break;
+                        case "Trimestral": proximaManutencao = dataBase.AddMonths(3); break;
+                        case "Anual": proximaManutencao = dataBase.AddYears(1); break;
+                        default: continue;
                     }
 
                     if (proximaManutencao >= hoje && proximaManutencao <= dataLimite)
@@ -107,47 +132,11 @@ namespace Governança_de_TI.Controllers
                         });
                     }
                 }
-
-                return listaManutencao.OrderBy(e => DateTime.Parse(e.ProximaManutencao)).ToList();
+                return listaManutencao.OrderBy(e => e.ProximaManutencao).ToList();
             }
         }
 
-        private async Task<List<EquipamentoVencendoViewModel>> GetFimVidaUtilDataAsync()
-        {
-            using (var context = await _contextFactory.CreateDbContextAsync())
-            {
-                var hoje = DateTime.Now.Date;
-                var dataLimite = hoje.AddMonths(5);
-
-                var equipamentos = await context.Equipamentos
-                    .Where(e => e.VidaUtil.HasValue && e.VidaUtil.Value >= hoje && e.VidaUtil.Value <= dataLimite)
-                    .OrderBy(e => e.VidaUtil)
-                    .Select(e => new EquipamentoVencendoViewModel
-                    {
-                        CodigoItem = e.CodigoItem,
-                        Descricao = e.Descricao,
-                        DataVencimento = e.VidaUtil.Value.ToShortDateString(),
-                        DiasRestantes = (e.VidaUtil.Value - hoje).Days
-                    })
-                    .ToListAsync();
-                return equipamentos;
-            }
-        }
-
-        // OBSERVAÇÃO: Definição do método GetCardDataAsync que estava em falta.
-        private async Task<(string EquipamentosRecicladosPercentual, int ItensPendentesDescarte, int EquipamentosDescartadosCorretamente)> GetCardDataAsync()
-        {
-            using (var context = await _contextFactory.CreateDbContextAsync())
-            {
-                var totalDescartes = await context.Descartes.CountAsync();
-                var descartesCorretos = await context.Descartes.CountAsync(d => d.Status == "Reciclado" || d.Status == "Doado");
-                var itensPendentes = await context.Descartes.CountAsync(d => d.Status == "Pendente");
-                var percentual = totalDescartes > 0 ? ((decimal)descartesCorretos / totalDescartes).ToString("P1") : "0,0%";
-                return (percentual, itensPendentes, descartesCorretos);
-            }
-        }
-
-        // OBSERVAÇÃO: Definição do método GetConsumoMesDataAsync que estava em falta.
+        // Busca os dados para o gráfico de consumo mensal.
         private async Task<ChartData> GetConsumoMesDataAsync()
         {
             using (var context = await _contextFactory.CreateDbContextAsync())
@@ -161,16 +150,13 @@ namespace Governança_de_TI.Controllers
 
                 var labelsMes = CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedMonthNames.Take(12).ToArray();
                 var dataMes = new decimal[12];
-                foreach (var item in consumoMesQuery)
-                {
-                    dataMes[item.Mes - 1] = item.TotalKwh;
-                }
+                foreach (var item in consumoMesQuery) { dataMes[item.Mes - 1] = item.TotalKwh; }
 
                 return new ChartData { Labels = labelsMes, Data = dataMes };
             }
         }
 
-        // OBSERVAÇÃO: Definição do método GetConsumoAnoDataAsync que estava em falta.
+        // Busca os dados para o gráfico de consumo anual.
         private async Task<ChartData> GetConsumoAnoDataAsync()
         {
             using (var context = await _contextFactory.CreateDbContextAsync())
@@ -188,28 +174,6 @@ namespace Governança_de_TI.Controllers
                 };
             }
         }
-
-        // OBSERVAÇÃO: Adicionado o método GetTiposDescarteDataAsync para completar o ViewModel.
-        //private async Task<ChartData> GetTiposDescarteDataAsync()
-        //{
-        //    using (var context = await _contextFactory.CreateDbContextAsync())
-        //    {
-        //        var tiposDescarteQuery = await context.Descartes
-        //            .Where(d => d.Status == "Doado" || d.Status == "Reciclado")
-        //            .GroupBy(d => d.Status)
-        //            .Select(g => new { Tipo = g.Key, Contagem = g.Count() })
-        //            .ToListAsync();
-
-        //        var contagemDoado = tiposDescarteQuery.FirstOrDefault(t => t.Tipo == "Doado")?.Contagem ?? 0;
-        //        var contagemReciclado = tiposDescarteQuery.FirstOrDefault(t => t.Tipo == "Reciclado")?.Contagem ?? 0;
-
-        //        return new ChartData
-        //        {
-        //            Labels = new[] { "Doado", "Reciclado" },
-        //            Data = new[] { (decimal)contagemDoado, (decimal)contagemReciclado }
-        //        };
-        //    }
-        //}
     }
 }
 

@@ -14,93 +14,88 @@
                 </div>
 
                 <div class="row">
-                    <!-- Coluna da Esquerda: Dados do Equipamento -->
-                    <div class="col-md-6">
+                    <!-- Coluna Esquerda -->
+                    <div class="col-md-7">
                         <div class="mb-3">
-                            <label asp-for="CodigoItem" class="form-label fw-bold"></label>
-                            <input asp-for="CodigoItem" class="form-control" readonly />
+                            <label class="form-label fw-bold">Código</label>
+                            <input value="@Model.CodigoItem" class="form-control" readonly />
                         </div>
                         <div class="mb-3">
-                            <label asp-for="Descricao" class="form-label fw-bold"></label>
-                            <input asp-for="Descricao" class="form-control" readonly />
+                            <label class="form-label fw-bold">Descrição</label>
+                            <input value="@Model.Descricao" class="form-control" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tipo de Equipamento</label>
+                            <input value="@Model.TipoEquipamento?.Nome" class="form-control" readonly />
                         </div>
                         <div class="row">
                             <div class="col-sm-6 mb-3">
-                                <label asp-for="Serie" class="form-label fw-bold"></label>
-                                <input asp-for="Serie" class="form-control" readonly />
+                                <label class="form-label fw-bold">Série</label>
+                                <input value="@Model.Serie" class="form-control" readonly />
                             </div>
                             <div class="col-sm-6 mb-3">
-                                <label asp-for="Modelo" class="form-label fw-bold"></label>
-                                <input asp-for="Modelo" class="form-control" readonly />
+                                <label class="form-label fw-bold">Modelo</label>
+                                <input value="@Model.Modelo" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label fw-bold">Data de Compra</label>
+                                <input value="@Model.DataCompra?.ToString("dd/MM/yyyy")" class="form-control" readonly />
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label fw-bold">Vida Útil (anos)</label>
+                                <input value="@Model.VidaUtilAnos" class="form-control" readonly />
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label asp-for="DataCompra" class="form-label fw-bold"></label>
-                            <input type="text" value="@Model.DataCompra" class="form-control" readonly />
+                            <label class="form-label fw-bold">Status</label>
+                            <input value="@Model.Status" class="form-control" readonly />
                         </div>
                         <div class="mb-3">
-                            <label asp-for="DataFimGarantia" class="form-label fw-bold"></label>
-                            <input type="text" value="@Model.DataFimGarantia" class="form-control" readonly />
+                            <label class="form-label fw-bold">Frequência de Manutenção</label>
+                            <input value="@Model.FrequenciaManutencao" class="form-control" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Última Manutenção</label>
+                            <input value="@(Model.DataUltimaManutencao?.ToString("dd/MM/yyyy") ?? "N/A")" class="form-control" readonly />
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="DataUltimaManutencao" class="form-label fw-bold"></label>
-                            <input type="text" value="@(Model.DataUltimaManutencao.HasValue? Model.DataUltimaManutencao.Value.ToShortDateString() : "N/A")" class="form-control" readonly />
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="DataDeCadastro" class="form-label fw-bold"></label>
-                            <input type="text" value="@Model.DataDeCadastro" class="form-control" readonly />
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="Status" class="form-label fw-bold"></label>
-                            <input asp-for="Status" class="form-control" readonly />
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label asp-for="VidaUtil" class="form-label"></label>
-                            <input asp-for="VidaUtil" class="form-control" readonly />
-                            <span asp-validation-for="VidaUtil" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="FrequenciaManutencao" class="form-label fw-bold"></label>
-                            <input asp-for="FrequenciaManutencao" class="form-control" readonly />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Anexo</label>
-                            @if (!string.IsNullOrEmpty(Model.AnexoUrl))
-                            {
-                                <div class="input-group">
-                                    <input type="text" value="@System.IO.Path.GetFileName(Model.AnexoUrl)" class="form-control" readonly />
-                                    <a href="@Url.Content("~" + Model.AnexoUrl)" class="btn btn-outline-secondary" target="_blank" title="Baixar Anexo">
-                                        <i class="bi bi-download"></i>
-                                    </a>
-                                </div>
-                            }
-                            else
-                            {
-                                <input type="text" value="Nenhum anexo disponível" class="form-control" readonly />
-                            }
-                        </div>
-                        <!-- CAMPOS MOVIDOS PARA O FINAL DA COLUNA ESQUERDA -->
+                        <!-- Campos de Alerta -->
                         <div class="row">
                             <div class="col-sm-6 mb-3">
-                                <label asp-for="DiasAlertaManutencao" class="form-label fw-bold"></label>
-                                <input asp-for="DiasAlertaManutencao" class="form-control" readonly />
+                                <label class="form-label fw-bold">Dias de Alerta</label>
+                                <input value="@Model.DiasAlertaManutencao" class="form-control" readonly />
                             </div>
-                            <div class="col-sm-6 mb-3 d-flex align-items-end">
+                            <div class="col-sm-6 mb-3 d-flex align-items-center">
                                 <div class="form-check">
-                                    <input asp-for="EnviarEmailAlerta" class="form-check-input" type="checkbox" disabled />
-                                    <label asp-for="EnviarEmailAlerta" class="form-check-label"></label>
+                                    <input class="form-check-input" type="checkbox" disabled @(Model.EnviarEmailAlerta ? "checked" : "") />
+                                    <label class="form-check-label fw-bold">Enviar Email de Alerta</label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Coluna da Direita: Apenas Imagem -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Imagem do Produto</label>
-                        <div class="text-center mb-3">
+                    <!-- Coluna Direita -->
+                    <div class="col-md-5 d-flex flex-column align-items-center">
+                        <div class="mb-3 text-center">
+                            <label class="form-label fw-bold">Imagem do Equipamento</label>
                             <img src="@(string.IsNullOrEmpty(Model.ImagemUrl) ? "https://placehold.co/250x250/f0f0f0/ccc?text=Imagem" : Url.Content("~" + Model.ImagemUrl))"
-                                 alt="Imagem do Equipamento" class="img-fluid rounded" style="max-height: 250px;" />
+                                 alt="Imagem do Equipamento" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;" />
+                        </div>
+
+                        <div class="mb-3 w-100">
+                            <label class="form-label fw-bold">Anexo</label>
+                            @if (!string.IsNullOrEmpty(Model.AnexoUrl))
+                            {
+                                <a href="@Url.Content("~" + Model.AnexoUrl)" class="btn btn-outline-secondary w-100" target="_blank">
+                                    <i class="bi bi-download me-2"></i> Baixar Anexo
+                                </a>
+                            }
+                            else
+                            {
+                                <p class="text-muted text-center">Nenhum anexo disponível.</p>
+                            }
                         </div>
                     </div>
                 </div>

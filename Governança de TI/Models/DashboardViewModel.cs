@@ -2,24 +2,30 @@
 
 namespace Governança_de_TI.ViewModels
 {
+    /// <summary>
+    /// Agrupa todos os dados necessários para a renderização do dashboard principal.
+    /// Esta classe é usada como o objeto de retorno da API do DashboardController.
+    /// </summary>
     public class DashboardViewModel
     {
-        // Cards Superiores
+        // Propriedades para os cards de métricas superiores
         public string EmissoesCo2Evitadas { get; set; }
         public string EquipamentosRecicladosPercentual { get; set; }
         public int ItensPendentesDescarte { get; set; }
         public int EquipamentosDescartadosCorretamente { get; set; }
 
-        // NOVAS LISTAS DINÂMICAS
+        // Propriedades para as listas dinâmicas
         public List<EquipamentoVencendoViewModel> EquipamentosProximosFimVida { get; set; }
         public List<EquipamentoManutencaoViewModel> EquipamentosProximaManutencao { get; set; }
 
-        // Gráficos de Consumo
+        // Propriedades para os gráficos de consumo restantes
         public ChartData ConsumoKwhMes { get; set; }
         public ChartData ConsumoKwhAno { get; set; }
     }
 
-    // Representa um item na lista de equipamentos a vencer
+    /// <summary>
+    /// Representa um único item na lista de equipamentos próximos do fim da vida útil.
+    /// </summary>
     public class EquipamentoVencendoViewModel
     {
         public int CodigoItem { get; set; }
@@ -28,7 +34,9 @@ namespace Governança_de_TI.ViewModels
         public int DiasRestantes { get; set; }
     }
 
-    // NOVA CLASSE: Representa um item na lista de manutenções próximas
+    /// <summary>
+    /// Representa um único item na lista de equipamentos com manutenção próxima.
+    /// </summary>
     public class EquipamentoManutencaoViewModel
     {
         public int CodigoItem { get; set; }
@@ -37,11 +45,12 @@ namespace Governança_de_TI.ViewModels
         public string Frequencia { get; set; }
     }
 
-    // Classe auxiliar para os gráficos de consumo
+    /// <summary>
+    /// Classe auxiliar que representa a estrutura de dados para os gráficos (Chart.js).
+    /// </summary>
     public class ChartData
     {
         public string[] Labels { get; set; }
         public decimal[] Data { get; set; }
     }
 }
-

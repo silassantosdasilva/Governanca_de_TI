@@ -1,12 +1,14 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+﻿// Aguarda o DOM ser completamente carregado para executar todo o script
+document.addEventListener('DOMContentLoaded', () => {
 
-    // --- LÓGICA DO MENU EXPANSÍVEL ---
+    // --- LÓGICA DO MENU EXPANSÍVEL DA SIDEBAR ---
     const pageContainer = document.querySelector('.page-container');
     const navItems = document.querySelectorAll('.sidebar-nav-item');
     navItems.forEach(item => {
         const link = item.querySelector('.sidebar-nav-link');
         link.addEventListener('click', (e) => {
-            if (link.classList.contains('has-submenu') || (window.location.pathname === link.getAttribute('href') && !link.classList.contains('has-submenu'))) {
+            // Previne o comportamento padrão do link para o item de submenu
+            if (link.classList.contains('has-submenu')) {
                 e.preventDefault();
             }
 
@@ -25,6 +27,7 @@
             } else {
                 item.classList.add('active');
                 pageContainer.classList.remove('submenu-active');
+                // Navega para o link se não for a página atual
                 if (window.location.pathname !== link.getAttribute('href')) {
                     window.location.href = link.href;
                 }
@@ -33,7 +36,7 @@
     });
 
     // --- LÓGICA DO DASHBOARD ---
-    // Verifica se estamos na página do dashboard antes de executar
+    // Verifica se estamos na página do dashboard antes de executar o código
     if (document.getElementById('metric-cards-container')) {
         carregarDashboard();
     }
@@ -43,7 +46,7 @@
         try {
             const response = await fetch('/api/dashboard');
             if (!response.ok) {
-                throw new Error('Falha ao buscar dados do dashboard.');
+                throw new Error(`Falha ao buscar dados: ${response.statusText}`);
             }
             const data = await response.json();
 
@@ -56,6 +59,7 @@
 
         } catch (error) {
             console.error("Erro ao carregar o dashboard:", error);
+            // Poderia exibir uma mensagem de erro na tela para o utilizador aqui
         }
     }
 
@@ -66,12 +70,12 @@
         if (!container) return;
         const metrics = [
             { icon: 'bi-tree', title: 'Emissões de CO₂ Evitadas', value: data.emissoesCo2Evitadas },
-            { icon: 'bi-recycle', title: 'Equipamentos Reaproveitados ou Reciclados', value: data.equipamentosRecicladosPercentual },
-            { icon: 'bi-box-seam', title: 'Itens Pendentes de Descarte', value: data.itensPendentesDescarte },
-            { icon: 'bi-check2-square', title: 'Equipamentos Descartados Corretamente', value: data.equipamentosDescartadosCorretamente }
+            { icon: 'bi-recycle', title: 'Equipamentos Reaproveitados', value: data.equipamentosRecicladosPercentual },
+            { icon: 'bi-box-seam', title: 'Itens Pendentes', value: data.itensPendentesDescarte },
+            { icon: 'bi-check2-square', title: 'Descartes Corretos', value: data.equipamentosDescartadosCorretamente }
         ];
         container.innerHTML = metrics.map(m => `
-            <div class="col-xl-3 col-md-6 mb-4">
+            <div class="col-lg-3 col-md-6 mb-4">
                 <div class="metric-card h-100 p-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <span class="title text-muted small">${m.title}</span>

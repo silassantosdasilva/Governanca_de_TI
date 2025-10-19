@@ -12,7 +12,7 @@
                     <h5 class="mb-0">Cadastro</h5>
                 </div>
 
-                <form asp-controller="Descarte" asp-action="Criar" method="post" enctype="multipart/form-data">
+                <form asp-action="Criar" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -26,10 +26,13 @@
                                 </select>
                                 <span asp-validation-for="EquipamentoId" class="text-danger"></span>
                             </div>
-                            <!-- NOVO: Campo Descrição -->
+                            <div class="mb-3">
+                                <label asp-for="Descricao" class="form-label"></label>
+                                <input asp-for="Descricao" class="form-control" readonly />
+                            </div>
                             <div class="mb-3">
                                 <label asp-for="Observacao" class="form-label"></label>
-                                <input asp-for="Observacao" class="form-control"/>
+                                <textarea asp-for="Observacao" class="form-control" rows="2"></textarea>
                             </div>
                             <div class="row">
                                 <div class="col-sm-6 mb-3">
@@ -66,11 +69,11 @@
                                 <label asp-for="Status" class="form-label"></label>
                                 <select asp-for="Status" class="form-select">
                                     <option value="">Selecione...</option>
-                                    <option value="Ativo">Ativo</option>
-                                    <option value="Em Manutenção">Em Manutenção</option>
-                                    <option value="Descartado">Descartado</option>
+                                    <option>Pendente</option>
+                                    <option>Coletado</option>
+                                    <option>Reciclado</option>
+                                    <option>Doado</option>
                                 </select>
-                                <span asp-validation-for="Status" class="text-danger"></span>
                             </div>
                             <div class="mb-3">
                                 <label asp-for="CertificadoUpload" class="form-label"></label>
@@ -90,14 +93,17 @@
                                     <img id="imagePreview" src="https://placehold.co/250x250/f0f0f0/ccc?text=Imagem" alt="Pré-visualização da Imagem" style="width: 250px; height: 250px; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
                                 </div>
                             </div>
-                
+                           @*  <div class="mt-auto">
+                                <label asp-for="UsuarioId" class="form-label"></label>
+                                <input asp-for="UsuarioId" class="form-control" placeholder="ID do utilizador" />
+                            </div> *@
                         </div>
                     </div>
 
                     <hr class="my-4" />
 
                     <div class="d-flex justify-content-end">
-                        <a asp-controller="Descarte" asp-action="Consulta" class="btn btn-outline-secondary me-2">Voltar</a>
+                        <a asp-action="Consulta" class="btn btn-outline-secondary me-2">Voltar</a>
                         <button type="submit" class="btn btn-primary px-4" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar</button>
                     </div>
                 </form>
@@ -114,7 +120,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const equipamentoSelect = document.getElementById('EquipamentoId');
             const imagePreview = document.getElementById('imagePreview');
-            const descricaoInput = document.getElementById('Descricao'); // Campo de descrição
+            const descricaoInput = document.getElementById('Descricao');
             const placeholderImg = 'https://placehold.co/250x250/f0f0f0/ccc?text=Imagem';
 
             if (equipamentoSelect && imagePreview && descricaoInput) {
@@ -122,14 +128,14 @@
                     const equipamentoId = this.value;
 
                     if (equipamentoId) {
-                        // Faz uma chamada fetch para buscar os dados do equipamento
+                        // Faz uma chamada fetch para buscar os dados do equipamento no EquipamentosController
                         fetch(`/Equipamentos/GetEquipamentoDados/${equipamentoId}`)
                             .then(response => response.json())
                             .then(data => {
                                 if (data) {
-                                    // Atualiza a imagem
+                                    // Atualiza a imagem de pré-visualização
                                     imagePreview.src = data.imageUrl ? data.imageUrl : placeholderImg;
-                                    // Atualiza a descrição
+                                    // Atualiza o campo de descrição (que é readonly)
                                     descricaoInput.value = data.descricao || '';
                                 } else {
                                     imagePreview.src = placeholderImg;

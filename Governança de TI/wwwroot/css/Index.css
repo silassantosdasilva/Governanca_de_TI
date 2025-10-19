@@ -1,0 +1,5 @@
+﻿.lista-scroll {
+    max-height: 200px; /* altura máxima da lista */
+    overflow-y: auto; /* barra de rolagem vertical */
+    padding-right: 5px; /* opcional: espaço para não encostar na borda */
+}

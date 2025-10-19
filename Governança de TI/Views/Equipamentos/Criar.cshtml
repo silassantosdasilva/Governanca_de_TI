@@ -18,7 +18,7 @@
 
                     <div class="row">
                         <!-- Coluna da Esquerda -->
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <div class="mb-3">
                                 <label asp-for="Descricao" class="form-label"></label>
                                 <input asp-for="Descricao" class="form-control" />
@@ -26,16 +26,16 @@
                             </div>
 
                             <div class="mb-3">
-                                <label asp-for="TipoEquipamento" class="form-label"></label>
+                                <label asp-for="TipoEquipamentoId" class="form-label"></label>
                                 <div class="input-group">
-                                    <select asp-for="TipoEquipamento" class="form-select" asp-items="ViewBag.TipoEquipamento">
+                                    <select asp-for="TipoEquipamentoId" class="form-select" asp-items="ViewBag.TipoEquipamentoId">
                                         <option value="">Selecione...</option>
                                     </select>
                                     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalGerenciarTipos">
                                         <i class="bi bi-plus-lg"></i>
                                     </button>
                                 </div>
-                                <span asp-validation-for="TipoEquipamento" class="text-danger"></span>
+                                <span asp-validation-for="TipoEquipamentoId" class="text-danger"></span>
                             </div>
 
                             <div class="row">
@@ -54,19 +54,16 @@
                             <div class="row">
                                 <div class="col-sm-6 mb-3">
                                     <label asp-for="DataCompra" class="form-label"></label>
-                                    <input asp-for="DataCompra" class="form-control" />
+                                    <input asp-for="DataCompra" class="form-control" type="date" />
                                     <span asp-validation-for="DataCompra" class="text-danger"></span>
                                 </div>
                                 <div class="col-sm-6 mb-3">
-                                    <label asp-for="DataFimGarantia" class="form-label"></label>
-                                    <input asp-for="DataFimGarantia" class="form-control" />
-                                    <span asp-validation-for="DataFimGarantia" class="text-danger"></span>
-                                </div>
-                                <div class="col-sm-6 mb-3">
-                                    <label asp-for="VidaUtil" class="form-label"></label>
-                                    <input asp-for="VidaUtil" class="form-control"/>
+                                    <label asp-for="VidaUtilFim" class="form-label"></label>
+                                    <input asp-for="VidaUtilFim" class="form-control" type="date" />
+                                    <span asp-validation-for="VidaUtilFim" class="text-danger"></span>
                                 </div>
                             </div>
+
                             <div class="mb-3">
                                 <label asp-for="Status" class="form-label"></label>
                                 <select asp-for="Status" class="form-select">
@@ -77,6 +74,7 @@
                                 </select>
                                 <span asp-validation-for="Status" class="text-danger"></span>
                             </div>
+
                             <div class="mb-3">
                                 <label asp-for="FrequenciaManutencao" class="form-label"></label>
                                 <select asp-for="FrequenciaManutencao" class="form-select">
@@ -86,13 +84,28 @@
                                     <option>Anual</option>
                                 </select>
                             </div>
+
                             <div class="mb-3">
                                 <label asp-for="DataUltimaManutencao" class="form-label"></label>
-                                <input asp-for="DataUltimaManutencao" class="form-control" />
+                                <input asp-for="DataUltimaManutencao" class="form-control" type="date" />
                             </div>
+
                             <div class="mb-3">
-                                <label asp-for="AnexoUpload" class="form-label"></label>
-                                <input asp-for="AnexoUpload" class="form-control" type="file" id="AnexoUpload" accept="image/*" />
+                                <label asp-for="AnexoUpload" class="form-label">Anexo</label>
+                                <input asp-for="AnexoUpload" class="form-control" type="file" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label asp-for="DiasAlertaManutencao" class="form-label"></label>
+                                    <input asp-for="DiasAlertaManutencao" class="form-control" type="number" />
+                                </div>
+                                <div class="col-sm-6 mb-3 d-flex align-items-end">
+                                    <div class="form-check">
+                                        <input asp-for="EnviarEmailAlerta" class="form-check-input" type="checkbox" />
+                                        <label asp-for="EnviarEmailAlerta" class="form-check-label"></label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -100,10 +113,10 @@
                         <div class="col-md-5 d-flex flex-column align-items-center">
                             <label class="form-label">Pré-visualização da Imagem</label>
                             <div class="text-center">
-                                <img id="imagePreview" src="https://placehold.co/250x250/f0f0f0/ccc?text=Imagem" alt="Pré-visualização da Imagem" style="width: 100%; max-width: 250px; height: auto; aspect-ratio: 1/1; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
-                                <!-- ATUALIZAÇÃO: Botão visível que aciona o input de ficheiro oculto -->
+                                <img id="imagePreview" src="https://placehold.co/250x250/f0f0f0/ccc?text=Imagem"
+                                     alt="Pré-visualização da Imagem"
+                                     style="width: 100%; max-width: 250px; height: auto; aspect-ratio: 1/1; border-radius: 1rem; object-fit: cover; border: 2px dashed #ccc;" />
                                 <label for="ImagemUpload" class="btn btn-sm btn-outline-secondary mt-2">Carregar Imagem</label>
-                                <!-- ATUALIZAÇÃO: Input de ficheiro real para a imagem, agora oculto -->
                                 <input asp-for="ImagemUpload" type="file" class="d-none" id="ImagemUpload" accept="image/*" />
                             </div>
                         </div>
@@ -112,7 +125,7 @@
                     <hr class="my-4" />
 
                     <div class="d-flex justify-content-end">
-                        <a asp-action="Equipamentos" asp-action="Consulta" class="btn btn-outline-secondary me-2">Voltar</a>
+                        <a asp-action="Consulta" class="btn btn-outline-secondary me-2">Voltar</a>
                         <button type="submit" class="btn btn-primary px-4" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar</button>
                     </div>
                 </form>
@@ -137,9 +150,7 @@
                 </div>
                 <hr>
                 <h6>Tipos Existentes</h6>
-                <ul id="listaTiposExistentes" class="list-group">
-                    <!-- A lista será carregada aqui via JavaScript -->
-                </ul>
+                <ul id="listaTiposExistentes" class="list-group"></ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -149,42 +160,38 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Lógica do Modal
             const modalEl = document.getElementById('modalGerenciarTipos');
             const btnSalvarNovoTipo = document.getElementById('btnSalvarNovoTipo');
             const novoTipoNomeInput = document.getElementById('novoTipoNome');
-            const tipoEquipamentoSelect = document.getElementById('TipoEquipamento');
+            const tipoEquipamentoSelect = document.getElementById('TipoEquipamentoId');
             const listaTiposExistentes = document.getElementById('listaTiposExistentes');
             const modalGerenciarTipos = new bootstrap.Modal(modalEl);
 
+            // Carregar tipos ao abrir modal
             modalEl.addEventListener('show.bs.modal', function () {
                 fetch('/api/TipoEquipamento')
-                    .then(response => response.json())
+                    .then(res => res.json())
                     .then(tipos => {
                         listaTiposExistentes.innerHTML = '';
-                        if (tipos.length === 0) {
-                             listaTiposExistentes.innerHTML = '<li class="list-group-item">Nenhum tipo cadastrado.</li>';
-                        } else {
-                            tipos.forEach(tipo => {
-                                const li = document.createElement('li');
-                                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                                li.textContent = tipo.nome;
-                                li.dataset.id = tipo.id.toString();
-                                const deleteBtn = document.createElement('button');
-                                deleteBtn.className = 'btn-close';
-                                deleteBtn.setAttribute('aria-label', 'Excluir');
-                                li.appendChild(deleteBtn);
-                                listaTiposExistentes.appendChild(li);
-                            });
-                        }
+                        if (!tipos.length) listaTiposExistentes.innerHTML = '<li class="list-group-item">Nenhum tipo cadastrado.</li>';
+                        else tipos.forEach(tipo => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                            li.textContent = tipo.nome;
+                            li.dataset.id = tipo.id;
+                            const btnDelete = document.createElement('button');
+                            btnDelete.className = 'btn-close';
+                            btnDelete.setAttribute('aria-label', 'Excluir');
+                            li.appendChild(btnDelete);
+                            listaTiposExistentes.appendChild(li);
+                        });
                     });
             });
 
+            // Adicionar novo tipo
             btnSalvarNovoTipo.addEventListener('click', function () {
                 const nomeNovoTipo = novoTipoNomeInput.value.trim();
                 if (!nomeNovoTipo) return;
@@ -194,52 +201,39 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nome: nomeNovoTipo })
                 })
-                .then(response => response.ok ? response.json() : Promise.reject('Falha ao salvar.'))
+                .then(res => res.ok ? res.json() : res.text().then(text => Promise.reject(text)))
                 .then(novoTipo => {
-                    const option = new Option(novoTipo.nome, novoTipo.id.toString(), true, true);
+                    const option = new Option(novoTipo.nome, novoTipo.id, true, true);
                     tipoEquipamentoSelect.add(option);
                     modalGerenciarTipos.hide();
                     novoTipoNomeInput.value = '';
                 })
-                .catch(error => alert(error));
+                .catch(err => alert(`Erro: ${err}`));
             });
 
-            listaTiposExistentes.addEventListener('click', function(e) {
-                if (e.target.classList.contains('btn-close')) {
-                    const li = e.target.closest('li');
-                    const tipoId = li.dataset.id;
-                    if (confirm(`Tem a certeza de que deseja excluir o tipo "${li.textContent.trim()}"?`)) {
-                        fetch(`/api/TipoEquipamento/${tipoId}`, { method: 'DELETE' })
-                            .then(response => {
-                                if (response.ok) {
-                                    li.remove();
-                                    document.querySelector(`#TipoEquipamento option[value='${tipoId}']`).remove();
-                                } else {
-                                    response.text().then(text => alert(`Erro: ${text}`));
-                                }
-                            });
-                    }
-                }
+            // Excluir tipo
+            listaTiposExistentes.addEventListener('click', function (e) {
+                if (!e.target.classList.contains('btn-close')) return;
+                const li = e.target.closest('li');
+                const tipoId = li.dataset.id;
+                if (!confirm(`Deseja excluir o tipo "${li.textContent.trim()}"?`)) return;
+
+                fetch(`/api/TipoEquipamento/${tipoId}`, { method: 'DELETE' })
+                    .then(res => res.ok ? li.remove() : res.text().then(t => alert(`Erro: ${t}`)));
             });
 
-            //O script agora escuta o input de imagem correto
+            // Pré-visualização da imagem
             const imageUploadInput = document.getElementById('ImagemUpload');
             const imagePreview = document.getElementById('imagePreview');
-
             if (imageUploadInput && imagePreview) {
-                imageUploadInput.addEventListener('change', function (event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            imagePreview.src = e.target.result;
-                        }
-                        reader.readAsDataURL(file);
-                    }
+                imageUploadInput.addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function (ev) { imagePreview.src = ev.target.result; }
+                    reader.readAsDataURL(file);
                 });
             }
-            
         });
     </script>
 }
-

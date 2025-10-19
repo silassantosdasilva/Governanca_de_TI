@@ -1,27 +1,44 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Http;
 
 namespace Governança_de_TI.Models
 {
+    /// <summary>
+    /// Representa um registo de descarte de um ou mais equipamentos.
+    /// </summary>
     public class DescarteModel
     {
+        /// <summary>
+        /// Chave primária do registo de descarte.
+        /// </summary>
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
+        /// <summary>
+        /// Chave estrangeira que referencia o equipamento a ser descartado.
+        /// </summary>
         [Required(ErrorMessage = "É obrigatório selecionar um item.")]
         [Display(Name = "Item")]
         public int EquipamentoId { get; set; }
 
-        [Display(Name = "Observação")]
-        public string? Observacao { get; set; }
-
+        /// <summary>
+        /// Propriedade de navegação para o equipamento relacionado.
+        /// O Entity Framework usa isto para carregar os dados do equipamento (join).
+        /// </summary>
         [ForeignKey("EquipamentoId")]
         public virtual EquipamentoModel Equipamento { get; set; }
 
+        /// <summary>
+        /// Descrição do equipamento, preenchida automaticamente ao selecionar o item.
+        /// </summary>
+        [Display(Name = "Descrição do Item")]
+        public string Descricao { get; set; }
+
         [Required(ErrorMessage = "O campo Quantidade é obrigatório.")]
+        [Range(1, int.MaxValue, ErrorMessage = "A quantidade deve ser de pelo menos 1.")]
         public int Quantidade { get; set; }
 
         [Required(ErrorMessage = "O campo Data é obrigatório.")]
@@ -36,19 +53,26 @@ namespace Governança_de_TI.Models
 
         [StringLength(18)]
         [Display(Name = "CNPJ")]
-        public string? CnpjEmpresa { get; set; }
+        public string CnpjEmpresa { get; set; }
 
         [EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
         [StringLength(100)]
         [Display(Name = "E-mail")]
-        public string? EmailEmpresa { get; set; }
+        public string EmailEmpresa { get; set; }
 
         [StringLength(100)]
         [Display(Name = "Pessoa que vai Coletar")]
         public string PessoaResponsavelColeta { get; set; }
 
-        public string? CertificadoUrl { get; set; }
+        /// <summary>
+        /// Caminho relativo para o ficheiro do certificado guardado no servidor.
+        /// </summary>
+        public string CertificadoUrl { get; set; }
 
+        /// <summary>
+        /// Propriedade temporária para receber o ficheiro de upload do certificado.
+        /// Não é mapeada para uma coluna no banco de dados.
+        /// </summary>
         [NotMapped]
         [Display(Name = "Certificado de Coleta")]
         public IFormFile CertificadoUpload { get; set; }
@@ -59,18 +83,12 @@ namespace Governança_de_TI.Models
         [Display(Name = "Data de Cadastro")]
         public DateTime DataDeCadastro { get; set; }
 
-  
-        [StringLength(20)]
-        public string? Status { get; set; }
+        [StringLength(500)]
+        [Display(Name = "Observação")]
+        public string Observacao { get; set; }
 
-        [Display(Name = "Usuário Responsável")]
-        public int? UsuarioId { get; set; }  // nullable se nem todo equipamento precisa de usuário
-
-        // 🔹 Navegação
-        [ForeignKey("UsuarioId")]
-        public Usuario Usuario { get; set; }
-
-
-
+        [StringLength(50)]
+        public string Status { get; set; }
     }
 }
+

@@ -1,6 +1,7 @@
 ﻿using Governança_de_TI.Data;
 using Governança_de_TI.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -22,118 +23,188 @@ namespace Governança_de_TI.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: Equipamentos/Consulta
-        public async Task<IActionResult> Consulta(int? codigoItem, string descricao, string status, DateTime? dataCompra, DateTime? dataUltimaManutencao, DateTime? dataDeCriacao)
+        #region Consulta
+        public async Task<IActionResult> Consulta(int? codigoItem, string descricao, int? tipoEquipamentoId, string status)
         {
-            // OBSERVAÇÃO: A chamada '.Include(e => e.TipoEquipamento)' foi removida
-            // porque 'TipoEquipamento' agora é um campo de texto e não uma tabela relacionada.
-            var query = _context.Equipamentos.AsQueryable();
+            var query = _context.Equipamentos.Include(e => e.TipoEquipamento).AsQueryable();
 
             if (codigoItem.HasValue)
-            {
                 query = query.Where(e => e.CodigoItem == codigoItem.Value);
-            }
-            if (!string.IsNullOrEmpty(descricao))
-            {
-                query = query.Where(e => e.Descricao.Contains(descricao));
-            }
-            if (!string.IsNullOrEmpty(status) && status != "Todos...")
-            {
-                query = query.Where(e => e.Status == status);
-            }
-            if (dataCompra.HasValue)
-            {
-                var dataFim = dataCompra.Value.AddDays(1);
-                query = query.Where(e => e.DataCompra >= dataCompra.Value && e.DataCompra < dataFim);
-            }
-            if (dataUltimaManutencao.HasValue)
-            {
-                var dataFim = dataUltimaManutencao.Value.AddDays(1);
-                query = query.Where(e => e.DataUltimaManutencao.HasValue && e.DataUltimaManutencao >= dataFim.AddDays(-1) && e.DataUltimaManutencao < dataFim);
-            }
-            if (dataDeCriacao.HasValue)
-            {
-                var dataFim = dataDeCriacao.Value.AddDays(1);
-                query = query.Where(e => e.DataDeCadastro >= dataFim.AddDays(-1) && e.DataDeCadastro < dataFim);
-            }
 
+            if (!string.IsNullOrEmpty(descricao))
+                query = query.Where(e => e.Descricao.Contains(descricao));
+
+            if (tipoEquipamentoId.HasValue)
+                query = query.Where(e => e.TipoEquipamentoId == tipoEquipamentoId.Value);
+
+            if (!string.IsNullOrEmpty(status) && status != "Todos...")
+                query = query.Where(e => e.Status == status);
+
+            await PopulaTiposEquipamentoViewData(tipoEquipamentoId);
             return View(await query.ToListAsync());
         }
+        #endregion
 
-        // GET: Equipamentos/Detalhes/5
+        #region Detalhes
         public async Task<IActionResult> Detalhes(int? id)
         {
             if (id == null) return NotFound();
 
-            // OBSERVAÇÃO: A chamada '.Include(e => e.TipoEquipamento)' também foi removida daqui.
             var equipamento = await _context.Equipamentos
+                .Include(e => e.TipoEquipamento)
                 .FirstOrDefaultAsync(e => e.CodigoItem == id);
 
             if (equipamento == null) return NotFound();
+
             return View(equipamento);
         }
+        #endregion
 
-        // GET: Equipamentos/Criar
+        #region Criar
         public async Task<IActionResult> Criar()
         {
             await PopulaTiposEquipamentoViewData();
             return View();
         }
 
-        // POST: Equipamentos/Criar
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Criar([Bind("Descricao,TipoEquipamento,Serie,Modelo,DataCompra,DataFimGarantia,VidaUtil,Status,FrequenciaManutencao,DataUltimaManutencao,ImagemUpload,AnexoUpload")] EquipamentoModel equipamento)
+        public async Task<IActionResult> Criar([Bind("Descricao,TipoEquipamentoId,Serie,Modelo,DataCompra,VidaUtilFim,Status,FrequenciaManutencao,DataUltimaManutencao,ImagemUrl,AnexoUrl,DiasAlertaManutencao,EnviarEmailAlerta")] EquipamentoModel equipamento, IFormFile ImagemUpload, IFormFile AnexoUpload)
         {
-          
-                // Lógica de uploads...
-                equipamento.DataDeCadastro = DateTime.Now;
-                _context.Add(equipamento);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
-                return RedirectToAction(nameof(Consulta));
-           
-        }
+        
 
-        // GET: Equipamentos/Editar/5
+            // Calcular VidaUtilFim se necessário
+            var dataBase = equipamento.DataUltimaManutencao ?? equipamento.DataCompra ?? DateTime.Now;
+            if (equipamento.VidaUtilFim == null && equipamento.VidaUtilAnos.HasValue)
+            {
+                equipamento.VidaUtilFim = dataBase.AddYears(equipamento.VidaUtilAnos.Value);
+            }
+
+            // Salvar arquivos
+            if (ImagemUpload != null)
+                equipamento.ImagemUrl = await SalvarFicheiro(ImagemUpload, "imagens");
+
+            if (AnexoUpload != null)
+                equipamento.AnexoUrl = await SalvarFicheiro(AnexoUpload, "anexos");
+
+            equipamento.DataDeCadastro = DateTime.Now;
+
+            _context.Add(equipamento);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
+            return RedirectToAction(nameof(Consulta));
+        }
+        #endregion
+
+        #region Editar
         public async Task<IActionResult> Editar(int? id)
         {
             if (id == null) return NotFound();
+
             var equipamento = await _context.Equipamentos.FindAsync(id);
             if (equipamento == null) return NotFound();
-            await PopulaTiposEquipamentoViewData(equipamento.TipoEquipamento);
+
+            await PopulaTiposEquipamentoViewData(equipamento.TipoEquipamentoId);
             return View(equipamento);
         }
 
-        // POST: Equipamentos/Editar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(int id, [Bind("CodigoItem,Descricao,TipoEquipamento,Serie,Modelo,DataCompra,DataFimGarantia,VidaUtil,Status,FrequenciaManutencao,DataUltimaManutencao,ImagemUpload,AnexoUpload,DataDeCadastro")] EquipamentoModel equipamento)
+        public async Task<IActionResult> Editar(int id, [Bind("Descricao,TipoEquipamentoId,Serie,Modelo,DataCompra,VidaUtilFim,Status,FrequenciaManutencao,DataUltimaManutencao,ImagemUrl,AnexoUrl,DiasAlertaManutencao,EnviarEmailAlerta,VidaUtilAnos")] EquipamentoModel equipamento, IFormFile ImagemUpload, IFormFile AnexoUpload)
         {
-            if (id != equipamento.CodigoItem) return NotFound();
+            if (!EquipamentoExists(id)) return NotFound();
 
+            var equipamentoOriginal = await _context.Equipamentos.FirstOrDefaultAsync(e => e.CodigoItem == id);
+            if (equipamentoOriginal == null) return NotFound();
 
-                try
+            try
+            {
+                // Atualizar campos comuns
+                equipamentoOriginal.Descricao = equipamento.Descricao;
+                equipamentoOriginal.TipoEquipamentoId = equipamento.TipoEquipamentoId;
+                equipamentoOriginal.Serie = equipamento.Serie;
+                equipamentoOriginal.Modelo = equipamento.Modelo;
+                equipamentoOriginal.DataCompra = equipamento.DataCompra;
+                equipamentoOriginal.DataUltimaManutencao = equipamento.DataUltimaManutencao;
+                equipamentoOriginal.Status = equipamento.Status;
+                equipamentoOriginal.FrequenciaManutencao = equipamento.FrequenciaManutencao;
+                equipamentoOriginal.DiasAlertaManutencao = equipamento.DiasAlertaManutencao;
+                equipamentoOriginal.EnviarEmailAlerta = equipamento.EnviarEmailAlerta;
+
+                // Calcular VidaUtilFim se necessário
+                var dataBase = equipamento.DataUltimaManutencao ?? equipamento.DataCompra ?? DateTime.Now;
+                if (equipamento.VidaUtilFim == null && equipamento.VidaUtilAnos.HasValue)
                 {
-                    var equipamentoOriginal = await _context.Equipamentos.AsNoTracking().FirstOrDefaultAsync(e => e.CodigoItem == id);
-                    // (Lógica de upload aqui...)
+                    equipamentoOriginal.VidaUtilFim = dataBase.AddYears(equipamento.VidaUtilAnos.Value);
+                }
 
-                    _context.Update(equipamento);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!EquipamentoExists(equipamento.CodigoItem)) return NotFound();
-                    else throw;
-                }
+                // Salvar arquivos se houver
+                if (ImagemUpload != null)
+                    equipamentoOriginal.ImagemUrl = await SalvarFicheiro(ImagemUpload, "imagens");
+
+                if (AnexoUpload != null)
+                    equipamentoOriginal.AnexoUrl = await SalvarFicheiro(AnexoUpload, "anexos");
+
+                await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Equipamento atualizado com sucesso!";
-                return RedirectToAction(nameof(Consulta));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EquipamentoExists(equipamento.CodigoItem)) return NotFound();
+                else throw;
+            }
+
+            return RedirectToAction(nameof(Consulta));
+        }
+        #endregion
+
+        #region Excluir
+        public async Task<IActionResult> Excluir(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var equipamento = await _context.Equipamentos
+                .Include(e => e.TipoEquipamento)
+                .FirstOrDefaultAsync(e => e.CodigoItem == id);
+
+            if (equipamento == null) return NotFound();
+
+            return View(equipamento);
         }
 
-        // ... (Actions Excluir e GetEquipamentoDados) ...
+        [HttpPost, ActionName("Excluir")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ExcluirConfirmado(int id)
+        {
+            var equipamento = await _context.Equipamentos.FindAsync(id);
+            if (equipamento != null)
+            {
+                _context.Equipamentos.Remove(equipamento);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Equipamento excluído com sucesso!";
+            }
 
-        // --- MÉTODOS AUXILIARES ---
+            return RedirectToAction(nameof(Consulta));
+        }
+        #endregion
 
+        #region API / Dados auxiliares
+        [HttpGet]
+        public async Task<IActionResult> GetEquipamentoDados(int id)
+        {
+            var equipamento = await _context.Equipamentos.FindAsync(id);
+            if (equipamento == null) return Json(null);
+
+            return Json(new
+            {
+                imageUrl = string.IsNullOrEmpty(equipamento.ImagemUrl) ? null : Url.Content("~" + equipamento.ImagemUrl),
+                descricao = equipamento.Descricao
+            });
+        }
+        #endregion
+
+        #region Métodos Auxiliares
         private bool EquipamentoExists(int id)
         {
             return _context.Equipamentos.Any(e => e.CodigoItem == id);
@@ -142,9 +213,27 @@ namespace Governança_de_TI.Controllers
         private async Task PopulaTiposEquipamentoViewData(object selectedType = null)
         {
             var tiposQuery = await _context.TiposEquipamento.OrderBy(t => t.Nome).ToListAsync();
-            // OBSERVAÇÃO: O ViewData foi atualizado para o novo nome da propriedade.
-            ViewData["TipoEquipamento"] = new SelectList(tiposQuery, "Nome", "Nome", selectedType);
+            ViewData["TipoEquipamentoId"] = new SelectList(tiposQuery, "Id", "Nome", selectedType);
         }
+
+        private async Task<string> SalvarFicheiro(IFormFile ficheiro, string subpasta)
+        {
+            if (ficheiro == null || ficheiro.Length == 0) return null;
+
+            string pastaDestino = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", subpasta);
+            if (!Directory.Exists(pastaDestino))
+                Directory.CreateDirectory(pastaDestino);
+
+            string nomeFicheiroUnico = Guid.NewGuid().ToString() + "_" + Path.GetFileName(ficheiro.FileName);
+            string caminhoCompleto = Path.Combine(pastaDestino, nomeFicheiroUnico);
+
+            using (var fileStream = new FileStream(caminhoCompleto, FileMode.Create))
+            {
+                await ficheiro.CopyToAsync(fileStream);
+            }
+
+            return $"/uploads/{subpasta}/{nomeFicheiroUnico}";
+        }
+        #endregion
     }
 }
-

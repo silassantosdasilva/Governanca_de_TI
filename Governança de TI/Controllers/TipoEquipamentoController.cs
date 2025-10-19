@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Governança_de_TI.Controllers
 {
+    /// <summary>
+    /// Controller de API para gerir os Tipos de Equipamento.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TipoEquipamentoController : ControllerBase
@@ -19,7 +22,8 @@ namespace Governança_de_TI.Controllers
         }
 
         // GET: api/TipoEquipamento
-        // OBSERVAÇÃO: Novo método para buscar a lista de todos os tipos existentes.
+        // OBSERVAÇÃO: Busca e retorna a lista de todos os tipos de equipamento existentes,
+        // ordenados por nome. É usado para popular a lista no modal.
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -28,7 +32,7 @@ namespace Governança_de_TI.Controllers
         }
 
         // POST: api/TipoEquipamento
-        // OBSERVAÇÃO: Este método, que já existia, salva um novo tipo de equipamento.
+        // OBSERVAÇÃO: Cria um novo tipo de equipamento a partir do nome enviado pelo modal.
         [HttpPost]
         public async Task<IActionResult> Criar([FromBody] TipoEquipamentoModel tipoEquipamento)
         {
@@ -37,14 +41,22 @@ namespace Governança_de_TI.Controllers
                 return BadRequest("O nome do tipo de equipamento é obrigatório.");
             }
 
+            // Verifica se já existe um tipo com o mesmo nome para evitar duplicados
+            var tipoExistente = await _context.TiposEquipamento.FirstOrDefaultAsync(t => t.Nome.ToUpper() == tipoEquipamento.Nome.ToUpper());
+            if (tipoExistente != null)
+            {
+                return BadRequest("Já existe um tipo de equipamento com este nome.");
+            }
+
             _context.TiposEquipamento.Add(tipoEquipamento);
             await _context.SaveChangesAsync();
 
+            // Retorna o objeto completo com o novo ID gerado pelo banco de dados
             return Ok(tipoEquipamento);
         }
 
         // DELETE: api/TipoEquipamento/5
-        // OBSERVAÇÃO: Novo método para excluir um tipo de equipamento.
+        // OBSERVAÇÃO: Exclui um tipo de equipamento, mas apenas se ele não estiver em uso.
         [HttpDelete("{id}")]
         public async Task<IActionResult> Excluir(int id)
         {
@@ -54,10 +66,10 @@ namespace Governança_de_TI.Controllers
                 return NotFound();
             }
 
-            // Regra de negócio: Verifica se o tipo está em uso antes de excluir.
-            var isUsed = await _context.Equipamentos.FirstOrDefaultAsync(m => m.CodigoItem == id);
-
-            if (isUsed != null )
+            // Regra de negócio: Verifica se o tipo está a ser utilizado por algum equipamento.
+            // Se estiver, a exclusão é bloqueada e uma mensagem de erro é retornada.
+            var isUsed = await _context.Equipamentos.AnyAsync(e => e.TipoEquipamentoId == id);
+            if (isUsed)
             {
                 return BadRequest("Este tipo de equipamento está em uso e não pode ser excluído.");
             }
@@ -65,7 +77,7 @@ namespace Governança_de_TI.Controllers
             _context.TiposEquipamento.Remove(tipoEquipamento);
             await _context.SaveChangesAsync();
 
-            return NoContent(); // Retorna sucesso sem conteúdo
+            return NoContent(); // Retorna 204 No Content, indicando sucesso na exclusão.
         }
     }
 }
