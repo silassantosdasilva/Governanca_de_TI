@@ -1,5 +1,6 @@
 ﻿using Governança_de_TI.Data;
 using Governança_de_TI.Models;
+using Governança_de_TI.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,11 +19,12 @@ namespace Governança_de_TI.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
-
-        public DescarteController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        private readonly IAuditService _auditService;
+        public DescarteController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, IAuditService auditService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _auditService = auditService;
         }
 
         // GET: Descarte/Consulta
@@ -110,7 +112,7 @@ namespace Governança_de_TI.Controllers
                 descarte.DataDeCadastro = DateTime.Now;
                 _context.Add(descarte);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Registo de descarte ({descarte.Id}) criado com sucesso!";
+                TempData["SuccessMessage"] = $"Registo de descarte ({descarte.Id}) Descrição({descarte.Descricao}) criado com sucesso!";
                 return RedirectToAction(nameof(Consulta));
             
           
@@ -145,7 +147,17 @@ namespace Governança_de_TI.Controllers
 
                     _context.Update(descarteModel);
                     await _context.SaveChangesAsync();
+
+                var userId = await GetCurrentUserId();
+                if (userId.HasValue)
+                {
+                    await _auditService.RegistrarAcao(
+                        userId.Value,
+                        "Editou Descarte", // Descrição da ação
+                        $"Descarte editado: ID={descarteModel.Id}, Descrição={descarteModel.Descricao}" // Detalhes exibidos nas atividades recentes
+                    );
                 }
+            }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!DescarteExists(descarteModel.Id)) return NotFound();
@@ -174,6 +186,16 @@ namespace Governança_de_TI.Controllers
             _context.Descartes.Remove(descarte);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Registo de descarte excluído com sucesso!";
+
+            var userId = await GetCurrentUserId();
+            if (userId.HasValue)
+            {
+                await _auditService.RegistrarAcao(
+                    userId.Value,
+                    "Excluiu Descarte", // Descrição da ação
+                    $"Descarte Excluido: ID={descarte.Id}, Descrição={descarte.Descricao}" // Detalhes exibidos nas atividades recentes
+                );
+            }
             return RedirectToAction(nameof(Consulta));
         }
 
@@ -190,7 +212,19 @@ namespace Governança_de_TI.Controllers
             var equipamentos = await _context.Equipamentos.OrderBy(e => e.Descricao).ToListAsync();
             ViewData["EquipamentoId"] = new SelectList(equipamentos, "CodigoItem", "Descricao", selectedItem);
         }
+        // Esse método é reutilizado para registrar logs de criação, edição e exclusão.
+        private async Task<int?> GetCurrentUserId()
+        {
+            var userEmail = User?.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(userEmail))
+                return null;
 
+            var user = await _context.Usuarios
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == userEmail);
+
+            return user?.Id;
+        }
         // OBSERVAÇÃO: Método auxiliar para salvar ficheiros de upload.
         private async Task<string> SalvarFicheiro(IFormFile ficheiro, string subpasta)
         {

@@ -4,6 +4,7 @@ using Governança_de_TI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Governança_de_TI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251019225050_AjusteDescricaoDescarte-null")]
+    partial class AjusteDescricaoDescartenull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,24 +73,6 @@ namespace Governança_de_TI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ConsumosEnergia");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.DepartamentoModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Departamentos");
                 });
 
             modelBuilder.Entity("Governança_de_TI.Models.DescarteModel", b =>
@@ -264,16 +249,15 @@ namespace Governança_de_TI.Migrations
                     b.Property<DateTime?>("DataUltimoLogin")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("DepartamentoId")
-                        .HasColumnType("int");
+                    b.Property<string>("Departamento")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<byte[]>("FotoPerfil")
-                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -296,8 +280,6 @@ namespace Governança_de_TI.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DepartamentoId");
 
                     b.ToTable("Usuarios");
                 });
@@ -339,15 +321,6 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("TipoEquipamento");
 
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioModel", b =>
-                {
-                    b.HasOne("Governança_de_TI.Models.DepartamentoModel", "Departamento")
-                        .WithMany()
-                        .HasForeignKey("DepartamentoId");
-
-                    b.Navigation("Departamento");
                 });
 #pragma warning restore 612, 618
         }

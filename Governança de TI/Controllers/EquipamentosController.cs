@@ -100,7 +100,7 @@ namespace Governança_de_TI.Controllers
             var userId = await GetCurrentUserId();
             if (userId.HasValue)
             {
-                await _auditService.RegistrarAcao(userId.Value, "Criou Equipamento", $"ID: {equipamento.CodigoItem}");
+                await _auditService.RegistrarAcao(userId.Value, "Criou Equipamento", $"ID: {equipamento.CodigoItem} Descrição: {equipamento.Descricao}");
             }
 
             TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
@@ -163,7 +163,7 @@ namespace Governança_de_TI.Controllers
                 var userId = await GetCurrentUserId();
                 if (userId.HasValue)
                 {
-                    await _auditService.RegistrarAcao(userId.Value, "Editou Equipamento", $"ID: {equipamento.CodigoItem}");
+                    await _auditService.RegistrarAcao(userId.Value, "Editou Equipamento", $"Descricao: {equipamento.Descricao} Tipo: {equipamento.TipoEquipamento}");
                 }
             }
             catch (DbUpdateConcurrencyException)
@@ -204,7 +204,7 @@ namespace Governança_de_TI.Controllers
                 var userId = await GetCurrentUserId();
                 if (userId.HasValue)
                 {
-                    await _auditService.RegistrarAcao(userId.Value, "Excluiu Equipamento", $"ID: {equipamento.CodigoItem}");
+                    await _auditService.RegistrarAcao(userId.Value, "Excluiu Equipamento", $"ID: {equipamento.CodigoItem} Descrição: {equipamento.Descricao}");
                 }
 
             }

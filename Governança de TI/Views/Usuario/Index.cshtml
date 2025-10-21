@@ -1,13 +1,7 @@
 ﻿@model IEnumerable<Governança_de_TI.Models.UsuarioModel>
 @{
-    ViewData["Title"] = "Controle de Responsáveis";
+    ViewData["Title"] = "Usuários";
 }
-
-@section Styles {
-    <!-- Link para o ficheiro de estilos que faz a tabela ocupar a altura total -->
-    <link rel="stylesheet" href="~/css/equipamento.css" asp-append-version="true" />
-}
-
 @if (TempData["SuccessMessage"] != null)
 {
     <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -15,84 +9,51 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-
-<!-- Wrapper que garante que o conteúdo ocupe a altura total da tela -->
-<div class="content-wrapper">
-    <!-- Card do Cabeçalho e Botão de Novo Registo -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">@ViewData["Title"]</h4>
-                <a asp-action="Criar" class="btn btn-sm btn-primary" style="background-color: #8A2BE2; border-color: #8A2BE2;">
-                    <i class="bi bi-plus-lg me-2"></i>Novo Responsável
-                </a>
-            </div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-muted mb-0">Lista de Usuários</h4>
+            <a asp-action="Criar" class="btn btn-success">Novo Usuário</a>
         </div>
-    </div>
 
-    <!-- Card da Tabela de Resultados -->
-    <div class="card shadow-sm table-card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover table-sm align-middle">
-                    <thead>
-                        <tr>
-                            <th>@Html.DisplayNameFor(model => model.Nome)</th>
-                            <th>@Html.DisplayNameFor(model => model.Email)</th>
-                            <th>@Html.DisplayNameFor(model => model.Perfil)</th>
-                            <th>@Html.DisplayNameFor(model => model.Status)</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.Any())
-                        {
-                            @foreach (var item in Model)
+        <table class="table table-striped align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Foto</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Perfil</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (item.FotoPerfil != null && item.FotoPerfil.Length > 0)
                             {
-                                <tr>
-                                    <td>@item.Nome</td>
-                                    <td>@item.Email</td>
-                                    <td>@item.Perfil</td>
-                                    <td>
-                                        @if (item.Status == "Ativo")
-                                        {
-                                            <span class="badge bg-success">@item.Status</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">@item.Status</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <a asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0" title="Detalhes"><i class="bi bi-search"></i></a>
-                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
-                                        <a asp-action="Excluir" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-0" title="Excluir"><i class="bi bi-trash"></i></a>
-                                    </td>
-                                </tr>
+                                var base64 = Convert.ToBase64String(item.FotoPerfil);
+                                <img src="data:image/png;base64,@base64" class="rounded-circle shadow-sm" style="width:40px;height:40px;object-fit:cover;" />
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="5" class="text-center py-4">Nenhum responsável encontrado.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                            else
+                            {
+                                <img src="/img/default-user.png" class="rounded-circle shadow-sm" style="width:40px;height:40px;object-fit:cover;" />
+                            }
+                        </td>
+                        <td>@item.Nome</td>
+                        <td>@item.Email</td>
+                        <td>@item.Perfil</td>
+                        <td>@item.Status</td>
+                        <td>
+                            <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1">Editar</a>
+                            <a asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">Detalhes</a>
+                            <a asp-action="Excluir" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Script para fechar o alerta de sucesso automaticamente
-        window.setTimeout(function() {
-            var alert = document.getElementById('success-alert');
-            if (alert) {
-                new bootstrap.Alert(alert).close();
-            }
-        }, 5000);
-    </script>
-}
-

@@ -35,7 +35,7 @@ namespace Governança_de_TI.Models
         /// Descrição do equipamento, preenchida automaticamente ao selecionar o item.
         /// </summary>
         [Display(Name = "Descrição do Item")]
-        public string Descricao { get; set; }
+        public string? Descricao { get; set; }
 
         [Required(ErrorMessage = "O campo Quantidade é obrigatório.")]
         [Range(1, int.MaxValue, ErrorMessage = "A quantidade deve ser de pelo menos 1.")]

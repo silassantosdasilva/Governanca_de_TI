@@ -1,0 +1,44 @@
+﻿@model Governança_de_TI.Models.UsuarioModel
+
+@{
+    ViewData["Title"] = "Excluir Usuário";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="text-danger mb-3">Confirma a exclusão deste usuário?</h4>
+            <hr />
+
+            <dl class="row">
+                <dt class="col-sm-3">Nome</dt>
+                <dd class="col-sm-9">@Model.Nome</dd>
+
+                <dt class="col-sm-3">E-mail</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Perfil</dt>
+                <dd class="col-sm-9">@Model.Perfil</dd>
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">@Model.Status</dd>
+            </dl>
+
+            <div class="alert alert-warning mt-3" role="alert">
+                Esta ação é permanente e não pode ser desfeita.
+            </div>
+
+            <form asp-action="Excluir" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        Voltar
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        Excluir Usuário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -18,6 +18,7 @@ namespace Governança_de_TI.Data
         public DbSet<ConsumoEnergiaModel> ConsumosEnergia { get; set; }
         public DbSet<TipoEquipamentoModel> TiposEquipamento { get; set; }
         public DbSet<AuditLogModel> AuditLogs { get; set; }
+        public DbSet<DepartamentoModel> Departamentos { get; set; }
 
 
 

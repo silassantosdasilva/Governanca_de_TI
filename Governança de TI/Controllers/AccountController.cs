@@ -26,7 +26,8 @@ namespace Governança_de_TI.Controllers
             _emailService = emailService;
         }
 
-        #region Login e Logout
+       
+
         // GET: /Account/Login
         [HttpGet]
         public IActionResult Login(string returnUrl = null)
@@ -42,10 +43,11 @@ namespace Governança_de_TI.Controllers
         {
             ViewData["ReturnUrl"] = returnUrl;
 
+            // === [VALIDAÇÃO INICIAL DO MODEL] ===
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Busca o usuário apenas uma vez
+            // === [BUSCA ÚNICA DO USUÁRIO] ===
             var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
 
             // Verifica se o usuário existe
@@ -56,33 +58,68 @@ namespace Governança_de_TI.Controllers
             }
 
             // Verifica se o usuário está inativo
-            if (user.Status == "Inativo")
+            if (user.Status?.Equals("Inativo", StringComparison.OrdinalIgnoreCase) == true)
             {
                 ModelState.AddModelError(string.Empty, "Usuário inativo!");
                 return View(model);
             }
 
-            // Verifica a senha (criptografada)
+            // === [VALIDAÇÃO DE SENHA CRIPTOGRAFADA] ===
+            // Verifica se a senha informada corresponde à senha armazenada (hash).
             if (!VerifyPassword(model.Senha, user.Senha))
             {
                 ModelState.AddModelError(string.Empty, "E-mail ou senha inválidos.");
                 return View(model);
             }
 
-            // Cria os claims para autenticação
+            // === [REFATORAÇÃO - CRIAÇÃO DE CLAIMS DE AUTENTICAÇÃO] ===
+            // As claims representam as informações que ficarão gravadas no cookie de login.
+            // Isso inclui dados como nome, perfil, e a foto (em Base64) para o layout.
             var claims = new List<Claim>
-            {
-              new Claim(ClaimTypes.Name, user.Email),
-              new Claim("FullName", user.Nome),
-              new Claim(ClaimTypes.Role, user.Perfil),
-             };
+    {
+        // Identificação principal do usuário (e-mail)
+        new Claim(ClaimTypes.Name, user.Email ?? string.Empty),
 
+        // Nome completo - usado em cabeçalhos, menus e relatórios
+        new Claim("FullName", user.Nome ?? string.Empty),
+
+        // Perfil de acesso (Administrador, Usuário etc.)
+        new Claim(ClaimTypes.Role, user.Perfil ?? string.Empty)
+    };
+
+            // === [NOVA REGRA - ADIÇÃO DA FOTO DE PERFIL NAS CLAIMS] ===
+            // Se o usuário tiver uma imagem armazenada no banco (byte[]),
+            // converte para Base64 e adiciona como Claim. Essa claim será usada no _Layout.cshtml.
+            if (user.FotoPerfil != null && user.FotoPerfil.Length > 0)
+            {
+                string fotoBase64 = Convert.ToBase64String(user.FotoPerfil);
+                claims.Add(new Claim("FotoPerfil", fotoBase64));
+            }
+
+            // === [CONFIGURAÇÃO DE AUTENTICAÇÃO] ===
+            // Cria a identidade e define as propriedades de sessão (cookie)
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
+            var authProperties = new AuthenticationProperties
+            {
+                // Mantém o login persistente enquanto o navegador estiver aberto
+                IsPersistent = true,
+
+                // Define o tempo de expiração da sessão
+                ExpiresUtc = DateTime.UtcNow.AddHours(2)
+            };
+
+            // === [AUTENTICAÇÃO DO USUÁRIO] ===
+            // Gera o cookie de autenticação e registra o login do usuário.
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(claimsIdentity));
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties
+            );
 
+            // === [REDIRECIONAMENTO APÓS LOGIN] ===
+            // Direciona o usuário para a URL de origem (ou página principal)
+            TempData["SuccessMessage"] = $"Bem-vindo, {user.Nome}!";
             return RedirectToLocal(returnUrl);
         }
 
@@ -95,7 +132,7 @@ namespace Governança_de_TI.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
         }
-        #endregion
+        
 
         #region Cadastro (Register)
         // GET: /Account/Register
@@ -129,7 +166,7 @@ namespace Governança_de_TI.Controllers
                     Perfil = "Usuario",
                    
                 };
-                user.Departamento = "Admin";
+               
                 user.DataDeCadastro = DateTime.Now;
                 _context.Usuarios.Add(user);
                 await _context.SaveChangesAsync();
@@ -145,13 +182,11 @@ namespace Governança_de_TI.Controllers
                     TempData["WarningMessage"] = $"Utilizador cadastrado, mas falha ao enviar e-mail: {ex.Message}";
                 }
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Login", "Account");
             }
             return View(model);
         }
-        #endregion
-
-        #region Recuperação de Senha
+     
         // GET: /Account/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
