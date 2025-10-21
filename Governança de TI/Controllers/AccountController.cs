@@ -9,9 +9,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
+using System.Security.Cryptography; // Mantido apenas para o método de migração SHA256
+using System.Text; // Mantido apenas para o método de migração SHA256
 using System.Threading.Tasks;
+using BCrypt.Net; // Importar o BCrypt
 
 namespace Governança_de_TI.Controllers
 {
@@ -25,8 +26,6 @@ namespace Governança_de_TI.Controllers
             _context = context;
             _emailService = emailService;
         }
-
-       
 
         // GET: /Account/Login
         [HttpGet]
@@ -43,82 +42,62 @@ namespace Governança_de_TI.Controllers
         {
             ViewData["ReturnUrl"] = returnUrl;
 
-            // === [VALIDAÇÃO INICIAL DO MODEL] ===
             if (!ModelState.IsValid)
                 return View(model);
 
-            // === [BUSCA ÚNICA DO USUÁRIO] ===
             var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
 
-            // Verifica se o usuário existe
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "E-mail ou senha inválidos.");
                 return View(model);
             }
 
-            // Verifica se o usuário está inativo
             if (user.Status?.Equals("Inativo", StringComparison.OrdinalIgnoreCase) == true)
             {
                 ModelState.AddModelError(string.Empty, "Usuário inativo!");
                 return View(model);
             }
 
-            // === [VALIDAÇÃO DE SENHA CRIPTOGRAFADA] ===
-            // Verifica se a senha informada corresponde à senha armazenada (hash).
-            if (!VerifyPassword(model.Senha, user.Senha))
+            // === [INÍCIO DA LÓGICA DE MIGRAÇÃO DE HASH] ===
+            if (!VerifyPassword(model.Senha, user.Senha, out bool needsRehash))
             {
                 ModelState.AddModelError(string.Empty, "E-mail ou senha inválidos.");
                 return View(model);
             }
 
-            // === [REFATORAÇÃO - CRIAÇÃO DE CLAIMS DE AUTENTICAÇÃO] ===
-            // As claims representam as informações que ficarão gravadas no cookie de login.
-            // Isso inclui dados como nome, perfil, e a foto (em Base64) para o layout.
-            var claims = new List<Claim>
-    {
-        // Identificação principal do usuário (e-mail)
-        new Claim(ClaimTypes.Name, user.Email ?? string.Empty),
-
-        // Nome completo - usado em cabeçalhos, menus e relatórios
-        new Claim("FullName", user.Nome ?? string.Empty),
-
-        // Perfil de acesso (Administrador, Usuário etc.)
-        new Claim(ClaimTypes.Role, user.Perfil ?? string.Empty)
-    };
-
-            // === [NOVA REGRA - ADIÇÃO DA FOTO DE PERFIL NAS CLAIMS] ===
-            // Se o usuário tiver uma imagem armazenada no banco (byte[]),
-            // converte para Base64 e adiciona como Claim. Essa claim será usada no _Layout.cshtml.
-            if (user.FotoPerfil != null && user.FotoPerfil.Length > 0)
+            // O utilizador é válido.
+            // Atualiza a data de último login e, se necessário, o hash da senha.
+            user.DataUltimoLogin = DateTime.Now;
+            if (needsRehash)
             {
-                string fotoBase64 = Convert.ToBase64String(user.FotoPerfil);
-                claims.Add(new Claim("FotoPerfil", fotoBase64));
+                // A senha bateu com o SHA256 antigo. Vamos atualizá-la para BCrypt.
+                user.Senha = BCrypt.Net.BCrypt.HashPassword(model.Senha);
             }
 
-            // === [CONFIGURAÇÃO DE AUTENTICAÇÃO] ===
-            // Cria a identidade e define as propriedades de sessão (cookie)
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            // === [FIM DA LÓGICA DE MIGRAÇÃO] ===
+
+
+            // === [CRIAÇÃO DE CLAIMS] ===
+            // (Esta lógica foi refatorada para usar a propriedade 'Claims' do UsuarioModel)
+            var claims = user.Claims.ToList(); // Usamos a lógica já definida no UsuarioModel
+
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
             var authProperties = new AuthenticationProperties
             {
-                // Mantém o login persistente enquanto o navegador estiver aberto
                 IsPersistent = true,
-
-                // Define o tempo de expiração da sessão
                 ExpiresUtc = DateTime.UtcNow.AddHours(2)
             };
 
-            // === [AUTENTICAÇÃO DO USUÁRIO] ===
-            // Gera o cookie de autenticação e registra o login do usuário.
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties
             );
 
-            // === [REDIRECIONAMENTO APÓS LOGIN] ===
-            // Direciona o usuário para a URL de origem (ou página principal)
             TempData["SuccessMessage"] = $"Bem-vindo, {user.Nome}!";
             return RedirectToLocal(returnUrl);
         }
@@ -132,7 +111,7 @@ namespace Governança_de_TI.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
         }
-        
+
 
         #region Cadastro (Register)
         // GET: /Account/Register
@@ -147,7 +126,7 @@ namespace Governança_de_TI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            ModelState.Remove("Senha"); // A senha é gerada, não vem do formulário
+            ModelState.Remove("Senha");
             if (ModelState.IsValid)
             {
                 var existingUser = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
@@ -162,12 +141,14 @@ namespace Governança_de_TI.Controllers
                 {
                     Nome = model.Nome,
                     Email = model.Email,
-                    Senha = HashPassword(senhaAleatoria),
+                    // === [ALTERAÇÃO DE SEGURANÇA] ===
+                    // Usando BCrypt para criar o hash
+                    Senha = BCrypt.Net.BCrypt.HashPassword(senhaAleatoria),
                     Perfil = "Usuario",
-                   
+                    DataDeCadastro = DateTime.Now,
+                    Status = "Ativo" // Garantindo que o Status é definido no cadastro
                 };
-               
-                user.DataDeCadastro = DateTime.Now;
+
                 _context.Usuarios.Add(user);
                 await _context.SaveChangesAsync();
 
@@ -186,7 +167,7 @@ namespace Governança_de_TI.Controllers
             }
             return View(model);
         }
-     
+
         // GET: /Account/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -205,7 +186,10 @@ namespace Governança_de_TI.Controllers
                 if (user != null)
                 {
                     string novaSenha = GerarSenhaAleatoria();
-                    user.Senha = HashPassword(novaSenha);
+
+                    // === [ALTERAÇÃO DE SEGURANÇA] ===
+                    // Usando BCrypt para criar o hash
+                    user.Senha = BCrypt.Net.BCrypt.HashPassword(novaSenha);
                     _context.Update(user);
                     await _context.SaveChangesAsync();
 
@@ -219,21 +203,64 @@ namespace Governança_de_TI.Controllers
                         // Mesmo se o e-mail falhar, a mensagem de sucesso genérica é mostrada por segurança
                     }
                 }
-                // Por segurança, mostramos sempre a mesma mensagem, quer o e-mail exista ou não
+
                 TempData["SuccessMessage"] = "Se um utilizador com este e-mail existir, uma nova senha será enviada.";
-                return View(model);
+                return View(model); // Retorna para a View (em vez de Redirecionar) para mostrar a TempData
             }
             return View(model);
         }
         #endregion
 
         #region Métodos Auxiliares
-        private bool VerifyPassword(string enteredPassword, string storedHash)
+
+        /// <summary>
+        /// Verifica a senha usando o novo método BCrypt e, se falhar,
+        /// tenta o método antigo SHA256 (para migração).
+        /// </summary>
+        /// <param name="enteredPassword">Senha digitada pelo utilizador.</param>
+        /// <param name="storedHash">Hash guardado na BD (pode ser BCrypt ou SHA256).</param>
+        /// <param name="needsRehash">OUT: Retorna true se a senha for válida mas usar o formato antigo (SHA256).</param>
+        /// <returns>True se a senha for válida.</returns>
+        private bool VerifyPassword(string enteredPassword, string storedHash, out bool needsRehash)
         {
-            return HashPassword(enteredPassword) == storedHash;
+            needsRehash = false;
+
+            try
+            {
+                // 1. Tenta verificar usando o novo padrão (BCrypt)
+                if (BCrypt.Net.BCrypt.Verify(enteredPassword, storedHash))
+                {
+                    return true;
+                }
+
+                // (BCrypt.Verify retorna false se não for um hash válido ou se a senha não bater, 
+                // mas pode lançar exceção se o hash não estiver no formato esperado)
+                return false;
+            }
+            catch (Exception)
+            {
+                // 2. Se o BCrypt falhar (ex: SaltParseException), pode ser um hash SHA256 antigo.
+                // Tenta verificar usando o método antigo.
+                string oldHashAttempt = HashPasswordSHA256_OLD(enteredPassword);
+
+                if (oldHashAttempt == storedHash)
+                {
+                    // A senha está correta, mas usa o formato antigo.
+                    // Sinaliza que precisa ser atualizada.
+                    needsRehash = true;
+                    return true;
+                }
+
+                // Falhou em ambos os métodos
+                return false;
+            }
         }
 
-        private string HashPassword(string password)
+        /// <summary>
+        /// MÉTODO DE HASH ANTIGO (INSEGURO) - MANTIDO APENAS PARA MIGRAÇÃO.
+        /// NÃO USAR PARA CRIAR NOVOS HASHES.
+        /// </summary>
+        private string HashPasswordSHA256_OLD(string password)
         {
             using (SHA256 sha256Hash = SHA256.Create())
             {
@@ -268,4 +295,3 @@ namespace Governança_de_TI.Controllers
         #endregion
     }
 }
-

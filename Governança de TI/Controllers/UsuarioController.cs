@@ -6,10 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
+// using System.Security.Cryptography; // Removido - Não é mais necessário
+// using System.Text; // Removido - Não é mais necessário
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using BCrypt.Net; // Importar o BCrypt
 
 namespace Governança_de_TI.Controllers
 {
@@ -88,7 +89,10 @@ namespace Governança_de_TI.Controllers
 
             // Gera senha aleatória e define data de criação
             string senhaAleatoria = GerarSenhaAleatoria();
-            usuario.Senha = HashPassword(senhaAleatoria);
+
+            // === [ALTERAÇÃO DE SEGURANÇA] ===
+            // Usando BCrypt para criar o hash
+            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(senhaAleatoria);
             usuario.DataDeCadastro = DateTime.Now;
 
             _context.Add(usuario);
@@ -141,17 +145,28 @@ namespace Governança_de_TI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(UsuarioModel model, IFormFile Imagem)
         {
-          
-
             var usuario = await _context.Usuarios.FindAsync(model.Id);
             if (usuario == null)
                 return NotFound();
+
+            // Validação de duplicidade de e-mail ao editar
+            if (usuario.Email != model.Email)
+            {
+                var emailExists = await _context.Usuarios.AnyAsync(u => u.Email == model.Email && u.Id != model.Id);
+                if (emailExists)
+                {
+                    ModelState.AddModelError("Email", "Este e-mail já está sendo utilizado por outra conta.");
+                    return View(model);
+                }
+            }
 
             usuario.Nome = model.Nome;
             usuario.Email = model.Email;
             usuario.Status = model.Status;
             usuario.Perfil = model.Perfil;
-            usuario.Departamento = model.Departamento;
+            // A propriedade Departamento não está no formulário padrão,
+            // mas se estivesse, seria atualizada aqui:
+            // usuario.DepartamentoId = model.DepartamentoId; 
 
             // Atualiza imagem se houver nova
             if (Imagem != null && Imagem.Length > 0)
@@ -176,7 +191,7 @@ namespace Governança_de_TI.Controllers
                 );
             }
 
-            TempData["Sucesso"] = "Perfil atualizado com sucesso!";
+            TempData["SuccessMessage"] = "Perfil atualizado com sucesso!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -195,7 +210,10 @@ namespace Governança_de_TI.Controllers
             }
 
             string novaSenha = GerarSenhaAleatoria();
-            usuario.Senha = HashPassword(novaSenha);
+
+            // === [ALTERAÇÃO DE SEGURANÇA] ===
+            // Usando BCrypt para criar o hash
+            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(novaSenha);
 
             _context.Update(usuario);
             await _context.SaveChangesAsync();
@@ -281,21 +299,15 @@ namespace Governança_de_TI.Controllers
                 return null;
 
             var user = await _context.Usuarios.AsNoTracking()
-                                              .FirstOrDefaultAsync(u => u.Email == userEmail);
+                                             .FirstOrDefaultAsync(u => u.Email == userEmail);
             return user?.Id;
         }
 
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                    builder.Append(bytes[i].ToString("x2"));
-                return builder.ToString();
-            }
-        }
+        // O método 'HashPassword' (SHA256) foi REMOVIDO deste controlador.
+        // O AccountController mantém uma versão renomeada ('HashPasswordSHA256_OLD') 
+        // apenas para fins de migração. Este controlador (Admin) NUNCA 
+        // deve usar o hash antigo.
+
         #endregion
     }
 }

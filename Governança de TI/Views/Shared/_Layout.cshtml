@@ -15,7 +15,7 @@
 </head>
 <body>
     <div class="page-container">
-        <!-- Sidebar Fixa -->
+        <!-- Sidebar Fixa / Deslizante -->
         <nav class="sidebar">
             <ul class="sidebar-nav">
                 <li class="sidebar-nav-item">
@@ -38,7 +38,6 @@
                             <li>
                                 <a asp-controller="ConsumoEnergia" asp-action="Index" class="submenu-link"><i class="bi bi-lightning-charge"></i><span>Registro de Consumo</span></a>
                             </li>
-                            <!-- OBSERVAÇÃO: Novo link para a Gestão de Utilizadores -->
                             <li>
                                 <a asp-controller="Usuario" asp-action="Index" class="submenu-link">
                                     <i class="bi bi-people"></i><span>Controle de Responsáveis</span>
@@ -59,31 +58,29 @@
         <!-- Container para Header e Conteúdo Principal -->
         <div class="main-wrapper">
             <header class="main-header d-flex justify-content-between align-items-center p-3 shadow-sm bg-white">
-                <div class="user-greeting d-flex align-items-center">
 
+                <!-- [ALTERAÇÃO] Botão Hambúrguer (Visível apenas em mobile) -->
+                <button id="sidebar-toggle" class="btn btn-outline-secondary d-lg-none">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+
+                <div class="user-greeting d-flex align-items-center flex-grow-1">
                     @{
-                        // === [EXIBIÇÃO DO USUÁRIO LOGADO] ===
-                        // Recupera o nome completo e a foto do usuário a partir das Claims criadas no Login.
                         var nomeUsuario = User.FindFirst("FullName")?.Value ?? "Usuário";
                         var fotoClaim = User.FindFirst("FotoPerfil")?.Value;
-
-                        // Se a claim FotoPerfil contiver Base64, monta o src; senão, usa imagem padrão.
                         var fotoSrc = !string.IsNullOrEmpty(fotoClaim)
                         ? $"data:image/png;base64,{fotoClaim}"
                         : Url.Content("~/img/default-user.png");
                     }
-
                     <img src="@fotoSrc" alt="Foto do Usuário"
                          class="user-avatar rounded-circle shadow-sm me-2"
                          style="width:40px;height:40px;object-fit:cover;border:1px solid #ddd;">
-
                     <div>
                         <h6 class="mb-0 fw-semibold">Olá, @nomeUsuario</h6>
                         <small class="text-muted">@User.Identity?.Name</small>
                     </div>
                 </div>
 
-                <!-- Opcional: botão de logout no canto direito -->
                 <div class="logout-section">
                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
@@ -99,6 +96,9 @@
             </main>
         </div>
 
+        <!-- [ALTERAÇÃO] Overlay para o fundo da sidebar em mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -109,4 +109,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

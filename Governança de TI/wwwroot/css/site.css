@@ -15,28 +15,77 @@ body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
 }
 
-/* Container Principal da Página */
 .page-container {
     display: flex;
     min-height: 100vh;
     transition: padding-left 0.3s ease-in-out;
 }
 
-/* --- Sidebar e Submenu --- */
+/* --- Wrapper e Conteúdo Principal --- */
+.main-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-left: 0; /* Começa com 0 para mobile */
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.main-header {
+    background: var(--header-bg);
+    padding: 1rem 1.5rem; /* Ajustado para mobile */
+    border-bottom: 1px solid var(--border-color);
+}
+
+.content-area {
+    padding: 1rem 1.5rem; /* Ajustado para mobile */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- [ALTERAÇÃO GERAL] Sidebar e Submenu (Mobile First) --- */
+
+/* Overlay para escurecer o conteúdo quando o menu está aberto em mobile */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1029;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0.3s, opacity 0.3s;
+}
+
+    .sidebar-overlay.is-visible {
+        visibility: visible;
+        opacity: 1;
+    }
+
+/* Sidebar (Mobile) */
 .sidebar {
-    width: var(--sidebar-width);
+    width: var(--submenu-width); /* Largura quando aberta */
     background: var(--header-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center; /* Centraliza os ícones na vertical */
+    align-items: flex-start; /* Alinha itens à esquerda */
     position: fixed;
     left: 0;
     top: 0;
     height: 100%;
     z-index: 1030;
+    transform: translateX(-100%); /* Começa escondida */
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto; /* Permite scroll se o menu for grande */
 }
+
+    .sidebar.is-open {
+        transform: translateX(0);
+    }
 
 .sidebar-nav {
     list-style: none;
@@ -46,67 +95,48 @@ body {
 }
 
 .sidebar-nav-item {
-    margin-bottom: 1rem;
-    position: relative;
+    width: 100%;
 }
 
+/* Links da Sidebar (Mobile) - Mostra texto */
 .sidebar-nav-link {
     display: flex;
-    justify-content: center;
     align-items: center;
+    padding: 1rem 1.5rem;
     color: #6c757d;
-    font-size: 1.5rem;
+    font-size: 1rem;
     text-decoration: none;
-    height: 50px;
+    height: auto;
 }
 
-.sidebar-nav-item.active > .sidebar-nav-link {
-    color: var(--active-color);
-}
-
-    .sidebar-nav-item.active > .sidebar-nav-link::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 4px;
-        height: 100%;
-        background-color: var(--active-color);
+    .sidebar-nav-link i {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        width: 24px;
+        text-align: center;
     }
 
+/* Submenu (Mobile) - Fica integrado */
 .submenu-panel {
-    position: fixed;
-    left: var(--sidebar-width);
-    top: 0;
-    width: var(--submenu-width);
-    height: 100%;
-    background-color: var(--header-bg);
-    border-right: 1px solid var(--border-color);
-    padding: 1.5rem 0;
-    transform: translateX(-100%);
-    visibility: hidden;
-    opacity: 0;
-    transition: transform 0.3s ease-in-out, visibility 0.3s, opacity 0.3s;
-    z-index: 1029;
+    position: static;
+    transform: none;
+    visibility: visible;
+    opacity: 1;
+    height: auto;
+    width: 100%;
+    border: none;
+    padding: 0;
+    display: none; /* Começa fechado */
 }
 
 .sidebar-nav-item.active .submenu-panel {
-    transform: translateX(0);
-    visibility: visible;
-    opacity: 1;
+    display: block; /* Mostra o submenu quando o item está ativo */
 }
 
 .submenu-panel h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #6c757d;
-    text-align: center;
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    display: none;
 }
-
+/* Esconde o título do submenu em mobile */
 .submenu-list {
     list-style: none;
     padding: 0;
@@ -116,47 +146,122 @@ body {
 .submenu-link {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1.5rem 0.75rem 4rem; /* Indentação para mostrar hierarquia */
     text-decoration: none;
     color: #495057;
     font-size: 0.95rem;
-    border-bottom: 1px solid var(--border-color);
 }
 
-.submenu-list li:last-child .submenu-link {
-    border-bottom: none;
+    .submenu-link:hover {
+        background-color: #f1f3f5;
+    }
+
+    .submenu-link i {
+        display: none;
+    }
+/* Esconde ícones do submenu para não duplicar */
+
+
+/* --- [ALTERAÇÃO] Estilos Desktop (Ecrãs Largos) --- */
+@media (min-width: 992px) {
+    .main-wrapper {
+        margin-left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
+    }
+
+    .page-container.submenu-active .main-wrapper {
+        margin-left: calc(var(--sidebar-width) + var(--submenu-width));
+    }
+
+    .main-header, .content-area {
+        padding: 1.5rem 2rem; /* Restaura padding original */
+    }
+
+    .sidebar {
+        width: var(--sidebar-width);
+        transform: translateX(0);
+        justify-content: center; /* Centraliza ícones na vertical */
+        overflow-y: visible;
+    }
+
+    .sidebar-nav-link span {
+        display: none; /* Esconde o texto dos links principais */
+    }
+
+    .sidebar-nav-link i {
+        margin-right: 0;
+    }
+
+    .sidebar-nav-item {
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+        .sidebar-nav-item.active > .sidebar-nav-link {
+            color: var(--active-color);
+        }
+
+            .sidebar-nav-item.active > .sidebar-nav-link::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 4px;
+                height: 100%;
+                background-color: var(--active-color);
+            }
+
+    .submenu-panel {
+        position: fixed;
+        left: var(--sidebar-width);
+        top: 0;
+        width: var(--submenu-width);
+        height: 100%;
+        border-right: 1px solid var(--border-color);
+        padding: 1.5rem 0;
+        transform: translateX(-100%);
+        visibility: hidden;
+        opacity: 0;
+        transition: transform 0.3s ease-in-out, visibility 0.3s, opacity 0.3s;
+        z-index: 1029;
+        display: block; /* Garante que está visível para a animação */
+    }
+
+    .sidebar-nav-item.active .submenu-panel {
+        transform: translateX(0);
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .submenu-panel h2 {
+        display: block;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-align: center;
+        padding: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .submenu-link {
+        padding: 0.75rem 1.5rem;
+    }
+
+        .submenu-link i {
+            display: inline-block;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 24px;
+        }
+
+        .submenu-link:hover {
+            background-color: #f1f3f5;
+        }
 }
 
-.submenu-link:hover {
-    background-color: #f1f3f5;
-}
-
-.submenu-link i {
-    margin-right: 1rem;
-    font-size: 1.2rem;
-    width: 24px;
-}
-
-/* --- Wrapper e Conteúdo Principal --- */
-.main-wrapper {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    transition: margin-left 0.3s ease-in-out;
-}
-
-.page-container.submenu-active .main-wrapper {
-    margin-left: calc(var(--sidebar-width) + var(--submenu-width));
-}
-
-.main-header {
-    background: var(--header-bg);
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
+/* --- Estilos de Componentes (mantidos) --- */
 .user-greeting {
     display: flex;
     align-items: center;
@@ -169,14 +274,6 @@ body {
     margin-right: 12px;
 }
 
-.content-area {
-    padding: 1.5rem 2rem;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-/* --- Estilos do Dashboard --- */
 .metric-card, .card {
     background-color: #fff;
     border: 1px solid var(--border-color);

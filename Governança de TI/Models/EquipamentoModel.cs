@@ -25,20 +25,20 @@ namespace Governança_de_TI.Models
         [Display(Name = "Descrição")]
         public string Descricao { get; set; }
 
-        //[Required(ErrorMessage = "O campo Série é obrigatório.")]
         [StringLength(50)]
         public string? Serie { get; set; }
 
-        //[Required(ErrorMessage = "O campo Modelo é obrigatório.")]
         [StringLength(50)]
         public string? Modelo { get; set; }
 
         /// <summary>
         /// Chave estrangeira que referencia o tipo de equipamento.
         /// </summary>
-        //[Required(ErrorMessage = "O campo Tipo de Equipamento é obrigatório.")]
+        // === [CORREÇÃO DE VALIDAÇÃO] ===
+        // Alterado para 'int?' e [Required] adicionado para validar a seleção "Selecione...".
+        [Required(ErrorMessage = "O campo Tipo de Equipamento é obrigatório.")]
         [Display(Name = "Tipo de Equipamento")]
-        public int TipoEquipamentoId { get; set; }
+        public int? TipoEquipamentoId { get; set; } // Alterado para nulável
 
         /// <summary>
         /// Propriedade de navegação para o Tipo de Equipamento relacionado.
@@ -46,12 +46,10 @@ namespace Governança_de_TI.Models
         [ForeignKey("TipoEquipamentoId")]
         public virtual TipoEquipamentoModel TipoEquipamento { get; set; }
 
-        //[Required(ErrorMessage = "O campo Data da Compra é obrigatório.")]
         [Display(Name = "Data da Compra")]
         [DataType(DataType.Date)]
         public DateTime? DataCompra { get; set; }
 
-        //[Required(ErrorMessage = "O campo Vida Útil é obrigatório.")]
         [Display(Name = "Vida Útil (em anos)")]
         [Range(1, 30, ErrorMessage = "A vida útil deve ser um valor positivo.")]
         public int? VidaUtilAnos { get; set; }
@@ -64,7 +62,6 @@ namespace Governança_de_TI.Models
         [DataType(DataType.Date)]
         public DateTime? VidaUtilFim { get; set; }
 
-        //[Required(ErrorMessage = "O campo Fim da Garantia é obrigatório.")]
         [Display(Name = "Fim da Garantia")]
         [DataType(DataType.Date)]
         public DateTime? DataFimGarantia { get; set; }
@@ -73,7 +70,9 @@ namespace Governança_de_TI.Models
         [DataType(DataType.Date)]
         public DateTime? DataUltimaManutencao { get; set; }
 
-        //[Required(ErrorMessage = "O campo Status é obrigatório.")]
+        // === [CORREÇÃO DE VALIDAÇÃO] ===
+        // [Required] adicionado para validar a seleção "Selecione...".
+        [Required(ErrorMessage = "O campo Status é obrigatório.")]
         [StringLength(50)]
         public string Status { get; set; }
 
@@ -123,4 +122,3 @@ namespace Governança_de_TI.Models
         public virtual UsuarioModel Usuario { get; set; }
     }
 }
-

@@ -1,47 +1,91 @@
 ﻿// Aguarda o DOM ser completamente carregado para executar todo o script
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- LÓGICA DO MENU EXPANSÍVEL DA SIDEBAR ---
+    // --- Seletores Globais ---
     const pageContainer = document.querySelector('.page-container');
-    const navItems = document.querySelectorAll('.sidebar-nav-item');
-    navItems.forEach(item => {
-        const link = item.querySelector('.sidebar-nav-link');
-        link.addEventListener('click', (e) => {
-            // Previne o comportamento padrão do link para o item de submenu
-            if (link.classList.contains('has-submenu')) {
-                e.preventDefault();
-            }
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const navItemsWithSubmenu = document.querySelectorAll('.sidebar-nav-item .has-submenu');
 
-            const isSubmenuItem = link.classList.contains('has-submenu');
-            const isAlreadyActive = item.classList.contains('active');
+    // ============================================================
+    // LÓGICA DA SIDEBAR RESPONSIVA (MENU HAMBÚRGUER)
+    // ============================================================
+    if (sidebar && sidebarToggle && sidebarOverlay) {
+        const closeSidebar = () => {
+            sidebar.classList.remove('is-open');
+            sidebarOverlay.classList.remove('is-visible');
+        };
 
-            navItems.forEach(i => i.classList.remove('active'));
+        const openSidebar = () => {
+            sidebar.classList.add('is-open');
+            sidebarOverlay.classList.add('is-visible');
+        };
 
-            if (isSubmenuItem) {
-                if (isAlreadyActive) {
-                    pageContainer.classList.remove('submenu-active');
-                } else {
-                    item.classList.add('active');
-                    pageContainer.classList.add('submenu-active');
-                }
+        // Abre/Fecha a sidebar ao clicar no botão hambúrguer
+        sidebarToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Impede que o clique feche o menu imediatamente
+            if (sidebar.classList.contains('is-open')) {
+                closeSidebar();
             } else {
-                item.classList.add('active');
-                pageContainer.classList.remove('submenu-active');
-                // Navega para o link se não for a página atual
-                if (window.location.pathname !== link.getAttribute('href')) {
-                    window.location.href = link.href;
-                }
+                openSidebar();
             }
         });
-    });
 
-    // --- LÓGICA DO DASHBOARD ---
-    // Verifica se estamos na página do dashboard antes de executar o código
+        // Fecha a sidebar ao clicar no overlay
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+
+    // ============================================================
+    // LÓGICA DO SUBMENU EXPANSÍVEL (DESKTOP E MOBILE)
+    // ============================================================
+    if (navItemsWithSubmenu.length > 0 && pageContainer) {
+        navItemsWithSubmenu.forEach(triggerLink => {
+            triggerLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                const parentNavItem = triggerLink.closest('.sidebar-nav-item');
+                const isAlreadyActive = parentNavItem.classList.contains('active');
+
+                // Fecha todos os outros itens de menu
+                document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+                    if (item !== parentNavItem) {
+                        item.classList.remove('active');
+                    }
+                });
+
+                // Abre ou fecha o item clicado
+                parentNavItem.classList.toggle('active');
+
+                // Controla a margem do conteúdo principal em DESKTOP
+                if (window.innerWidth >= 992) {
+                    if (isAlreadyActive) {
+                        pageContainer.classList.remove('submenu-active');
+                    } else {
+                        pageContainer.classList.add('submenu-active');
+                    }
+                }
+            });
+        });
+
+        // Fecha o submenu se clicar fora dele (apenas em desktop)
+        document.addEventListener('click', (event) => {
+            if (window.innerWidth < 992) return;
+
+            const activeSubmenuItem = document.querySelector('.sidebar-nav-item.active');
+            if (activeSubmenuItem && !activeSubmenuItem.contains(event.target)) {
+                activeSubmenuItem.classList.remove('active');
+                pageContainer.classList.remove('submenu-active');
+            }
+        });
+    }
+
+    // ============================================================
+    // LÓGICA DO DASHBOARD (Mantida do seu código original)
+    // ============================================================
     if (document.getElementById('metric-cards-container')) {
         carregarDashboard();
     }
 
-    // Função principal que busca os dados da API
     async function carregarDashboard() {
         try {
             const response = await fetch('/api/dashboard');
@@ -50,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const data = await response.json();
 
-            // Chama as funções para renderizar cada parte do dashboard
             renderMetricCards(data);
             renderListaFimVidaUtil(data.equipamentosProximosFimVida);
             renderListaProximaManutencao(data.equipamentosProximaManutencao);
@@ -59,11 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Erro ao carregar o dashboard:", error);
-            // Poderia exibir uma mensagem de erro na tela para o utilizador aqui
         }
     }
-
-    // --- FUNÇÕES DE RENDERIZAÇÃO DO DASHBOARD ---
 
     function renderMetricCards(data) {
         const container = document.getElementById('metric-cards-container');
