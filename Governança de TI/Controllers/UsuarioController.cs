@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 using System.Linq;
-// using System.Security.Cryptography; // Removido - Não é mais necessário
-// using System.Text; // Removido - Não é mais necessário
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using BCrypt.Net; // Importar o BCrypt
+using BCrypt.Net;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic; // Necessário para List<>
 
 namespace Governança_de_TI.Controllers
 {
@@ -28,11 +28,49 @@ namespace Governança_de_TI.Controllers
         }
 
         // ============================================================
+        // Método Privado para Carregar ViewBag de Departamentos
+        // ============================================================
+        private async Task CarregarDepartamentosViewBag(int? selectedId = null)
+        {
+            // --- [TESTE] Comentada a busca na base de dados ---
+            // var departamentosDb = await _context.Departamentos
+            //                                   .AsNoTracking()
+            //                                   .OrderBy(d => d.Nome)
+            //                                   .Select(d => new SelectListItem
+            //                                   {
+            //                                       Value = d.Id.ToString(),
+            //                                       Text = d.Nome
+            //                                   })
+            //                                   .ToListAsync();
+
+            // --- [TESTE] Usando uma lista vazia para simular ---
+            var departamentosDb = new List<SelectListItem>();
+
+
+            // Adiciona a opção "Selecione..." no início da lista
+            var selectListItems = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "", Text = "Selecione um departamento..." }
+            };
+            selectListItems.AddRange(departamentosDb); // Adiciona a lista (vazia neste teste)
+
+            // Cria o SelectList usando a lista de SelectListItem
+            ViewBag.DepartamentoId = new SelectList(selectListItems, "Value", "Text", selectedId?.ToString());
+
+            // --- Fim do Teste ---
+
+            // **NOTA:** Lembre-se de descomentar a busca na base de dados e remover a lista vazia depois de testar!
+        }
+
+        // ============================================================
         // GET: Usuario
         // ============================================================
         public async Task<IActionResult> Index()
         {
-            var usuarios = await _context.Usuarios.OrderBy(u => u.Nome).ToListAsync();
+            var usuarios = await _context.Usuarios
+                                         .Include(u => u.Departamento)
+                                         .OrderBy(u => u.Nome)
+                                         .ToListAsync();
             return View(usuarios);
         }
 
@@ -43,7 +81,10 @@ namespace Governança_de_TI.Controllers
         {
             if (id == null) return NotFound();
 
-            var usuario = await _context.Usuarios.FirstOrDefaultAsync(m => m.Id == id);
+            var usuario = await _context.Usuarios
+                                        .Include(u => u.Departamento)
+                                        .FirstOrDefaultAsync(m => m.Id == id);
+
             if (usuario == null) return NotFound();
 
             return View(usuario);
@@ -52,8 +93,9 @@ namespace Governança_de_TI.Controllers
         // ============================================================
         // GET: Usuario/Criar
         // ============================================================
-        public IActionResult Criar()
+        public async Task<IActionResult> Criar()
         {
+            await CarregarDepartamentosViewBag();
             return View();
         }
 
@@ -67,17 +109,27 @@ namespace Governança_de_TI.Controllers
             ModelState.Remove("Senha");
 
             if (!ModelState.IsValid)
+            {
+                await CarregarDepartamentosViewBag(usuario.DepartamentoId);
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("_CriarUsuarioPartial", usuario);
+                }
                 return View(usuario);
+            }
 
-            // Verifica duplicidade de e-mail
             var existingUser = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == usuario.Email);
             if (existingUser != null)
             {
                 ModelState.AddModelError("Email", "Este e-mail já está sendo utilizado por outra conta.");
+                await CarregarDepartamentosViewBag(usuario.DepartamentoId);
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("_CriarUsuarioPartial", usuario);
+                }
                 return View(usuario);
             }
 
-            // Salva imagem de perfil (se enviada)
             if (Imagem != null && Imagem.Length > 0)
             {
                 using (var ms = new MemoryStream())
@@ -87,18 +139,13 @@ namespace Governança_de_TI.Controllers
                 }
             }
 
-            // Gera senha aleatória e define data de criação
             string senhaAleatoria = GerarSenhaAleatoria();
-
-            // === [ALTERAÇÃO DE SEGURANÇA] ===
-            // Usando BCrypt para criar o hash
             usuario.Senha = BCrypt.Net.BCrypt.HashPassword(senhaAleatoria);
             usuario.DataDeCadastro = DateTime.Now;
 
             _context.Add(usuario);
             await _context.SaveChangesAsync();
 
-            // Registra auditoria
             var executorId = await GetCurrentUserId();
             if (executorId.HasValue)
             {
@@ -114,7 +161,6 @@ namespace Governança_de_TI.Controllers
                 var corpoEmail = $"<p>Olá {usuario.Nome},</p>" +
                                  $"<p>Sua conta foi criada com sucesso. Sua senha temporária é: <strong>{senhaAleatoria}</strong></p>";
                 await _emailService.EnviarEmailAsync(usuario.Email, "Bem-vindo ao Sistema", corpoEmail);
-
                 TempData["SuccessMessage"] = $"Utilizador {usuario.Nome} criado com sucesso! Senha enviada para {usuario.Email}.";
             }
             catch (Exception ex)
@@ -122,8 +168,13 @@ namespace Governança_de_TI.Controllers
                 TempData["WarningMessage"] = $"Utilizador criado, mas falha ao enviar e-mail: {ex.Message}";
             }
 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Ok(new { redirectTo = Url.Action(nameof(Index)) });
+            }
             return RedirectToAction(nameof(Index));
         }
+
 
         // ============================================================
         // GET: Usuario/Editar/5
@@ -135,6 +186,7 @@ namespace Governança_de_TI.Controllers
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null) return NotFound();
 
+            await CarregarDepartamentosViewBag(usuario.DepartamentoId);
             return View(usuario);
         }
 
@@ -149,13 +201,19 @@ namespace Governança_de_TI.Controllers
             if (usuario == null)
                 return NotFound();
 
-            // Validação de duplicidade de e-mail ao editar
+            if (!ModelState.IsValid)
+            {
+                await CarregarDepartamentosViewBag(model.DepartamentoId);
+                return View(model);
+            }
+
             if (usuario.Email != model.Email)
             {
                 var emailExists = await _context.Usuarios.AnyAsync(u => u.Email == model.Email && u.Id != model.Id);
                 if (emailExists)
                 {
                     ModelState.AddModelError("Email", "Este e-mail já está sendo utilizado por outra conta.");
+                    await CarregarDepartamentosViewBag(model.DepartamentoId);
                     return View(model);
                 }
             }
@@ -164,11 +222,8 @@ namespace Governança_de_TI.Controllers
             usuario.Email = model.Email;
             usuario.Status = model.Status;
             usuario.Perfil = model.Perfil;
-            // A propriedade Departamento não está no formulário padrão,
-            // mas se estivesse, seria atualizada aqui:
-            // usuario.DepartamentoId = model.DepartamentoId; 
+            usuario.DepartamentoId = model.DepartamentoId;
 
-            // Atualiza imagem se houver nova
             if (Imagem != null && Imagem.Length > 0)
             {
                 using (var ms = new MemoryStream())
@@ -210,9 +265,6 @@ namespace Governança_de_TI.Controllers
             }
 
             string novaSenha = GerarSenhaAleatoria();
-
-            // === [ALTERAÇÃO DE SEGURANÇA] ===
-            // Usando BCrypt para criar o hash
             usuario.Senha = BCrypt.Net.BCrypt.HashPassword(novaSenha);
 
             _context.Update(usuario);
@@ -232,7 +284,6 @@ namespace Governança_de_TI.Controllers
             {
                 var corpoEmail = $"<p>Olá {usuario.Nome},</p><p>Sua senha foi redefinida. Nova senha temporária: <strong>{novaSenha}</strong></p>";
                 await _emailService.EnviarEmailAsync(usuario.Email, "Redefinição de Senha", corpoEmail);
-
                 TempData["SuccessMessage"] = $"Uma nova senha foi enviada para o e-mail {usuario.Email}.";
             }
             catch (Exception ex)
@@ -283,6 +334,17 @@ namespace Governança_de_TI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ============================================================
+        // GET: Usuario/_CriarUsuarioPartial
+        // ============================================================
+        [HttpGet]
+        public async Task<IActionResult> _CriarUsuarioPartial()
+        {
+            await CarregarDepartamentosViewBag();
+            return PartialView("_CriarUsuarioPartial", new UsuarioModel());
+        }
+
+
         #region Métodos Auxiliares
         private string GerarSenhaAleatoria(int length = 10)
         {
@@ -302,12 +364,7 @@ namespace Governança_de_TI.Controllers
                                              .FirstOrDefaultAsync(u => u.Email == userEmail);
             return user?.Id;
         }
-
-        // O método 'HashPassword' (SHA256) foi REMOVIDO deste controlador.
-        // O AccountController mantém uma versão renomeada ('HashPasswordSHA256_OLD') 
-        // apenas para fins de migração. Este controlador (Admin) NUNCA 
-        // deve usar o hash antigo.
-
         #endregion
     }
 }
+

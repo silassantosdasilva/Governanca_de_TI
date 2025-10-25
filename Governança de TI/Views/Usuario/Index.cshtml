@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = "Usuários";
 }
+
+@* Alerta para mensagens de sucesso (será preenchido via JS após AJAX) *@
+<div id="ajax-success-alert-placeholder"></div>
+
 @if (TempData["SuccessMessage"] != null)
 {
     <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -13,47 +17,263 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="text-muted mb-0">Lista de Usuários</h4>
-            <a asp-action="Criar" class="btn btn-success">Novo Usuário</a>
+            @* --- [ALTERAÇÃO] Botão agora abre o modal --- *@
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#userModal" id="btnNovoUsuario">
+                <i class="bi bi-plus-lg me-2"></i>Novo Usuário
+            </button>
         </div>
 
-        <table class="table table-striped align-middle text-center">
-            <thead class="table-light">
-                <tr>
-                    <th>Foto</th>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Perfil</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+        <div class="table-responsive">
+            @* Adicionado para melhor responsividade da tabela *@
+            <table class="table table-striped align-middle text-center">
+                <thead class="table-light">
                     <tr>
-                        <td>
-                            @if (item.FotoPerfil != null && item.FotoPerfil.Length > 0)
-                            {
-                                var base64 = Convert.ToBase64String(item.FotoPerfil);
-                                <img src="data:image/png;base64,@base64" class="rounded-circle shadow-sm" style="width:40px;height:40px;object-fit:cover;" />
-                            }
-                            else
-                            {
-                                <img src="/img/default-user.png" class="rounded-circle shadow-sm" style="width:40px;height:40px;object-fit:cover;" />
-                            }
-                        </td>
-                        <td>@item.Nome</td>
-                        <td>@item.Email</td>
-                        <td>@item.Perfil</td>
-                        <td>@item.Status</td>
-                        <td>
-                            <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1">Editar</a>
-                            <a asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">Detalhes</a>
-                            <a asp-action="Excluir" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Excluir</a>
-                        </td>
+                        <th>Foto</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Departamento</th> @* Adicionada coluna Departamento *@
+                        <th>Perfil</th>
+                        <th>Status</th>
+                        <th>Ações</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (item.FotoPerfil != null && item.FotoPerfil.Length > 0)
+                                    {
+                                        var base64 = Convert.ToBase64String(item.FotoPerfil);
+                                        <img src="data:image/png;base64,@base64" class="rounded-circle shadow-sm" style="width:40px;height:40px;object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <img src="/img/default-user.png" class="rounded-circle shadow-sm" style="width:40px;height:40px;object-fit:cover;" />
+                                    }
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.Nome)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Departamento.Nome)</td> @* Exibe o nome do Departamento *@
+                                <td>@Html.DisplayFor(modelItem => item.Perfil)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Status)</td>
+                                <td>
+                                    @* TODO: Alterar botões Editar/Detalhes/Excluir para abrir modais também, se desejado *@
+                                    <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                    <a asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1" title="Detalhes"><i class="bi bi-search"></i></a>
+                                    <a asp-action="Excluir" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Excluir"><i class="bi bi-trash"></i></a>
+
+                                    @* Adicionado botão para Redefinir Senha (ação já existe no controller) *@
+                                    <form asp-action="RedefinirSenha" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja redefinir a senha para este usuário? Uma nova senha será enviada por e-mail.');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Redefinir Senha"><i class="bi bi-key-fill"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4">Nenhum usuário encontrado.</td> @* Ajustado colspan *@
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+
+<!-- =================== [NOVO] MODAL PLACEHOLDER =================== -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        @* Aumentado o tamanho para lg *@
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalLabel">Novo Responsável</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @* Conteúdo da Partial View será carregado aqui *@
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando formulário...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                @* O botão Salvar pertence ao formulário que será carregado *@
+                <button type="submit" form="formCriarUsuario" class="btn btn-primary px-4" style="background-color:#8A2BE2;border-color:#8A2BE2;">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div
+<!-- ============================================================= -->
+<div class="modal fade" id="modalGerenciarDepartamentos" tabindex="-1" aria-labelledby="modalDepartamentosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDepartamentosLabel">Gerenciar Departamentos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Adicionar Novo Departamento</h6>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="novoDepartamentoNome" placeholder="Nome do novo departamento...">
+                    <button type="button" class="btn btn-primary" id="btnSalvarNovoDepartamento" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar</button>
+                </div>
+                <hr>
+                <h6>Departamentos Existentes</h6>
+                <ul id="listaDepartamentosExistentes" class="list-group">
+                    <!-- Conteúdo será carregado via JS -->
+                    <li class="list-group-item">Carregando...</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () { // Atalho para document.ready com jQuery
+
+            // --- [NOVO] LÓGICA DO MODAL DE CRIAÇÃO ---
+            var userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            var modalBody = $('#userModal .modal-body');
+
+            $('#btnNovoUsuario').on('click', function () {
+                // Limpa o corpo do modal e mostra spinner
+                modalBody.html('<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando formulário...</span></div></div>');
+                $('#userModalLabel').text('Novo Responsável'); // Define o título
+
+                // Busca a Partial View
+                $.get('@Url.Action("_CriarUsuarioPartial", "Usuario")') // Usa Url.Action para gerar a URL correta
+                    .done(function (data) {
+                        modalBody.html(data); // Coloca o HTML do formulário no modal
+                        // Tenta buscar e popular o dropdown de departamentos APÓS carregar o formulário
+                         fetch('/api/departamento')
+                            .then(res => res.ok ? res.json() : Promise.reject('Erro ao buscar departamentos'))
+                            .then(departamentos => {
+                                const select = modalBody.find('#DepartamentoIdModal');
+                                select.empty().append('<option value="">Selecione...</option>'); // Limpa e adiciona opção padrão
+                                departamentos.forEach(dpto => {
+                                    select.append(new Option(dpto.nome, dpto.id));
+                                });
+                            })
+                            .catch(err => {
+                                console.error("Erro ao carregar departamentos no modal:", err);
+                                modalBody.find('#DepartamentoIdModal').empty().append('<option value="">Erro ao carregar</option>');
+                            });
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                         console.error("Erro ao carregar _CriarUsuarioPartial:", textStatus, errorThrown);
+                        modalBody.html('<div class="alert alert-danger">Erro ao carregar o formulário. Tente novamente.</div>');
+                    });
+            });
+
+            // Delegação de evento para lidar com a submissão do formulário DENTRO do modal
+            $(document).on('submit', '#formCriarUsuario', function (e) {
+                e.preventDefault(); // Impede a submissão padrão
+
+                var form = $(this);
+                var url = form.attr('action');
+                var formData = new FormData(this); // Usa FormData para incluir ficheiros
+
+                // Validação do lado do cliente (se aplicável)
+                if (form.length && $.validator && $.validator.unobtrusive && !form.valid()) {
+                     return; // Para se o formulário for inválido
+                 }
+
+
+                // Mostra um feedback de loading no botão Salvar
+                var submitButton = $('#userModal .modal-footer button[type="submit"]');
+                submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
+
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false, // Necessário para FormData
+                    contentType: false, // Necessário para FormData
+                    headers: {
+                       'RequestVerificationToken': form.find('input[name="__RequestVerificationToken"]').val() // Adiciona token
+                    },
+                    success: function (result) {
+                        // Se o controller retornar um redirect (sucesso)
+                        if (result.redirectTo) {
+                             userModal.hide();
+                             // Mostra a mensagem de sucesso que estaria no TempData
+                             showAjaxSuccessAlert('Utilizador criado com sucesso! Senha enviada por e-mail.');
+                             // Recarrega a página para ver o novo utilizador na tabela
+                             window.location.reload();
+                        } else {
+                             // Se retornar a Partial View com erros de validação
+                             modalBody.html(result);
+                             // Reabilita o botão
+                             submitButton.prop('disabled', false).text('Salvar');
+                             // Repopula o dropdown de departamentos
+                             fetch('/api/departamento')
+                                .then(res => res.ok ? res.json() : Promise.reject('Erro'))
+                                .then(departamentos => {
+                                    const select = modalBody.find('#DepartamentoIdModal');
+                                    select.empty().append('<option value="">Selecione...</option>');
+                                    const selectedId = formData.get("DepartamentoId"); // Pega o valor que estava selecionado
+                                    departamentos.forEach(dpto => {
+                                        const option = new Option(dpto.nome, dpto.id);
+                                        if(dpto.id == selectedId) option.selected = true;
+                                        select.append(option);
+                                    });
+                                });
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Erro ao submeter formulário:", textStatus, errorThrown);
+                        // Tenta exibir um erro mais genérico no sumário de validação
+                        var validationSummary = form.find('[data-valmsg-summary="true"]');
+                        if (validationSummary.length) {
+                             validationSummary.removeClass('validation-summary-valid').addClass('validation-summary-errors');
+                             validationSummary.html('<ul><li>Ocorreu um erro ao processar o pedido. Tente novamente.</li></ul>');
+                        } else {
+                            // Se não houver sumário, mostra um alert (menos ideal)
+                             alert('Ocorreu um erro inesperado. Verifique a consola para detalhes.');
+                        }
+                         // Reabilita o botão
+                        submitButton.prop('disabled', false).text('Salvar');
+                    }
+                });
+            });
+
+             // Função para mostrar alerta de sucesso Bootstrap dinamicamente
+            function showAjaxSuccessAlert(message) {
+                var placeholder = $('#ajax-success-alert-placeholder');
+                var alertHtml = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+                placeholder.html(alertHtml);
+                 // Fecha automaticamente após 5 segundos
+                 window.setTimeout(function() {
+                    placeholder.find('.alert').alert('close');
+                 }, 5000);
+            }
+
+            // Script para fechar o alerta TempData automaticamente (mantido)
+            window.setTimeout(function() {
+                var alert = document.getElementById('success-alert');
+                if (alert) { new bootstrap.Alert(alert).close(); }
+            }, 5000);
+
+        });
+    </script>
+}
