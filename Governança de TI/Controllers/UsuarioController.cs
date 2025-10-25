@@ -32,36 +32,25 @@ namespace Governança_de_TI.Controllers
         // ============================================================
         private async Task CarregarDepartamentosViewBag(int? selectedId = null)
         {
-            // --- [TESTE] Comentada a busca na base de dados ---
-            // var departamentosDb = await _context.Departamentos
-            //                                   .AsNoTracking()
-            //                                   .OrderBy(d => d.Nome)
-            //                                   .Select(d => new SelectListItem
-            //                                   {
-            //                                       Value = d.Id.ToString(),
-            //                                       Text = d.Nome
-            //                                   })
-            //                                   .ToListAsync();
+            var departamentosDb = await _context.Departamentos
+                                               .AsNoTracking()
+                                               .OrderBy(d => d.Nome)
+                                               .Select(d => new SelectListItem
+                                               {
+                                                   Value = d.Id.ToString(),
+                                                   Text = d.Nome
+                                               })
+                                               .ToListAsync();
 
-            // --- [TESTE] Usando uma lista vazia para simular ---
-            var departamentosDb = new List<SelectListItem>();
-
-
-            // Adiciona a opção "Selecione..." no início da lista
-            var selectListItems = new List<SelectListItem>
+            // Adiciona apenas UM item inicial
+            departamentosDb.Insert(0, new SelectListItem
             {
-                new SelectListItem { Value = "", Text = "Selecione um departamento..." }
-            };
-            selectListItems.AddRange(departamentosDb); // Adiciona a lista (vazia neste teste)
+                Value = "",
+                Text = "Selecione um departamento..."
+            });
 
-            // Cria o SelectList usando a lista de SelectListItem
-            ViewBag.DepartamentoId = new SelectList(selectListItems, "Value", "Text", selectedId?.ToString());
-
-            // --- Fim do Teste ---
-
-            // **NOTA:** Lembre-se de descomentar a busca na base de dados e remover a lista vazia depois de testar!
+            ViewBag.DepartamentoId = new SelectList(departamentosDb, "Value", "Text", selectedId?.ToString());
         }
-
         // ============================================================
         // GET: Usuario
         // ============================================================

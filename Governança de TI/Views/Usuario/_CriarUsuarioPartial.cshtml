@@ -1,14 +1,10 @@
-﻿@* Removemos a declaração @model daqui, pois o modelo virá via AJAX/Controller *@
-@* Removemos ViewData["Title"] *@
-
-@* Usamos um ID específico para o formulário dentro do modal *@
+﻿@* Partial View: Formulário de criação de usuário *@
 <form id="formCriarUsuario" asp-action="Criar" enctype="multipart/form-data" method="post">
     @Html.AntiForgeryToken()
-    @* Usamos asp-validation-summary="All" para mostrar todos os erros, incluindo os do modelo *@
+
     <div asp-validation-summary="All" class="text-danger mb-3 validation-summary-placeholder"></div>
 
     <div class="mb-3">
-        @* Usamos Html.Label e Html.TextBox para não depender do @model *@
         @Html.Label("Nome", null, new { @class = "form-label" })
         @Html.TextBox("Nome", null, new { @class = "form-control" })
         @Html.ValidationMessage("Nome", null, new { @class = "text-danger" })
@@ -24,10 +20,16 @@
     <div class="mb-3">
         @Html.Label("DepartamentoId", "Departamento", new { @class = "form-label" })
         <div class="input-group">
-            @* Usamos um ID diferente para o select dentro do modal para evitar conflitos
-               O ViewBag virá do Controller que retorna esta PartialView *@
-            @Html.DropDownList("DepartamentoId", ViewBag.DepartamentoId as SelectList, "Selecione...", new { @class = "form-select", id = "DepartamentoIdModal" })
-            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalGerenciarDepartamentos">
+            @Html.DropDownList(
+            "DepartamentoId",
+                        ViewBag.DepartamentoId as SelectList,
+                        htmlAttributes: new { @class = "form-select", id = "DepartamentoIdModal" }
+                        )
+
+            <!-- Botão que abre o modal global de departamentos -->
+            <button type="button" class="btn btn-outline-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalGerenciarDepartamentos">
                 <i class="bi bi-plus-lg"></i>
             </button>
         </div>
@@ -38,7 +40,7 @@
         <div class="col-md-6 mb-3">
             @Html.Label("Perfil", null, new { @class = "form-label" })
             @Html.DropDownList("Perfil", new List<SelectListItem> {
-            new SelectListItem { Value = "", Text = "Selecione..." },
+                        new SelectListItem { Value = "", Text = "Selecione..." },
                         new SelectListItem { Value = "Admin", Text = "Administrador/TI" },
                         new SelectListItem { Value = "Usuario", Text = "Utilizador Comum" }
                         }, null, new { @class = "form-select" })
@@ -55,13 +57,12 @@
         </div>
     </div>
 
-    <!-- Foto de Perfil -->
+    <!-- Upload e Preview de Imagem -->
     <div class="mb-4 text-center">
         <label class="form-label d-block">Foto de Perfil</label>
         <img id="previewImagemModal" src="~/img/default-user.png"
              class="rounded-circle shadow-sm mb-2"
              style="width:100px;height:100px;object-fit:cover;border:1px solid #ccc;" />
-        @* O nome do input deve corresponder ao parâmetro na Action 'Criar' (IFormFile Imagem) *@
         <input type="file" name="Imagem" id="inputImagemModal"
                class="form-control mt-2" accept="image/*" />
     </div>
@@ -69,58 +70,25 @@
     <div class="alert alert-info small mt-3" role="alert">
         Uma senha aleatória será gerada e enviada para o e-mail do utilizador.
     </div>
-
-    <!-- Os botões 'Salvar' e 'Cancelar' ficam no Footer do Modal principal (#userModal) -->
-
 </form>
 
-<!-- Modal de Departamentos (HTML continua aqui) -->
-<div class="modal fade" id="modalGerenciarDepartamentos" tabindex="-1" aria-labelledby="modalDepartamentosLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalDepartamentosLabel">Gerenciar Departamentos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Adicionar Novo Departamento</h6>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="novoDepartamentoNome" placeholder="Nome do novo departamento...">
-                    <button type="button" class="btn btn-primary" id="btnSalvarNovoDepartamento" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar</button>
-                </div>
-                <hr>
-                <h6>Departamentos Existentes</h6>
-                <ul id="listaDepartamentosExistentes" class="list-group">
-                    <li class="list-group-item">Carregando...</li>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- Scripts Mínimos desta Partial View -->
+<!-- Script: Preview da imagem e reativação da validação -->
 <script>
-    // Preview da Imagem
-    const imageUploadInputModal = document.getElementById('inputImagemModal');
-    const imagePreviewModal = document.getElementById('previewImagemModal');
-    if (imageUploadInputModal && imagePreviewModal) {
-        imageUploadInputModal.addEventListener('change', function (event) {
-            const file = event.target.files[0];
+    const inputImg = document.getElementById('inputImagemModal');
+    const previewImg = document.getElementById('previewImagemModal');
+    if (inputImg && previewImg) {
+        inputImg.addEventListener('change', e => {
+            const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function (e) { imagePreviewModal.src = e.target.result; };
+                reader.onload = ev => previewImg.src = ev.target.result;
                 reader.readAsDataURL(file);
             }
         });
     }
 
     // Reativa validação jQuery Unobtrusive
-     if ($.validator && $.validator.unobtrusive) {
+    if ($.validator && $.validator.unobtrusive) {
         $.validator.unobtrusive.parse("#formCriarUsuario");
-     }
+    }
 </script>
-
