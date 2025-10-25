@@ -295,3 +295,122 @@ body {
         font-weight: 600;
         color: #212529;
     }
+
+/* ============================================== */
+/* [NOVO] Estilos do Loader Personalizado        */
+/* ============================================== */
+#global-loader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #212529; /* Fundo escuro */
+    display: flex;
+    flex-direction: column; /* Coloca itens em coluna */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    visibility: hidden;
+}
+
+    #global-loader.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+
+/* Estilo para o anel de carregamento */
+.loader-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    position: relative;
+    transform: rotate(45deg); /* Gira para a abertura ficar em cima/direita */
+}
+
+    .loader-ring::before,
+    .loader-ring::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        border: 8px solid transparent;
+        border-top-color: #fff; /* Cor do carregamento */
+        border-left-color: #fff; /* Cor do carregamento */
+        animation: ring-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    }
+
+    .loader-ring::before {
+        width: 80px;
+        height: 80px;
+        border-top-color: #ccc; /* Cor da parte "não carregada" */
+        border-left-color: #ccc; /* Cor da parte "não carregada" */
+        animation-delay: -0.6s;
+    }
+
+    .loader-ring::after {
+        width: 60px; /* Anel interno */
+        height: 60px; /* Anel interno */
+        border-top-color: #fff;
+        border-left-color: #fff;
+        animation-delay: -0.3s;
+        top: 10px;
+        left: 10px;
+    }
+
+@keyframes ring-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Estilo para o texto "LOADING..." */
+.loader-text {
+    color: #ccc; /* Cor do texto */
+    font-size: 1.2rem;
+    margin-top: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Estilo para a barra de progresso */
+.loader-bar-container {
+    width: 200px; /* Largura da barra */
+    height: 8px;
+    background-color: #444; /* Fundo da barra */
+    border-radius: 4px;
+    margin-top: 20px;
+    overflow: hidden; /* Garante que a barra interna não transborde */
+}
+
+.loader-bar {
+    width: 100%; /* Começa com 100% para a animação */
+    height: 100%;
+    background-color: #fff; /* Cor da barra de progresso */
+    border-radius: 4px;
+    transform: translateX(-100%); /* Escondida à esquerda */
+    animation: progress-bar-fill 1.8s ease-in-out infinite; /* Animação */
+    animation-delay: 0.5s; /* Começa um pouco depois do anel */
+}
+
+@keyframes progress-bar-fill {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+    /* Passa da direita para "desaparecer" */
+}

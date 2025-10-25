@@ -34,12 +34,14 @@ namespace Governança_de_TI.Models
 
         public byte[]? FotoPerfil { get; set; }
 
-        // Relacionamento opcional com Departamento
+
+        // === [ALTERAÇÃO AQUI] ===
+        // Adicionado o DisplayName para corrigir o rótulo na view
+        [Display(Name = "Departamento")]
         public int? DepartamentoId { get; set; }
 
         [ForeignKey("DepartamentoId")]
         public DepartamentoModel? Departamento { get; set; }
-
         [Required]
         [StringLength(50)]
         public string Status { get; set; } = "Ativo";

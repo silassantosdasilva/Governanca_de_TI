@@ -14,6 +14,16 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
+    <!-- [NOVO] HTML do Loader Personalizado -->
+    <div id="global-loader">
+        <div class="loader-ring"></div>
+        <div class="loader-text">CARREGANDO...</div>
+        <div class="loader-bar-container">
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+    <!-- Fim do HTML do Loader -->
+
     <div class="page-container">
         <!-- Sidebar Fixa / Deslizante -->
         <nav class="sidebar">
@@ -106,6 +116,39 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <!-- [NOVO] JavaScript para controlar o Loader -->
+    <script>
+        $(function () {
+            var globalLoader = $('#global-loader');
+
+            // Mostrar loader em requisições AJAX
+            $(document).ajaxStart(function () {
+                globalLoader.addClass('show');
+            });
+
+            // Esconder loader após requisições AJAX
+            $(document).ajaxStop(function () {
+                globalLoader.removeClass('show');
+            });
+
+            // Mostrar loader antes de uma navegação de página
+            $(window).on('beforeunload', function () {
+                globalLoader.addClass('show');
+            });
+
+            // Esconder loader quando a página for totalmente carregada
+            $(window).on('load', function () {
+                globalLoader.removeClass('show');
+            });
+
+            // Fallback para garantir que o loader é removido
+            setTimeout(function() {
+                globalLoader.removeClass('show');
+            }, 5000);
+        });
+    </script>
+    <!-- Fim do JavaScript do Loader -->
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

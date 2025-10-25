@@ -4,20 +4,22 @@
 }
 
 <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
+    <div class="col-md-8 col-lg-7">
         <div class="card shadow-sm">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h4 class="mb-0 text-muted">Controle de Responsáveis</h4>
-                    <h5 class="mb-0">Edição</h5>
+                    <h5 class="mb-0">Editar</h5>
                 </div>
 
-                <!-- enctype="multipart/form-data" é OBRIGATÓRIO para envio de arquivos -->
                 <form asp-action="Editar" enctype="multipart/form-data" method="post">
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                    <!-- Campo oculto para o ID -->
                     <input type="hidden" asp-for="Id" />
+                    <!-- Campo oculto para a senha (não queremos editá-la aqui) -->
+                    <input type="hidden" asp-for="Senha" />
 
                     <div class="mb-3">
                         <label asp-for="Nome" class="form-label"></label>
@@ -31,11 +33,24 @@
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
+                    <!-- =================== [CAMPO DEPARTAMENTO CORRIGIDO] =================== -->
+                    <!-- Este é o único campo de departamento que deve existir. -->
                     <div class="mb-3">
-                        <label asp-for="Departamento" class="form-label"></label>
-                        <input asp-for="Departamento" class="form-control" />
-                        <span asp-validation-for="Departamento" class="text-danger"></span>
+                        <!-- O Label "Departamento" vem do [Display] no UsuarioModel.cs -->
+                        <label asp-for="DepartamentoId" class="form-label"></label>
+                        <div class="input-group">
+                            <!-- O asp-items="ViewBag.DepartamentoId" seleciona o valor atual
+                                 enviado pelo UsuarioController -->
+                            <select asp-for="DepartamentoId" class="form-select" asp-items="ViewBag.DepartamentoId">
+                                <option value="">Selecione um departamento...</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalGerenciarDepartamentos">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="DepartamentoId" class="text-danger"></span>
                     </div>
+                    <!-- ====================================================================== -->
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -62,31 +77,24 @@
                     <div class="mb-4 text-center">
                         <label class="form-label d-block">Foto de Perfil</label>
 
-                        @if (Model.FotoPerfil != null && Model.FotoPerfil.Length > 0)
-                        {
-                            var base64 = Convert.ToBase64String(Model.FotoPerfil);
-                            var imgSrc = $"data:image/png;base64,{base64}";
-                            <img id="previewImagem" src="@imgSrc" class="rounded-circle shadow-sm mb-2"
-                                 style="width:100px;height:100px;object-fit:cover;border:1px solid #ccc;" />
-                        }
-                        else
-                        {
-                            <img id="previewImagem" src="~/img/default-user.png" class="rounded-circle shadow-sm mb-2"
-                                 style="width:100px;height:100px;object-fit:cover;border:1px solid #ccc;" />
+                        @{
+                            // Converte o byte[] do modelo para Base64 para exibir a imagem atual
+                            var fotoSrc = "~/img/default-user.png";
+                            if (Model.FotoPerfil != null && Model.FotoPerfil.Length > 0)
+                            {
+                                fotoSrc = $"data:image/png;base64,{Convert.ToBase64String(Model.FotoPerfil)}";
+                            }
                         }
 
-                        <!-- Campo do arquivo -->
+                        <img id="previewImagem" src="@fotoSrc"
+                             class="rounded-circle shadow-sm mb-2"
+                             style="width:100px;height:100px;object-fit:cover;border:1px solid #ccc;" />
+
                         <input type="file" name="Imagem" id="inputImagem"
                                class="form-control mt-2" accept="image/*" />
+                        <small class="text-muted">Carregue uma nova imagem apenas se desejar alterá-la.</small>
                     </div>
                     <!-- ===================================================== -->
-
-                    <div class="mt-3">
-                        <label class="form-label">Gestão da Senha</label>
-                        <button type="button" class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#modalRedefinirSenha">
-                            <i class="bi bi-key me-2"></i>Redefinir Senha e Enviar por E-mail
-                        </button>
-                    </div>
 
                     <hr class="my-4" />
 
@@ -103,46 +111,155 @@
     </div>
 </div>
 
-<!-- Modal de Redefinição de Senha -->
-<div class="modal fade" id="modalRedefinirSenha" tabindex="-1" aria-labelledby="modalRedefinirSenhaLabel" aria-hidden="true">
+<!-- =================== [MODAL DE DEPARTAMENTOS] =================== -->
+<div class="modal fade" id="modalGerenciarDepartamentos" tabindex="-1" aria-labelledby="modalDepartamentosLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalRedefinirSenhaLabel">Confirmar Redefinição de Senha</h5>
+                <h5 class="modal-title" id="modalDepartamentosLabel">Gerenciar Departamentos</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Tem certeza de que deseja gerar uma nova senha e enviá-la para <strong>@Model.Email</strong>?</p>
-                <p class="text-muted small">O utilizador <strong>@Model.Nome</strong> receberá a nova senha por e-mail.</p>
+                <h6>Adicionar Novo Departamento</h6>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="novoDepartamentoNome" placeholder="Nome do novo departamento...">
+                    <button type="button" class="btn btn-primary" id="btnSalvarNovoDepartamento" style="background-color: #8A2BE2; border-color: #8A2BE2;">Salvar</button>
+                </div>
+                <hr>
+                <h6>Departamentos Existentes</h6>
+                <ul id="listaDepartamentosExistentes" class="list-group">
+                    <li class="list-group-item">Carregando...</li>
+                </ul>
             </div>
             <div class="modal-footer">
-                <form asp-action="RedefinirSenha" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning">Sim, Redefinir Senha</button>
-                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
             </div>
         </div>
     </div>
 </div>
-
+<!-- ====================================================================== -->
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        // --- LÓGICA DE PREVIEW DA IMAGEM ---
+        const imageUploadInput = document.getElementById('inputImagem');
+        const imagePreview = document.getElementById('previewImagem');
+        if (imageUploadInput && imagePreview) {
+            imageUploadInput.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        imagePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // --- LÓGICA DO MODAL DE DEPARTAMENTOS ---
+        const modalEl = document.getElementById('modalGerenciarDepartamentos');
+
+        if (modalEl) {
+            const btnSalvarNovoDepartamento = document.getElementById('btnSalvarNovoDepartamento');
+            const novoDepartamentoNomeInput = document.getElementById('novoDepartamentoNome');
+            const departamentoSelect = document.getElementById('DepartamentoId');
+            const listaDepartamentosExistentes = document.getElementById('listaDepartamentosExistentes');
+
+            // Esta linha está corrigida e não dará erro de 'bootstrap'
+            const modalGerenciarDepartamentos = new bootstrap.Modal(modalEl);
+
+            // 1. Carregar departamentos ao abrir o modal
+            modalEl.addEventListener('show.bs.modal', function () {
+                fetchDepartamentos();
+            });
+
+            function fetchDepartamentos() {
+                fetch('/api/departamento')
+                    .then(res => res.json())
+                    .then(departamentos => {
+                        listaDepartamentosExistentes.innerHTML = '';
+                        if (!departamentos.length) {
+                            listaDepartamentosExistentes.innerHTML = '<li class="list-group-item">Nenhum departamento cadastrado.</li>';
+                        } else {
+                            departamentos.forEach(dpto => {
+                                listaDepartamentosExistentes.appendChild(criarItemListaDepartamento(dpto));
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        listaDepartamentosExistentes.innerHTML = '<li class="list-group-item text-danger">Erro ao carregar departamentos.</li>';
+                    });
+            }
+
+            function criarItemListaDepartamento(dpto) {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.textContent = dpto.nome;
+                li.dataset.id = dpto.id;
+
+                const btnDelete = document.createElement('button');
+                btnDelete.type = 'button';
+                btnDelete.className = 'btn-close';
+                btnDelete.setAttribute('aria-label', 'Excluir');
+                li.appendChild(btnDelete);
+                return li;
+            }
+
+            // 2. Adicionar novo departamento (POST)
+            btnSalvarNovoDepartamento.addEventListener('click', function () {
+                const nomeNovoDepartamento = novoDepartamentoNomeInput.value.trim();
+                if (!nomeNovoDepartamento) return;
+
+                fetch('/api/departamento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: nomeNovoDepartamento })
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        return res.text().then(text => Promise.reject(text || 'Erro desconhecido'));
+                    }
+                    return res.json();
+                })
+                .then(novoDpto => {
+                    listaDepartamentosExistentes.appendChild(criarItemListaDepartamento(novoDpto));
+                    const option = new Option(novoDpto.nome, novoDpto.id, true, true);
+                    departamentoSelect.add(option);
+                    modalGerenciarDepartamentos.hide();
+                    novoDepartamentoNomeInput.value = '';
+                })
+                .catch(err => alert(`Erro: ${err}`));
+            });
+
+            // 3. Excluir departamento (DELETE)
+            listaDepartamentosExistentes.addEventListener('click', function (e) {
+                if (!e.target.classList.contains('btn-close')) return;
+
+                const li = e.target.closest('li');
+                const dptoId = li.dataset.id;
+                const dptoNome = li.textContent.trim();
+
+                if (!confirm(`Deseja excluir o departamento "${dptoNome}"?`)) return;
+
+                fetch(`/api/departamento/${dptoId}`, { method: 'DELETE' })
+                    .then(res => {
+                        if (!res.ok) {
+                            return res.text().then(text => Promise.reject(text || 'Erro desconhecido'));
+                        }
+                        li.remove();
+                        Array.from(departamentoSelect.options).forEach(opt => {
+                            if (opt.value == dptoId) opt.remove();
+                        });
+                    })
+                    .catch(err => alert(`Erro: ${err}`));
+            });
+
+        }
+    </script>
 }
 
-<script>
-    // Pré-visualiza a imagem escolhida antes de salvar
-    document.getElementById('inputImagem').addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById('previewImagem').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-</script>

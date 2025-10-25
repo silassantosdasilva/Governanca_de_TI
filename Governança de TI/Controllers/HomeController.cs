@@ -106,10 +106,20 @@ namespace Governança_de_TI.Controllers
             return View();
         }
 
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var errorViewModel = new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            };
+
+            // Aqui você poderia adicionar lógica para logar o erro detalhado
+            // usando um serviço de log (ex: Serilog, NLog) se ainda não o fizer.
+            // Ex: _logger.LogError($"Erro não tratado. Request ID: {errorViewModel.RequestId}", HttpContext.Features.Get<IExceptionHandlerFeature>()?.Error);
+
+            return View(errorViewModel);
         }
     }
 }

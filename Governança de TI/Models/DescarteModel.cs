@@ -52,8 +52,8 @@ namespace Governança_de_TI.Models
         public string EmpresaColetora { get; set; }
 
         [StringLength(18)]
-        [Display(Name = "CNPJ")]
-        public string CnpjEmpresa { get; set; }
+        [Display(Name = "CNPJ / CPF")]
+        public string? CnpjEmpresa { get; set; }
 
         [EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
         [StringLength(100)]
