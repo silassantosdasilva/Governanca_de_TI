@@ -4,6 +4,7 @@ using Governança_de_TI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Governança_de_TI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251025175838_EdicaoUsuarioModel")]
+    partial class EdicaoUsuarioModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,55 +234,6 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("Equipamentos");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.GamificacaoModel", b =>
-                {
-                    b.Property<int>("UsuarioId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nivel")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Pontos")
-                        .HasColumnType("int");
-
-                    b.HasKey("UsuarioId");
-
-                    b.ToTable("Gamificacoes");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.PremioModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("IconeBootstrap")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("PontosNecessarios")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Premios");
-                });
-
             modelBuilder.Entity("Governança_de_TI.Models.TipoEquipamentoModel", b =>
                 {
                     b.Property<int>("Id")
@@ -347,28 +301,7 @@ namespace Governança_de_TI.Migrations
 
                     b.HasIndex("DepartamentoId");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
                     b.ToTable("Usuarios");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioPremioModel", b =>
-                {
-                    b.Property<int>("UsuarioId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PremioId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DataConquista")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("UsuarioId", "PremioId");
-
-                    b.HasIndex("PremioId");
-
-                    b.ToTable("UsuarioPremios");
                 });
 
             modelBuilder.Entity("Governança_de_TI.Models.AuditLogModel", b =>
@@ -410,17 +343,6 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.GamificacaoModel", b =>
-                {
-                    b.HasOne("Governança_de_TI.Models.UsuarioModel", "Usuario")
-                        .WithOne("Gamificacao")
-                        .HasForeignKey("Governança_de_TI.Models.GamificacaoModel", "UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("Governança_de_TI.Models.UsuarioModel", b =>
                 {
                     b.HasOne("Governança_de_TI.Models.DepartamentoModel", "Departamento")
@@ -428,38 +350,6 @@ namespace Governança_de_TI.Migrations
                         .HasForeignKey("DepartamentoId");
 
                     b.Navigation("Departamento");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioPremioModel", b =>
-                {
-                    b.HasOne("Governança_de_TI.Models.PremioModel", "Premio")
-                        .WithMany("UsuariosQueConquistaram")
-                        .HasForeignKey("PremioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Governança_de_TI.Models.UsuarioModel", "Usuario")
-                        .WithMany("UsuarioPremios")
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Premio");
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.PremioModel", b =>
-                {
-                    b.Navigation("UsuariosQueConquistaram");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioModel", b =>
-                {
-                    b.Navigation("Gamificacao")
-                        .IsRequired();
-
-                    b.Navigation("UsuarioPremios");
                 });
 #pragma warning restore 612, 618
         }

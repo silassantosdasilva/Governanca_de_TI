@@ -1,5 +1,6 @@
 using Governança_de_TI.Data;
 using Governança_de_TI.Services; // Adiciona o namespace dos seus serviços
+using Governança_de_TI.Views.Services.Gamificacao;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         //options.AccessDeniedPath = "/Conta/AcessoNegado"; // opcional
     });
 
+//Gamificacao
+builder.Services.AddScoped<IGamificacaoService, GamificacaoService>();
 // --- Configuração dos Serviços ---
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IEmailService, MailKitEmailService>();

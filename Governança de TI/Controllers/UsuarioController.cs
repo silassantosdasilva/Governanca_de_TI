@@ -1,16 +1,16 @@
-﻿using Governança_de_TI.Data;
+﻿using BCrypt.Net;
+using Governança_de_TI.Data;
 using Governança_de_TI.Models;
 using Governança_de_TI.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using BCrypt.Net;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic; // Necessário para List<>
 
 namespace Governança_de_TI.Controllers
 {
@@ -28,69 +28,50 @@ namespace Governança_de_TI.Controllers
         }
 
         // ============================================================
-        // Método Privado para Carregar ViewBag de Departamentos
+        // VIEWBAG DEPARTAMENTOS
         // ============================================================
         private async Task CarregarDepartamentosViewBag(int? selectedId = null)
         {
-            var departamentosDb = await _context.Departamentos
-                                               .AsNoTracking()
-                                               .OrderBy(d => d.Nome)
-                                               .Select(d => new SelectListItem
-                                               {
-                                                   Value = d.Id.ToString(),
-                                                   Text = d.Nome
-                                               })
-                                               .ToListAsync();
+            var departamentos = await _context.Departamentos
+                .AsNoTracking()
+                .OrderBy(d => d.Nome)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.Id.ToString(),
+                    Text = d.Nome
+                }).ToListAsync();
 
-            // Adiciona apenas UM item inicial
-            departamentosDb.Insert(0, new SelectListItem
+            var lista = new List<SelectListItem>
             {
-                Value = "",
-                Text = "Selecione um departamento..."
-            });
+                new SelectListItem { Value = "", Text = "Selecione um departamento..." }
+            };
+            lista.AddRange(departamentos);
 
-            ViewBag.DepartamentoId = new SelectList(departamentosDb, "Value", "Text", selectedId?.ToString());
+            ViewBag.DepartamentoId = new SelectList(lista, "Value", "Text", selectedId?.ToString());
         }
+
         // ============================================================
-        // GET: Usuario
+        // INDEX
         // ============================================================
         public async Task<IActionResult> Index()
         {
             var usuarios = await _context.Usuarios
-                                         .Include(u => u.Departamento)
-                                         .OrderBy(u => u.Nome)
-                                         .ToListAsync();
+                .Include(u => u.Departamento)
+                .OrderBy(u => u.Nome)
+                .ToListAsync();
             return View(usuarios);
         }
 
         // ============================================================
-        // GET: Usuario/Detalhes/5
+        // CRIAR USUÁRIO (MODAL)
         // ============================================================
-        public async Task<IActionResult> Detalhes(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var usuario = await _context.Usuarios
-                                        .Include(u => u.Departamento)
-                                        .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (usuario == null) return NotFound();
-
-            return View(usuario);
-        }
-
-        // ============================================================
-        // GET: Usuario/Criar
-        // ============================================================
-        public async Task<IActionResult> Criar()
+        [HttpGet]
+        public async Task<IActionResult> _CriarUsuarioPartial()
         {
             await CarregarDepartamentosViewBag();
-            return View();
+            return PartialView("_CriarUsuarioPartial", new UsuarioModel());
         }
 
-        // ============================================================
-        // POST: Usuario/Criar
-        // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Criar(UsuarioModel usuario, IFormFile Imagem)
@@ -100,147 +81,128 @@ namespace Governança_de_TI.Controllers
             if (!ModelState.IsValid)
             {
                 await CarregarDepartamentosViewBag(usuario.DepartamentoId);
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                {
-                    return PartialView("_CriarUsuarioPartial", usuario);
-                }
-                return View(usuario);
+                return PartialView("_CriarUsuarioPartial", usuario);
             }
 
-            var existingUser = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == usuario.Email);
-            if (existingUser != null)
+            if (await _context.Usuarios.AsNoTracking().AnyAsync(u => u.Email == usuario.Email))
             {
-                ModelState.AddModelError("Email", "Este e-mail já está sendo utilizado por outra conta.");
+                ModelState.AddModelError("Email", "Este e-mail já está sendo utilizado.");
                 await CarregarDepartamentosViewBag(usuario.DepartamentoId);
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                {
-                    return PartialView("_CriarUsuarioPartial", usuario);
-                }
-                return View(usuario);
+                return PartialView("_CriarUsuarioPartial", usuario);
             }
 
-            if (Imagem != null && Imagem.Length > 0)
+            if (Imagem?.Length > 0)
             {
-                using (var ms = new MemoryStream())
-                {
-                    await Imagem.CopyToAsync(ms);
-                    usuario.FotoPerfil = ms.ToArray();
-                }
+                using var ms = new MemoryStream();
+                await Imagem.CopyToAsync(ms);
+                usuario.FotoPerfil = ms.ToArray();
             }
 
             string senhaAleatoria = GerarSenhaAleatoria();
             usuario.Senha = BCrypt.Net.BCrypt.HashPassword(senhaAleatoria);
             usuario.DataDeCadastro = DateTime.Now;
+            usuario.Status ??= "Ativo";
 
             _context.Add(usuario);
             await _context.SaveChangesAsync();
 
-            var executorId = await GetCurrentUserId();
-            if (executorId.HasValue)
+            // Auditoria e envio de email
+            _ = Task.Run(async () =>
             {
-                await _auditService.RegistrarAcao(
-                    executorId.Value,
-                    "Criou Usuário",
-                    $"Usuário criado: {usuario.Nome}, E-mail: {usuario.Email}"
-                );
-            }
+                var id = await GetCurrentUserId();
+                if (id.HasValue)
+                    await _auditService.RegistrarAcao(id.Value, "Criou Usuário", $"Usuário: {usuario.Nome}");
 
-            try
-            {
-                var corpoEmail = $"<p>Olá {usuario.Nome},</p>" +
-                                 $"<p>Sua conta foi criada com sucesso. Sua senha temporária é: <strong>{senhaAleatoria}</strong></p>";
-                await _emailService.EnviarEmailAsync(usuario.Email, "Bem-vindo ao Sistema", corpoEmail);
-                TempData["SuccessMessage"] = $"Utilizador {usuario.Nome} criado com sucesso! Senha enviada para {usuario.Email}.";
-            }
-            catch (Exception ex)
-            {
-                TempData["WarningMessage"] = $"Utilizador criado, mas falha ao enviar e-mail: {ex.Message}";
-            }
+                try
+                {
+                    await _emailService.EnviarEmailAsync(usuario.Email, "Bem-vindo", $"<p>Olá {usuario.Nome},</p><p>Sua senha: <strong>{senhaAleatoria}</strong></p>");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Falha no envio de e-mail para {usuario.Email}: {ex.Message}");
+                }
+            });
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-                return Ok(new { redirectTo = Url.Action(nameof(Index)) });
-            }
-            return RedirectToAction(nameof(Index));
+            return Ok(new { redirectTo = Url.Action(nameof(Index)), message = $"Usuário {usuario.Nome} criado com sucesso!" });
         }
 
-
         // ============================================================
-        // GET: Usuario/Editar/5
+        // EDITAR USUÁRIO (MODAL)
         // ============================================================
-        public async Task<IActionResult> Editar(int? id)
+        [HttpGet]
+        public async Task<IActionResult> _EditarUsuarioPartial(int id)
         {
-            if (id == null) return NotFound();
-
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null) return NotFound();
+            var usuario = await _context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+            if (usuario == null)
+                return NotFound($"Usuário ID {id} não encontrado.");
 
             await CarregarDepartamentosViewBag(usuario.DepartamentoId);
-            return View(usuario);
+            return PartialView("_EditarUsuarioPartial", usuario);
         }
 
-        // ============================================================
-        // POST: Usuario/Editar/5
-        // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(UsuarioModel model, IFormFile Imagem)
         {
-            var usuario = await _context.Usuarios.FindAsync(model.Id);
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == model.Id);
             if (usuario == null)
-                return NotFound();
-
-            if (!ModelState.IsValid)
-            {
-                await CarregarDepartamentosViewBag(model.DepartamentoId);
-                return View(model);
-            }
-
-            if (usuario.Email != model.Email)
-            {
-                var emailExists = await _context.Usuarios.AnyAsync(u => u.Email == model.Email && u.Id != model.Id);
-                if (emailExists)
-                {
-                    ModelState.AddModelError("Email", "Este e-mail já está sendo utilizado por outra conta.");
-                    await CarregarDepartamentosViewBag(model.DepartamentoId);
-                    return View(model);
-                }
-            }
+                return BadRequest(new { message = "Usuário não encontrado." });
 
             usuario.Nome = model.Nome;
             usuario.Email = model.Email;
-            usuario.Status = model.Status;
             usuario.Perfil = model.Perfil;
+            usuario.Status = model.Status;
             usuario.DepartamentoId = model.DepartamentoId;
 
-            if (Imagem != null && Imagem.Length > 0)
+            if (Imagem?.Length > 0)
             {
-                using (var ms = new MemoryStream())
-                {
-                    await Imagem.CopyToAsync(ms);
-                    usuario.FotoPerfil = ms.ToArray();
-                }
+                using var ms = new MemoryStream();
+                await Imagem.CopyToAsync(ms);
+                usuario.FotoPerfil = ms.ToArray();
             }
 
-            _context.Update(usuario);
             await _context.SaveChangesAsync();
 
-            var executorId = await GetCurrentUserId();
-            if (executorId.HasValue)
+            _ = Task.Run(async () =>
             {
-                await _auditService.RegistrarAcao(
-                    executorId.Value,
-                    "Editou Usuário",
-                    $"Usuário editado: {usuario.Nome}, E-mail: {usuario.Email}"
-                );
-            }
+                var id = await GetCurrentUserId();
+                if (id.HasValue)
+                    await _auditService.RegistrarAcao(id.Value, "Editou Usuário", $"Usuário: {usuario.Nome}");
+            });
 
-            TempData["SuccessMessage"] = "Perfil atualizado com sucesso!";
-            return RedirectToAction(nameof(Index));
+            return Ok(new { redirectTo = Url.Action(nameof(Index)), message = "Usuário atualizado com sucesso!" });
         }
 
         // ============================================================
-        // POST: Usuario/RedefinirSenha
+        // DETALHES USUÁRIO (MODAL)
+        // ============================================================
+        [HttpGet]
+        public async Task<IActionResult> _DetalhesUsuarioPartial(int id)
+        {
+            var usuario = await _context.Usuarios
+                .Include(u => u.Departamento)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (usuario == null)
+                return NotFound($"Usuário com ID {id} não encontrado.");
+
+            // === [TRECHO CORRIGIDO] ===
+            var atividades = await _context.AuditLogs
+                .Where(a => a.UsuarioId == id)
+                .OrderByDescending(a => a.Timestamp)
+                .Take(10)
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Envia as atividades para a partial
+            ViewBag.Atividades = atividades;
+
+            return PartialView("_DetalhesUsuarioPartial", usuario);
+        }
+
+        // ============================================================
+        // REDEFINIR SENHA
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -249,111 +211,111 @@ namespace Governança_de_TI.Controllers
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null)
             {
-                TempData["ErrorMessage"] = "Utilizador não encontrado.";
+                TempData["ErrorMessage"] = "Usuário não encontrado.";
                 return RedirectToAction(nameof(Index));
             }
 
             string novaSenha = GerarSenhaAleatoria();
             usuario.Senha = BCrypt.Net.BCrypt.HashPassword(novaSenha);
-
-            _context.Update(usuario);
             await _context.SaveChangesAsync();
 
-            var executorId = await GetCurrentUserId();
-            if (executorId.HasValue)
+            _ = Task.Run(async () =>
             {
-                await _auditService.RegistrarAcao(
-                    executorId.Value,
-                    "Redefiniu Senha",
-                    $"Senha redefinida para o usuário: {usuario.Email}"
-                );
-            }
+                var executorId = await GetCurrentUserId();
+                if (executorId.HasValue)
+                    await _auditService.RegistrarAcao(executorId.Value, "Redefiniu Senha", $"Usuário: {usuario.Email}");
 
-            try
-            {
-                var corpoEmail = $"<p>Olá {usuario.Nome},</p><p>Sua senha foi redefinida. Nova senha temporária: <strong>{novaSenha}</strong></p>";
-                await _emailService.EnviarEmailAsync(usuario.Email, "Redefinição de Senha", corpoEmail);
-                TempData["SuccessMessage"] = $"Uma nova senha foi enviada para o e-mail {usuario.Email}.";
-            }
-            catch (Exception ex)
-            {
-                TempData["WarningMessage"] = $"Senha redefinida, mas falha ao enviar e-mail: {ex.Message}";
-            }
+                try
+                {
+                    await _emailService.EnviarEmailAsync(usuario.Email, "Redefinição de Senha", $"<p>Olá {usuario.Nome},</p><p>Sua nova senha: <strong>{novaSenha}</strong></p>");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Falha no envio de e-mail: {ex.Message}");
+                }
+            });
 
+            TempData["SuccessMessage"] = $"Nova senha enviada para {usuario.Email}.";
             return RedirectToAction(nameof(Index));
         }
 
         // ============================================================
-        // GET: Usuario/Excluir/5
+        // GET: Usuario/_ExcluirUsuarioPartial/{id} (Para o Modal de Exclusão)
         // ============================================================
-        public async Task<IActionResult> Excluir(int? id)
+        [HttpGet("_ExcluirUsuarioPartial/{id}")]
+        [HttpGet("Usuario/_ExcluirUsuarioPartial/{id}")]
+        public async Task<IActionResult> _ExcluirUsuarioPartial(int id)
         {
-            if (id == null) return NotFound();
+            var usuario = await _context.Usuarios
+                .AsNoTracking()
+                .Select(u => new UsuarioModel
+                {
+                    Id = u.Id,
+                    Nome = u.Nome,
+                    Email = u.Email,
+                    FotoPerfil = u.FotoPerfil,
+                    Perfil = u.Perfil
+                })
+                .FirstOrDefaultAsync(u => u.Id == id);
 
-            var usuario = await _context.Usuarios.FirstOrDefaultAsync(m => m.Id == id);
-            if (usuario == null) return NotFound();
+            if (usuario == null)
+                return NotFound($"Usuário com ID {id} não encontrado.");
 
-            return View(usuario);
+            return PartialView("_ExcluirUsuarioPartial", usuario);
         }
 
         // ============================================================
-        // POST: Usuario/Excluir/5
+        // EXCLUSÃO CONFIRMADA (POST)
         // ============================================================
-        [HttpPost, ActionName("Excluir")]
+        [HttpPost("Usuario/Excluir/{id}")]
+        [ActionName("ExcluirConfirmado")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExcluirConfirmado(int id)
         {
             var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null) return NotFound();
+            if (usuario == null)
+                return BadRequest(new { message = "Utilizador não encontrado." });
+
+            // Verifica se é o único admin
+            if (usuario.Perfil == "Admin" && await _context.Usuarios.CountAsync(u => u.Perfil == "Admin" && u.Id != id) == 0)
+            {
+                return BadRequest(new { message = "Não é possível excluir o único administrador." });
+            }
 
             _context.Usuarios.Remove(usuario);
             await _context.SaveChangesAsync();
 
-            var executorId = await GetCurrentUserId();
-            if (executorId.HasValue)
+            _ = Task.Run(async () =>
             {
-                await _auditService.RegistrarAcao(
-                    executorId.Value,
-                    "Excluiu Usuário",
-                    $"Usuário excluído: ID={usuario.Id}, E-mail={usuario.Email}"
-                );
-            }
+                var executorId = await GetCurrentUserId();
+                if (executorId.HasValue)
+                    await _auditService.RegistrarAcao(executorId.Value, "Excluiu Usuário", $"ID={usuario.Id}, Email={usuario.Email}");
+            });
 
-            TempData["SuccessMessage"] = "Utilizador excluído com sucesso!";
-            return RedirectToAction(nameof(Index));
+            return Ok(new
+            {
+                redirectTo = Url.Action(nameof(Index)),
+                message = "Usuário excluído com sucesso!"
+            });
         }
 
         // ============================================================
-        // GET: Usuario/_CriarUsuarioPartial
+        // MÉTODOS AUXILIARES
         // ============================================================
-        [HttpGet]
-        public async Task<IActionResult> _CriarUsuarioPartial()
-        {
-            await CarregarDepartamentosViewBag();
-            return PartialView("_CriarUsuarioPartial", new UsuarioModel());
-        }
-
-
-        #region Métodos Auxiliares
         private string GerarSenhaAleatoria(int length = 10)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%*";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         private async Task<int?> GetCurrentUserId()
         {
-            var userEmail = User?.Identity?.Name;
-            if (string.IsNullOrWhiteSpace(userEmail))
-                return null;
+            var email = User?.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(email)) return null;
 
-            var user = await _context.Usuarios.AsNoTracking()
-                                             .FirstOrDefaultAsync(u => u.Email == userEmail);
+            var user = await _context.Usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
             return user?.Id;
         }
-        #endregion
     }
 }
-

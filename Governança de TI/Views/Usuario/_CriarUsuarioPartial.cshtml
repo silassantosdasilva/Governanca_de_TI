@@ -1,81 +1,109 @@
-﻿@* Partial View: Formulário de criação de usuário *@
-<form id="formCriarUsuario" asp-action="Criar" enctype="multipart/form-data" method="post">
+﻿@model Governança_de_TI.Models.UsuarioModel
+
+<form id="formCriarUsuario" asp-action="Criar" enctype="multipart/form-data" method="post" class="p-2">
     @Html.AntiForgeryToken()
 
     <div asp-validation-summary="All" class="text-danger mb-3 validation-summary-placeholder"></div>
 
-    <div class="mb-3">
-        @Html.Label("Nome", null, new { @class = "form-label" })
-        @Html.TextBox("Nome", null, new { @class = "form-control" })
-        @Html.ValidationMessage("Nome", null, new { @class = "text-danger" })
+    <!-- ===================== INFORMAÇÕES PRINCIPAIS ===================== -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="Nome" class="form-label text-muted small mb-1">
+                <i class="bi bi-person-circle me-1"></i>Nome
+            </label>
+            @Html.TextBox("Nome", null, new { @class = "form-control shadow-sm", placeholder = "Digite o nome completo" })
+            @Html.ValidationMessage("Nome", null, new { @class = "text-danger small" })
+        </div>
+
+        <div class="col-md-6">
+            <label for="Email" class="form-label text-muted small mb-1">
+                <i class="bi bi-envelope-at me-1"></i>Email
+            </label>
+            @Html.TextBox("Email", null, new { @class = "form-control shadow-sm", type = "email", placeholder = "exemplo@email.com" })
+            @Html.ValidationMessage("Email", null, new { @class = "text-danger small" })
+        </div>
     </div>
 
-    <div class="mb-3">
-        @Html.Label("Email", null, new { @class = "form-label" })
-        @Html.TextBox("Email", null, new { @class = "form-control", type = "email" })
-        @Html.ValidationMessage("Email", null, new { @class = "text-danger" })
-    </div>
-
-    <!-- Campo Departamento -->
-    <div class="mb-3">
-        @Html.Label("DepartamentoId", "Departamento", new { @class = "form-label" })
+    <!-- ===================== DEPARTAMENTO ===================== -->
+    <div class="mt-3">
+        <label for="DepartamentoId" class="form-label text-muted small mb-1">
+            <i class="bi bi-building me-1"></i>Departamento
+        </label>
         <div class="input-group">
             @Html.DropDownList(
             "DepartamentoId",
                         ViewBag.DepartamentoId as SelectList,
-                        htmlAttributes: new { @class = "form-select", id = "DepartamentoIdModal" }
+                        htmlAttributes: new { @class = "form-select shadow-sm", id = "DepartamentoIdModal" }
                         )
-
-            <!-- Botão que abre o modal global de departamentos -->
-            <button type="button" class="btn btn-outline-secondary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalGerenciarDepartamentos">
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalGerenciarDepartamentos" title="Adicionar novo departamento">
                 <i class="bi bi-plus-lg"></i>
             </button>
         </div>
-        @Html.ValidationMessage("DepartamentoId", null, new { @class = "text-danger" })
+        @Html.ValidationMessage("DepartamentoId", null, new { @class = "text-danger small" })
     </div>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            @Html.Label("Perfil", null, new { @class = "form-label" })
+    <!-- ===================== PERFIL E STATUS ===================== -->
+    <div class="row mt-3 g-3">
+        <div class="col-md-6">
+            <label for="Perfil" class="form-label text-muted small mb-1">
+                <i class="bi bi-person-gear me-1"></i>Perfil
+            </label>
             @Html.DropDownList("Perfil", new List<SelectListItem> {
                         new SelectListItem { Value = "", Text = "Selecione..." },
                         new SelectListItem { Value = "Admin", Text = "Administrador/TI" },
                         new SelectListItem { Value = "Usuario", Text = "Utilizador Comum" }
-                        }, null, new { @class = "form-select" })
-            @Html.ValidationMessage("Perfil", null, new { @class = "text-danger" })
+                        },
+                        new { @class = "form-select shadow-sm" })
+            @Html.ValidationMessage("Perfil", null, new { @class = "text-danger small" })
         </div>
 
-        <div class="col-md-6 mb-3">
-            @Html.Label("Status", null, new { @class = "form-label" })
+        <div class="col-md-6">
+            <label for="Status" class="form-label text-muted small mb-1">
+                <i class="bi bi-circle-half me-1"></i>Status
+            </label>
             @Html.DropDownList("Status", new List<SelectListItem> {
                         new SelectListItem { Value = "Ativo", Text = "Ativo" },
                         new SelectListItem { Value = "Inativo", Text = "Inativo" }
-                        }, null, new { @class = "form-select" })
-            @Html.ValidationMessage("Status", null, new { @class = "text-danger" })
+                        },
+                        new { @class = "form-select shadow-sm" })
+            @Html.ValidationMessage("Status", null, new { @class = "text-danger small" })
         </div>
     </div>
 
-    <!-- Upload e Preview de Imagem -->
-    <div class="mb-4 text-center">
-        <label class="form-label d-block">Foto de Perfil</label>
+    <!-- ===================== FOTO DE PERFIL ===================== -->
+    <hr class="my-4" />
+    <div class="text-center">
+        <label class="form-label d-block text-muted mb-2">
+            <i class="bi bi-camera me-1"></i>Foto de Perfil
+        </label>
+
         <img id="previewImagemModal" src="~/img/default-user.png"
-             class="rounded-circle shadow-sm mb-2"
-             style="width:100px;height:100px;object-fit:cover;border:1px solid #ccc;" />
-        <input type="file" name="Imagem" id="inputImagemModal"
-               class="form-control mt-2" accept="image/*" />
+             class="rounded-circle shadow-sm border mb-3"
+             style="width:100px; height:100px; object-fit:cover;" />
+
+        <div class="d-flex justify-content-center">
+            <input type="file" name="Imagem" id="inputImagemModal"
+                   class="form-control form-control-sm w-75"
+                   accept="image/*" />
+        </div>
+
+        <small class="text-muted d-block mt-2">
+            Escolha uma imagem de perfil (opcional).
+        </small>
     </div>
 
-    <div class="alert alert-info small mt-3" role="alert">
+    <!-- ===================== AVISO SOBRE SENHA ===================== -->
+    <div class="alert alert-info small mt-4 mb-0 shadow-sm" role="alert">
+        <i class="bi bi-info-circle me-1"></i>
         Uma senha aleatória será gerada e enviada para o e-mail do utilizador.
     </div>
 </form>
 
-<!-- Script: Preview da imagem e reativação da validação -->
+<!-- ===================== SCRIPT: Preview + Validação ===================== -->
 <script>
     const inputImg = document.getElementById('inputImagemModal');
     const previewImg = document.getElementById('previewImagemModal');
+
     if (inputImg && previewImg) {
         inputImg.addEventListener('change', e => {
             const file = e.target.files[0];

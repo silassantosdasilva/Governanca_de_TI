@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Security.Claims;
@@ -24,7 +25,7 @@ namespace Governança_de_TI.Models
         public string Email { get; set; }
 
         [Required(ErrorMessage = "O campo Senha é obrigatório.")]
-        [StringLength(256)] // Aumentado para acomodar hashes mais longos como SHA256
+        [StringLength(256)] // tamanho suficiente para armazenar hash BCrypt/SHA256
         [DataType(DataType.Password)]
         public string Senha { get; set; }
 
@@ -32,17 +33,16 @@ namespace Governança_de_TI.Models
         [StringLength(50)]
         public string Perfil { get; set; }
 
+        [Display(Name = "Foto de Perfil")]
         public byte[]? FotoPerfil { get; set; }
 
-
-        // === [ALTERAÇÃO AQUI] ===
-        // Adicionado o DisplayName para corrigir o rótulo na view
         [Display(Name = "Departamento")]
         public int? DepartamentoId { get; set; }
 
         [ForeignKey("DepartamentoId")]
         public DepartamentoModel? Departamento { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "O campo Status é obrigatório.")]
         [StringLength(50)]
         public string Status { get; set; } = "Ativo";
 
@@ -52,8 +52,9 @@ namespace Governança_de_TI.Models
         [Display(Name = "Data de Cadastro")]
         public DateTime DataDeCadastro { get; set; } = DateTime.Now;
 
-        // === [NOVA PROPRIEDADE - GERAÇÃO DE CLAIMS] ===
-        // Essa propriedade é apenas lógica e não deve ser mapeada pelo EF.
+        // ============================================================
+        // Propriedade lógica: Claims do usuário (não mapeada no EF)
+        // ============================================================
         [NotMapped]
         public IEnumerable<Claim> Claims
         {
@@ -66,11 +67,28 @@ namespace Governança_de_TI.Models
                     new Claim(ClaimTypes.Role, Perfil ?? string.Empty)
                 };
 
+                // Armazena imagem de perfil (opcional)
                 if (FotoPerfil != null && FotoPerfil.Length > 0)
                     claims.Add(new Claim("FotoPerfil", Convert.ToBase64String(FotoPerfil)));
 
                 return claims;
             }
         }
+
+        // ============================================================
+        // Propriedades de Navegação para Gamificação
+        // ============================================================
+
+        // Relação Muitos-para-Muitos com Premios (via UsuarioPremioModel)
+        public virtual ICollection<UsuarioPremioModel> UsuarioPremios { get; set; } = new List<UsuarioPremioModel>();
+
+        // Relação One-to-One com GamificacaoModel
+        public virtual GamificacaoModel Gamificacao { get; set; }
+
+        // Adicionado para busca de logs na view Detalhes.cshtml via @inject (Não mapeado)
+        [NotMapped]
+        public List<AuditLogModel> RecentActivity { get; set; } = new List<AuditLogModel>();
+
     }
 }
+

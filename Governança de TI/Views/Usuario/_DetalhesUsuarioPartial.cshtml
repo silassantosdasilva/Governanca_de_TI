@@ -1,0 +1,91 @@
+﻿@model Governança_de_TI.Models.UsuarioModel
+@{
+    // Recebe as últimas atividades que foram passadas pelo controller
+    var atividadesRecentes = ViewBag.Atividades as List<Governança_de_TI.Models.AuditLogModel> ?? new();
+}
+<!-- ===================== DETALHES DO USUÁRIO ===================== -->
+<div class="container-fluid">
+
+    <!-- PERFIL -->
+    <div class="d-flex align-items-center mb-4">
+        @{
+            var fotoSrc = "~/img/default-user.png";
+            if (Model.FotoPerfil != null && Model.FotoPerfil.Length > 0)
+            {
+                fotoSrc = $"data:image/png;base64,{Convert.ToBase64String(Model.FotoPerfil)}";
+            }
+        }
+
+        <img src="@Url.Content(fotoSrc)" alt="Foto de @Model.Nome"
+             class="rounded-circle shadow-sm me-3"
+             style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;" />
+
+        <div>
+            <h4 class="mb-1">@Model.Nome</h4>
+            <p class="text-muted mb-0">@Model.Email</p>
+        </div>
+    </div>
+
+    <hr />
+
+    <!-- INFORMAÇÕES GERAIS -->
+    <h6 class="fw-semibold text-secondary">Informações Gerais</h6>
+    <dl class="row mt-3 small">
+        <dt class="col-sm-4 text-muted">Perfil de Acesso</dt>
+        <dd class="col-sm-8">@Model.Perfil</dd>
+
+        <dt class="col-sm-4 text-muted">Departamento</dt>
+        <dd class="col-sm-8">@(Model.Departamento?.Nome ?? "Não informado")</dd>
+
+        <dt class="col-sm-4 text-muted">Status</dt>
+        <dd class="col-sm-8">
+            @if (Model.Status == "Ativo")
+            {
+                <span class="badge bg-success">@Model.Status</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">@Model.Status</span>
+            }
+        </dd>
+
+        <dt class="col-sm-4 text-muted">Data de Cadastro</dt>
+        <dd class="col-sm-8">@Model.DataDeCadastro.ToString("dd/MM/yyyy HH:mm")</dd>
+    </dl>
+
+    <hr />
+
+    <!-- SEGURANÇA E ACESSO -->
+    <h6 class="fw-semibold text-secondary">Segurança e Acesso</h6>
+    <dl class="row mt-3 small">
+        <dt class="col-sm-4 text-muted">Último Login</dt>
+        <dd class="col-sm-8">@(Model.DataUltimoLogin?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</dd>
+    </dl>
+
+    <hr />
+
+    <!-- ATIVIDADE RECENTE -->
+    <h6 class="fw-semibold text-secondary">Atividade Recente</h6>
+    @if (atividadesRecentes.Any())
+    {
+        <ul class="list-group list-group-flush small mt-2"
+            style="max-height:200px;overflow-y:auto;border:1px solid #eee;border-radius:6px;">
+            @foreach (var atividade in atividadesRecentes)
+            {
+                <li class="list-group-item px-3 py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="text-primary" style="font-size:0.9em;">@atividade.Acao</strong>
+                        <span class="text-muted" style="font-size:0.8em;">@atividade.Timestamp.ToString("dd/MM/yy HH:mm")</span>
+                    </div>
+                    <p class="mb-0 text-muted" style="font-size:0.85em; word-break:break-word;">
+                        @atividade.Detalhes
+                    </p>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-muted fst-italic small mt-3">Nenhuma atividade recente registrada.</p>
+    }
+</div>
