@@ -5,7 +5,7 @@
 
 @section Styles {
     <!-- Link para o ficheiro de estilos específico desta página, que faz a tabela ocupar a altura total -->
-    <link rel="stylesheet" href="~/css/equipamento.css" asp-append-version="true" />
+@*     <link rel="stylesheet" href="~/css/equipamento.css" asp-append-version="true" /> *@
 }
 
 <!-- Bloco para exibir mensagens de sucesso (Ex: após criar, editar ou excluir um registo) -->
@@ -116,7 +116,6 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script>
         // Script para fechar o alerta de sucesso automaticamente após 5 segundos
@@ -125,5 +124,6 @@
             if (alert) { new bootstrap.Alert(alert).close(); }
         }, 5000);
     </script>
+   
 }
 

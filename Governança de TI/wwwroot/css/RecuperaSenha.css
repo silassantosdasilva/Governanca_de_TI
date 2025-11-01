@@ -1,62 +1,254 @@
-﻿:root {
-    --primary-purple: #8A2BE2;
-    --light-purple-bg: #F3F0FD;
-    --text-color: #333;
-    --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
+﻿
+/* ===== BASE ===== */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--light-purple-bg);
+    font-family: "Poppins", sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    overflow: hidden;
+    color: #fff;
 }
 
-.forgot-password-card {
-    background-color: white;
-    padding: 3rem;
-    border-radius: 1rem;
-    box-shadow: var(--box-shadow);
-    max-width: 500px;
+/* ===== VIDEO ===== */
+video.bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 10, 70, 0.55);
+    z-index: 1;
+}
+
+/* ===== NAVBAR ===== */
+.navbar-login {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    padding: 1.2rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+}
+
+.navbar-logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #fff;
+    text-decoration: none;
+}
+
+.navbar-btn {
+    color: #fff;
+    font-weight: 500;
+    border: 1px solid #fff;
+    padding: 0.4rem 1.2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+    .navbar-btn:hover {
+        background: #fff;
+        color: #6b34f5;
+    }
+
+/* ===== CONTAINER ===== */
+.forgot-container {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 1rem;
+}
+
+.forgot-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+    width: 850px;
+    max-width: 95%;
+    animation: fadeIn 1.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== ILUSTRAÇÃO ===== */
+.forgot-illustration {
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    flex: 1;
+}
+
+    .forgot-illustration img {
+        width: 100%;
+        max-width: 300px;
+        animation: float 6s ease-in-out infinite;
+    }
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ===== FORM ===== */
+.forgot-form-area {
+    flex: 1;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+    .forgot-form-area h2 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #fff;
+    }
+
+    .forgot-form-area p {
+        color: #ddd;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+    }
+
+.input-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.input-group-forgot {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+    .input-group-forgot:focus-within {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .input-group-forgot i {
+        margin-right: 10px;
+        color: #fff;
+        font-size: 1.2rem;
+    }
+
+    .input-group-forgot input {
+        background: transparent;
+        border: none;
+        outline: none;
+        flex: 1;
+        color: #fff;
+        font-size: 0.95rem;
+    }
+
+        .input-group-forgot input::placeholder {
+            color: #e1d8ff;
+        }
+
+/* ===== ERROS ===== */
+.text-danger {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #ffb3b3 !important;
+    margin-bottom: 0.4rem;
+    text-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
+    animation: fadeInError 0.3s ease-in-out;
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== BOTÃO ===== */
+.btn-forgot {
+    width: 100%;
+    background: #fff;
+    color: #6b34f5;
+    border: none;
+    border-radius: 25px;
+    padding: 0.8rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+    .btn-forgot:hover {
+        background: #f0eaff;
+        transform: translateY(-3px);
+    }
+
+/* ===== LINKS ===== */
+.forgot-links {
+    margin-top: 1.8rem;
+    font-size: 0.9rem;
+    color: #e1d8ff;
     text-align: center;
 }
 
-    .forgot-password-card h2 {
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
-
-    .forgot-password-card p {
-        color: #6c757d;
-        margin-bottom: 2rem;
-    }
-
-.form-label {
-    font-weight: 500;
-}
-
-.btn-reset {
-    background-color: var(--primary-purple);
-    color: white;
-    border: none;
-    padding: 0.8rem 0;
-    width: 100%;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.back-to-login {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-}
-
-    .back-to-login a {
-        color: var(--primary-purple);
+    .forgot-links a {
+        color: #fff;
+        text-decoration: none;
         font-weight: 500;
     }
+
+        .forgot-links a:hover {
+            text-decoration: underline;
+        }
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 992px) {
+    .forgot-card {
+        flex-direction: column;
+    }
+
+    .forgot-illustration {
+        display: none;
+    }
+
+    .forgot-form-area {
+        padding: 2rem;
+    }
+}
+

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Governança_de_TI.Models;
+using System.Collections.Generic;
 
 namespace Governança_de_TI.ViewModels
 {
@@ -21,6 +22,7 @@ namespace Governança_de_TI.ViewModels
         // Propriedades para os gráficos de consumo restantes
         public ChartData ConsumoKwhMes { get; set; }
         public ChartData ConsumoKwhAno { get; set; }
+        public GamificacaoViewModel Gamificacao { get; set; } // <<< NOVO
     }
 
     /// <summary>

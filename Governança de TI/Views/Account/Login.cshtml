@@ -1,8 +1,9 @@
 ﻿@model Governança_de_TI.Models.LoginViewModel;
 @{
-    ViewData["Title"] = "Login";
-    Layout = null; // Este layout é completamente customizado, sem usar o _LoginLayout
+    ViewData["Title"] = "Login - TechGreen";
+    Layout = null;
 }
+
 @if (TempData["SuccessMessage"] != null)
 {
     <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -10,74 +11,87 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PROSPERA</title>
+    <title>@ViewData["Title"]</title>
+
+    <!-- Bootstrap e Ícones -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
-    <!-- Google Fonts para Poppins e o estilo da imagem -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Fonte Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
- 
 </head>
+
 <body>
+    <!-- VÍDEO DE FUNDO -->
+    <video autoplay muted loop playsinline class="bg-video">
+        <source src="~/videos/Roxo-royal.mp4" type="video/mp4">
+    </video>
+
+    <!-- CAMADA ESCURA -->
+    <div class="overlay"></div>
+
+    <!-- NAVBAR -->
     <nav class="navbar-login">
-        <a href="#" class="navbar-logo">
-            <!-- Adicione o seu logo aqui ou use texto --><img src="https://img.icons8.com/ios-filled/50/8A2BE2/diamond.png" alt="Logo Prospera" /> PROSPERA
-        </a>
-        <div>
-            <a asp-controller="Home" asp-action="Landing" class="navbar-btn">INICIO</a>
-        </div>
+        <a href="#" class="navbar-logo">TechGreen</a>
+        <a asp-controller="Home" asp-action="Landing" class="navbar-btn">Início</a>
     </nav>
 
+    <!-- CONTEÚDO LOGIN -->
     <div class="login-container">
-        <div class="wave-bg"></div>
         <div class="login-card">
             <div class="login-illustration">
-                <img src="https://img.icons8.com/color/480/000000/girl-with-mobile-phone.png" alt="Ilustração de login" />
+                <img src="/img/TechGrenLogo.png" alt="Ilustração TechGreen" />
             </div>
+
             <div class="login-form-area">
-                <h2>Olá<br>Seja bem vindo</h2>
+                <h2>Bem-vindo de volta 👋</h2>
+
                 <form asp-controller="Account" asp-action="Login" method="post">
                     <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
-                    <div class="input-group-login">
-                        <i class="bi bi-person icon"></i>
-                        <input asp-for="Email" placeholder="Email" />
+                    <div class="input-wrapper">
                         <span asp-validation-for="Email" class="text-danger"></span>
+                        <div class="input-group-login">
+                            <i class="bi bi-person"></i>
+                            <input asp-for="Email" placeholder="Email" />
+                        </div>
                     </div>
 
-                    <div class="input-group-login">
-                        <i class="bi bi-lock icon"></i>
-                        <input asp-for="Senha" type="password" placeholder="Senha" />
+                    <div class="input-wrapper">
                         <span asp-validation-for="Senha" class="text-danger"></span>
+                        <div class="input-group-login">
+                            <i class="bi bi-lock"></i>
+                            <input asp-for="Senha" type="password" placeholder="Senha" />
+                        </div>
                     </div>
 
                     <label class="checkbox-label">
                         <input asp-for="LembrarMe" type="checkbox" /> Manter logado?
                     </label>
 
-                    <button type="submit" class="btn-logar">LOGAR</button>
+                    <button type="submit" class="btn-logar">Entrar</button>
 
                     <div class="login-links">
-                        Não tem conta? <a asp-controller="Account" asp-action="Register">Inscreva-se</a><br>
-                        <a asp-controller="Home" asp-action="Ajuda">Ajuda</a> <a asp-controller="Account" asp-action="ForgotPassword">Esqueceu a senha?</a>
+                        Não tem conta? <a asp-controller="Account" asp-action="Register">Registrar</a><br />
+                        <a asp-controller="Home" asp-action="Ajuda">Ajuda</a> |
+                        <a asp-controller="Account" asp-action="ForgotPassword">Esqueceu a senha?</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Scripts de validação do lado do cliente -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 </body>
 </html>
-

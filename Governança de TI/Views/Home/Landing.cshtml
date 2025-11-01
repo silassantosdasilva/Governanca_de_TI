@@ -1,6 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "O Futuro Sustentável da Tecnologia";
-    // Define um layout vazio para esta página, pois ela não deve ter a sidebar de gestão
+    ViewData["Title"] = "TechGreen - O Futuro Sustentável da Tecnologia";
     Layout = null;
 }
 
@@ -11,127 +10,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
 
-    <!-- Bootstrap CSS (para o sistema de grid) e Ícones -->
+    <!-- Bootstrap e Ícones -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/Loading.css" asp-append-version="true" />
 
-    <!-- Google Fonts para um estilo mais próximo da imagem -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
- 
-
 </head>
-<body>
 
-    <!-- Cabeçalho de Navegação -->
-    <a href="#" class="invistala-link">InvistaLa.com.br ®</a>
+<body>
+    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Nome da Empresa</a>
+            <a class="navbar-brand" href="#">TechGreen</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+                <i class="bi bi-list text-white fs-3"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link active px-3" href="#">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Serviços</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Contate-nos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">FAQ</a></li>
+                <ul class="navbar-nav ms-auto">
+                    <li><a href="#contato">Contato</a></li>
+                    <li><a asp-controller="Account" asp-action="Login">Login</a></li>
+                    <li><a asp-controller="Account" asp-action="Register" class="btn-register">Registrar</a></li>
                 </ul>
-                <div>
-                    <a asp-controller="Account" asp-action="Login" class="btn btn-link text-decoration-none me-2">Login</a>
-                    <a asp-controller="Account" asp-action="Register" class="btn  btn-cadastro">Cadastro</a>
-                    
-                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Secção Principal (Hero) -->
-    <header class="hero-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="hero-title">O Futuro Sustentável da Tecnologia Começa Aqui!</h1>
-                    <p class="hero-subtitle mt-3">Nome da Empresa</p>
-                    <button class="btn-aproveitar mt-4">Aproveitar</button>
-                </div>
-                <div class="col-lg-6 text-center">
-                  <img src="/img/LampadaFundo.png" alt="Alternate Text" />
-                </div>
-            </div>
-        </div>
-    </header>
+    <!-- HERO SECTION COM VÍDEO DE FUNDO -->
+    <section class="hero">
+        <video autoplay muted loop playsinline>
+            <source src="~/videos/Roxo-royal.mp4" type="video/mp4">
+        </video>
 
-    <!-- Secção do QRCode -->
-    <section class="container my-5">
-        <div class="section-qrcode">
-            <div class="row align-items-center">
-                <div class="col-lg-7">
-                    <h2>Simplifique a gestão sustentável da sua TI</h2>
-                    <p class="lead">Saiba mais sobre o nosso projeto</p>
-                    <p class="mt-5">Tenha em mãos as melhores ferramentas e os melhores métodos. Aprenda a gerenciar melhor o seu descarte sustentável e metas de Consumo.</p>
-                </div>
-                <div class="col-lg-5 text-center">
-                    <img src="/img/IconeQrCode.png" alt="Alternate Text" />
-                    <p class="mt-3 small text-muted">Coloque a câmera encima do Qrcode e acompanhe as novidades de perto</p>
-                </div>
+        <div class="container d-flex flex-column flex-lg-row align-items-center justify-content-between">
+            <div class="hero-content text-center text-lg-start mb-5 mb-lg-0">
+                <h1>Transforme sua TI<br>em uma força sustentável.</h1>
+                <p>Com a <strong>TechGreen</strong>, você gerencia recursos, consumo e sustentabilidade tecnológica de forma inteligente.</p>
+                <button class="hero-btn">Começar Agora</button>
+            </div>
+            <div class="hero-image">
+                <img src="/img/TechGrenLogo.png" alt="Ilustração TechGreen" />
             </div>
         </div>
     </section>
 
-    <!-- Secção de Newsletter -->
-    <section class="container my-5">
-        <div class="newsletter-section">
-            <div class="p-4 text-center">
-                <h5>Coloque o seu e-mail e acompanhe as novidades</h5>
-                <form class="d-flex justify-content-center mt-4 w-75 mx-auto">
-                    <input type="email" class="form-control" placeholder="Email">
-                    <button type="submit" class="btn ms-2 text-white" style="background-color: #4B79A1;">Acompanhar</button>
-                </form>
-                <div class="form-check mt-3 d-inline-block">
-                    <input class="form-check-input" type="checkbox" value="" id="newsletterCheck">
-                    <label class="form-check-label small" for="newsletterCheck">
-                        Aceito receber e-mails sobre promoções e planos
-                    </label>
-                </div>
-            </div>
+    <!-- SEÇÃO INFORMATIVA -->
+    <section class="section-info">
+        <div class="container">
+            <h2>Gestão inteligente e ecológica da sua infraestrutura</h2>
+            <p>Nosso sistema auxilia empresas a reduzir o impacto ambiental da TI, controlando descartes, otimizando energia e promovendo um futuro mais verde.</p>
         </div>
     </section>
 
-    <!-- Rodapé -->
-    <footer class="footer">
-        <div class="container">
-            <hr>
-            <div class="row pt-4">
-                <div class="col-md-6 mb-3">
-                    <h5 class="navbar-brand">Nome da Empresa</h5>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <h6>Navegação</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="text-decoration-none text-muted">Home</a></li>
-                        <li><a asp-controller="Account" asp-action="Login" class="text-decoration-none text-muted">Login</a></li>
-                        <li><a href="#" class="text-decoration-none text-muted">Ajuda</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <h6>Contato</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="mailto:testeemail@gmail.com" class="text-decoration-none text-muted"><i class="bi bi-envelope me-2"></i>Testeemail@gmail.com</a></li>
-                        <li><a href="#" class="text-decoration-none text-muted"><i class="bi bi-twitter me-2"></i></a></li>
-                        <li><a href="#" class="text-decoration-none text-muted"><i class="bi bi-instagram me-2"></i></a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+    <!-- RODAPÉ -->
+    <footer id="contato">
+        <p>© @DateTime.Now.Year TechGreen — Todos os direitos reservados.</p>
+        <p><a href="mailto:contato@techgreen.com.br"><i class="bi bi-envelope me-2"></i> contato@techgreen.com.br</a></p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

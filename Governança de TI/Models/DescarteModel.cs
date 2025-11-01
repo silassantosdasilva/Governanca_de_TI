@@ -77,6 +77,9 @@ namespace Governança_de_TI.Models
         [Display(Name = "Certificado de Coleta")]
         public IFormFile CertificadoUpload { get; set; }
 
+        [Display(Name = "URL Imagem Equip.")] // Nome curto para exibição
+        public string? ImagemEquipamentoUrl { get; set; }
+
         [Display(Name = "Enviar E-mail Automático")]
         public bool EnviarEmail { get; set; }
 

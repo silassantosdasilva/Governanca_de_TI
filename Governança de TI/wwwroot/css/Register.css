@@ -1,188 +1,260 @@
-﻿:root {
-    --primary-purple: #8A2BE2;
-    --dark-purple-wave: #6a0dad;
-    --light-purple-bg: #F3F0FD;
-    --text-color: #333;
-    --input-border: #ccc;
-    --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
+﻿
+/* ======= BASE ======= */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: white;
+    font-family: "Poppins", sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
+    overflow: hidden;
+    color: #fff;
 }
 
-.navbar-login {
-    background-color: white;
-    padding: 1rem 4rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* ======= VÍDEO DE FUNDO ======= */
+video.bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
 }
 
-.navbar-logo {
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    color: var(--primary-purple);
-    font-size: 1.2rem;
-    text-decoration: none;
-}
-
-    .navbar-logo img {
-        height: 25px;
-        margin-right: 0.5rem;
-    }
-
-.navbar-btn {
-    background-color: var(--primary-purple);
-    color: white;
-    border: none;
-    padding: 0.7rem 1.8rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    text-decoration: none;
-}
-
-.register-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-.wave-bg {
-    position: absolute;
-    width: 150%;
-    height: 50%;
-    background-color: var(--dark-purple-wave);
-    border-radius: 50%;
-    bottom: -25%;
-    left: -25%;
+/* ======= CAMADA ESCURA ======= */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 10, 70, 0.55);
     z-index: 1;
 }
 
-.register-card {
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: var(--box-shadow);
+/* ======= NAVBAR ======= */
+.navbar-login {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    padding: 1.2rem 2rem;
     display: flex;
-    overflow: hidden;
-    max-width: 900px;
-    width: 90%;
-    z-index: 10;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
 }
 
-.register-illustration {
-    background-color: var(--light-purple-bg);
-    padding: 2rem;
+.navbar-logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #fff;
+    text-decoration: none;
+}
+
+.navbar-btn {
+    color: #fff;
+    font-weight: 500;
+    border: 1px solid #fff;
+    padding: 0.4rem 1.2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+    .navbar-btn:hover {
+        background: #fff;
+        color: #6b34f5;
+    }
+
+/* ======= CONTAINER REGISTER ======= */
+.register-container {
+    position: relative;
+    z-index: 3;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 1rem;
+}
+
+.register-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+    width: 900px;
+    max-width: 95%;
+    animation: fadeIn 1.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ======= LADO ILUSTRAÇÃO ======= */
+.register-illustration {
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
     flex: 1;
 }
 
     .register-illustration img {
-        max-width: 100%;
-        height: auto;
+        width: 100%;
+        max-width: 330px;
+        animation: float 6s ease-in-out infinite;
     }
 
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ======= FORM ======= */
 .register-form-area {
-    padding: 2.5rem;
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.1);
 }
 
     .register-form-area h2 {
-        font-weight: 600;
-        margin-bottom: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: #fff;
     }
 
-.input-group-register {
-    position: relative;
-    margin-bottom: 1rem;
+.input-wrapper {
+    margin-bottom: 1.5rem;
 }
 
-    .input-group-register .icon {
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
+.input-group-register {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+    .input-group-register:focus-within {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .input-group-register i {
+        margin-right: 10px;
+        color: #fff;
+        font-size: 1.2rem;
     }
 
     .input-group-register input {
-        width: 100%;
-        padding: 0.8rem 0.8rem 0.8rem 40px;
-        border: 1px solid var(--input-border);
-        border-radius: 0.5rem;
-        box-sizing: border-box;
+        background: transparent;
+        border: none;
+        outline: none;
+        flex: 1;
+        color: #fff;
+        font-size: 0.95rem;
     }
+
+        .input-group-register input::placeholder {
+            color: #e1d8ff;
+        }
+
+/* ======= ERROS DE VALIDAÇÃO ======= */
+.text-danger {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #ffb3b3 !important;
+    margin-bottom: 0.4rem;
+    text-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
+    animation: fadeInError 0.3s ease-in-out;
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 .checkbox-label {
     display: flex;
     align-items: center;
+    font-size: 0.9rem;
+    color: #ddd;
     margin-bottom: 1.5rem;
-    font-size: 0.8rem;
 }
 
     .checkbox-label input {
-        margin-right: 0.5rem;
-        accent-color: var(--primary-purple);
+        margin-right: 8px;
     }
 
 .btn-cadastrar {
-    background-color: var(--primary-purple);
-    color: white;
-    border: none;
-    padding: 0.8rem 0;
     width: 100%;
-    border-radius: 0.5rem;
+    background: #fff;
+    color: #6b34f5;
+    border: none;
+    border-radius: 25px;
+    padding: 0.8rem;
     font-weight: 600;
-    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
 }
 
+    .btn-cadastrar:hover {
+        background: #f0eaff;
+        transform: translateY(-3px);
+    }
+
+/* ======= LINKS ======= */
 .register-links {
-    text-align: center;
-    margin-top: 1.5rem;
+    margin-top: 1.8rem;
     font-size: 0.9rem;
+    color: #e1d8ff;
+    text-align: center;
 }
 
     .register-links a {
-        color: var(--primary-purple);
+        color: #fff;
+        text-decoration: none;
         font-weight: 500;
     }
 
-.text-danger {
-    font-size: 0.8rem;
-}
+        .register-links a:hover {
+            text-decoration: underline;
+        }
 
-.validation-summary-errors ul {
-    list-style-type: none;
-    padding: 0;
-    color: #dc3545;
-    font-size: 0.9rem;
-}
-
-/* OBSERVAÇÃO: A media query para responsividade foi completada. */
-@@media (max-width: 768px) {
+/* ======= RESPONSIVO ======= */
+@media (max-width: 992px) {
     .register-card {
         flex-direction: column;
-        margin: 2rem 1rem;
     }
 
     .register-illustration {
-        order: -1; /* Coloca a imagem no topo em ecrãs pequenos */
-        border-radius: 1rem 1rem 0 0;
+        display: none;
+    }
+
+    .register-form-area {
+        padding: 2rem;
     }
 }
+

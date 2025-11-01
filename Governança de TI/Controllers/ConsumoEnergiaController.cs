@@ -1,7 +1,13 @@
 ﻿using Governança_de_TI.Data;
 using Governança_de_TI.Models;
+using Governança_de_TI.Services; // Adicionado para IAuditService e IGamificacaoService
+using Governança_de_TI.Views.Services.Gamificacao;
+
+// using Governança_de_TI.Views.Services.Gamificacao; // Comentado - Namespace parece incorreto
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System; // Adicionado para DateTime
+using System.Globalization; // Adicionado para CultureInfo
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,17 +16,24 @@ namespace Governança_de_TI.Controllers
     /// <summary>
     /// Controller responsável pela gestão dos registos de consumo de energia.
     /// </summary>
+    // [Authorize] // Adicione se esta área for restrita
     public class ConsumoEnergiaController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IGamificacaoService _gamificacaoService; // <<< NOVO
+        private readonly IAuditService _auditService; // <<< NOVO
 
-        public ConsumoEnergiaController(ApplicationDbContext context)
+        public ConsumoEnergiaController(
+            ApplicationDbContext context,
+            IGamificacaoService gamificacaoService, // <<< NOVO
+            IAuditService auditService) // <<< NOVO
         {
             _context = context;
+            _gamificacaoService = gamificacaoService;
+            _auditService = auditService;
         }
 
         // GET: ConsumoEnergia
-        // OBSERVAÇÃO: Esta é a página principal que exibe a lista de todos os consumos registados.
         public async Task<IActionResult> Index()
         {
             var consumos = await _context.ConsumosEnergia
@@ -30,122 +43,226 @@ namespace Governança_de_TI.Controllers
         }
 
         // GET: ConsumoEnergia/Criar
-        // OBSERVAÇÃO: Esta Action simplesmente exibe o formulário de criação em branco.
         public IActionResult Criar()
         {
-            return View();
+            // Sugere o mês atual
+            return View(new ConsumoEnergiaModel { DataReferencia = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1) });
         }
 
         // POST: ConsumoEnergia/Criar
-        // OBSERVAÇÃO: Esta Action recebe os dados do formulário e salva um novo registo na base de dados.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Criar([Bind("DataReferencia,ValorKwh")] ConsumoEnergiaModel consumo)
         {
+            // Padroniza a data para o dia 1 do mês
+            consumo.DataReferencia = new DateTime(consumo.DataReferencia.Year, consumo.DataReferencia.Month, 1);
+
+            // Validação de duplicidade
+            bool jaExiste = await _context.ConsumosEnergia
+                                        .AnyAsync(c => c.DataReferencia.Year == consumo.DataReferencia.Year &&
+                                                       c.DataReferencia.Month == consumo.DataReferencia.Month);
+            if (jaExiste)
+            {
+                ModelState.AddModelError("DataReferencia", $"Já existe um registo de consumo para {consumo.DataReferencia:MM/yyyy}.");
+            }
+
+            // --- [CORREÇÃO] Movido o ModelState.IsValid para o local correto ---
             if (ModelState.IsValid)
             {
-                // Garante que a data de referência seja sempre o primeiro dia do mês para padronização.
-                consumo.DataReferencia = new System.DateTime(consumo.DataReferencia.Year, consumo.DataReferencia.Month, 1);
-
                 _context.Add(consumo);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Salva
+
+                var userId = await GetCurrentUserId(); // Pega o ID do usuário
+
+                // --- [GAMIFICAÇÃO] ---
+                if (userId.HasValue)
+                {
+                    // Adiciona 30 pontos por registrar consumo (conforme doc)
+                    await _gamificacaoService.AdicionarPontosAsync(userId.Value, "RegistrouConsumoEnergia", 30);
+                }
+                // --- Fim Gamificação ---
+
+                // --- [AUDITORIA] (Executa em background) ---
+                if (userId.HasValue)
+                {
+                    _ = Task.Run(async () => {
+                        await _auditService.RegistrarAcao(userId.Value, "Registrou Consumo", $"Mês/Ano: {consumo.DataReferencia:MM/yyyy}, Valor: {consumo.ValorKwh} kWh");
+                    });
+                }
+                // --- Fim Auditoria ---
 
                 TempData["SuccessMessage"] = "Registo de consumo criado com sucesso!";
+                // --- [CORREÇÃO] Redireciona para o Index após sucesso ---
                 return RedirectToAction(nameof(Index));
             }
-            // Se o modelo for inválido, retorna para a mesma view para exibir os erros de validação.
-            return View(consumo);
+            // --- Fim da Correção ---
+
+            return View(consumo); // Retorna com erros
         }
 
         // GET: ConsumoEnergia/Editar/5
-        // OBSERVAÇÃO: Busca um registo pelo ID e exibe o formulário de edição com os dados preenchidos.
         public async Task<IActionResult> Editar(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
             var consumo = await _context.ConsumosEnergia.FindAsync(id);
-            if (consumo == null)
-            {
-                return NotFound();
-            }
+            if (consumo == null) return NotFound();
             return View(consumo);
         }
 
         // POST: ConsumoEnergia/Editar/5
-        // OBSERVAÇÃO: Recebe os dados do formulário de edição e atualiza o registo na base de dados.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(int id, [Bind("Id,DataReferencia,ValorKwh")] ConsumoEnergiaModel consumo)
         {
-            if (id != consumo.Id)
+            if (id != consumo.Id) return NotFound();
+
+            consumo.DataReferencia = new DateTime(consumo.DataReferencia.Year, consumo.DataReferencia.Month, 1);
+
+            // Validação de duplicidade na edição
+            bool conflitoMesAno = await _context.ConsumosEnergia
+                                        .AnyAsync(c => c.DataReferencia.Year == consumo.DataReferencia.Year &&
+                                                       c.DataReferencia.Month == consumo.DataReferencia.Month &&
+                                                       c.Id != consumo.Id);
+            if (conflitoMesAno)
             {
-                return NotFound();
+                ModelState.AddModelError("DataReferencia", $"Já existe outro registo para {consumo.DataReferencia:MM/yyyy}.");
             }
 
+            // --- [CORREÇÃO] Movido o ModelState.IsValid para o local correto ---
             if (ModelState.IsValid)
             {
                 try
                 {
-                    consumo.DataReferencia = new System.DateTime(consumo.DataReferencia.Year, consumo.DataReferencia.Month, 1);
                     _context.Update(consumo);
                     await _context.SaveChangesAsync();
+
+                    // --- [AUDITORIA] (Executa em background) ---
+                    var userId = await GetCurrentUserId();
+                    if (userId.HasValue)
+                    {
+                        _ = Task.Run(async () => {
+                            await _auditService.RegistrarAcao(userId.Value, "Editou Consumo", $"ID={consumo.Id}, Mês/Ano: {consumo.DataReferencia:MM/yyyy}");
+                        });
+                    }
+                    // --- Fim Auditoria ---
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ConsumoEnergiaExists(consumo.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!ConsumoEnergiaExists(consumo.Id)) return NotFound(); else throw;
                 }
-                TempData["SuccessMessage"] = "Registo de consumo atualizado com sucesso!";
+                TempData["SuccessMessage"] = "Registo de consumo atualizado!";
+                // --- [CORREÇÃO] Redireciona para o Index após sucesso ---
                 return RedirectToAction(nameof(Index));
             }
+
             return View(consumo);
         }
 
         // GET: ConsumoEnergia/Excluir/5
-        // OBSERVAÇÃO: Mostra uma página de confirmação antes de apagar um registo.
         public async Task<IActionResult> Excluir(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var consumo = await _context.ConsumosEnergia
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (consumo == null)
-            {
-                return NotFound();
-            }
-
+            if (id == null) return NotFound();
+            var consumo = await _context.ConsumosEnergia.FirstOrDefaultAsync(m => m.Id == id);
+            if (consumo == null) return NotFound();
             return View(consumo);
         }
 
         // POST: ConsumoEnergia/Excluir/5
-        // OBSERVAÇÃO: Efetivamente apaga o registo da base de dados após a confirmação.
         [HttpPost, ActionName("Excluir")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExcluirConfirmado(int id)
         {
             var consumo = await _context.ConsumosEnergia.FindAsync(id);
-            _context.ConsumosEnergia.Remove(consumo);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Registo de consumo excluído com sucesso!";
+            if (consumo != null)
+            {
+                _context.ConsumosEnergia.Remove(consumo);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Registo de consumo excluído!";
+
+                // --- [AUDITORIA] (Executa em background) ---
+                var userId = await GetCurrentUserId();
+                if (userId.HasValue)
+                {
+                    _ = Task.Run(async () => {
+                        await _auditService.RegistrarAcao(userId.Value, "Excluiu Consumo", $"ID={consumo.Id}, Mês/Ano: {consumo.DataReferencia:MM/yyyy}");
+                    });
+                }
+                // --- Fim Auditoria ---
+            }
             return RedirectToAction(nameof(Index));
         }
 
-        // Método auxiliar para verificar se um registo existe.
         private bool ConsumoEnergiaExists(int id)
         {
             return _context.ConsumosEnergia.Any(e => e.Id == id);
+        }
+
+        // Método auxiliar para obter ID do usuário logado
+        private async Task<int?> GetCurrentUserId()
+        {
+            var userEmail = User?.Identity?.Name; // Obtém o email do usuário logado
+            if (string.IsNullOrWhiteSpace(userEmail)) return null;
+
+            // Busca o usuário no banco pelo email
+            var user = await _context.Usuarios.AsNoTracking()
+                                       .FirstOrDefaultAsync(u => u.Email == userEmail);
+            return user?.Id;
+        }
+
+        // ============================================================
+        // [NOVO] API PARA GRÁFICO MENSAL (Chamado pelo site.js)
+        // ============================================================
+        [HttpGet]
+        public async Task<IActionResult> ObterConsumoMensal()
+        {
+            try
+            {
+                var anoAtual = DateTime.Now.Year;
+                var dados = await _context.ConsumosEnergia
+                    .Where(c => c.DataReferencia.Year == anoAtual)
+                    .GroupBy(c => c.DataReferencia.Month)
+                    .Select(g => new
+                    {
+                        Mes = g.Key,
+                        TotalKwh = g.Sum(c => c.ValorKwh)
+                    })
+                    .OrderBy(g => g.Mes)
+                    .ToListAsync();
+
+                // Retorna os dados brutos que o site.js espera (mes, totalKwh)
+                return Json(dados);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao buscar dados mensais: {ex.Message}");
+            }
+        }
+
+        // ============================================================
+        // [NOVO] API PARA GRÁFICO ANUAL (Chamado pelo site.js)
+        // ============================================================
+        [HttpGet]
+        public async Task<IActionResult> ObterConsumoAnual()
+        {
+            try
+            {
+                var dados = await _context.ConsumosEnergia
+                    .GroupBy(c => c.DataReferencia.Year)
+                    .Select(g => new
+                    {
+                        Ano = g.Key,
+                        TotalKwh = g.Sum(c => c.ValorKwh)
+                    })
+                    .OrderBy(g => g.Ano)
+                    .ToListAsync();
+
+                // Retorna os dados brutos que o site.js espera (ano, totalKwh)
+                return Json(dados);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao buscar dados anuais: {ex.Message}");
+            }
         }
     }
 }

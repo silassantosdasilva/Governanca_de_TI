@@ -1,46 +1,218 @@
 ﻿@{
     ViewData["Title"] = "Dashboard Principal";
 }
-<!-- Linha dos Indicadores Superiores (Cards de Métricas) -->
-<div class="row" id="metric-cards-container">
-    <!-- Os cards serão inseridos aqui dinamicamente pelo JavaScript -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<!-- ===========================
+     SEÇÃO: GAMIFICAÇÃO ESG
+=========================== -->
+<div class="card border-0 rounded-4 shadow-sm mb-4 bg-white text-center">
+    <div class="card-body py-4 d-flex flex-column align-items-center justify-content-center" id="gamificacao-widget-body">
+        <!-- Logo ESG -->
+        @* <img src="~/img/icone_esg.png" alt="Logo ESG" width="45" height="45" class="mb-3 opacity-75">
+*@
+        <!-- Título e Nível -->
+        <h6 class="text-muted mb-2">Seu Progresso ESG</h6>
+        <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <span id="iconeNivelESG" class="fs-2">🌱</span>
+            <h5 class="fw-bold text-dark mb-0">
+                <span id="nivelESG">Iniciante</span>
+            </h5>
+        </div>
+
+        <!-- Barra de progresso ESG -->
+        <div class="progress w-75 rounded-pill mb-2" style="height: 12px; background-color: #e9ecef;">
+            @* Fundo cinza claro para a barra *@
+
+            <!-- === [CORREÇÃO AQUI] === -->
+            <!-- Removido 'bg-gradient' e 'width: 5%'. Usando 'background-color' sólido. -->
+            <div id="barraProgressoESG"
+                 class="progress-bar"
+                 style="width: 0%; background-color: #27ae60; transition: width 0.8s ease-in-out;">
+            </div>
+            <!-- === Fim da Correção === -->
+
+        </div>
+
+        <!-- Mensagem dinâmica -->
+        <small class="text-muted">
+            <span id="pontosESG">0 / 100</span> pontos — @* JS irá atualizar para 10/100 *@
+            <span id="mensagemNivel" class="fw-semibold text-success fst-italic">...</span> @* JS irá atualizar *@
+        </small>
+    </div>
 </div>
 
-<!-- Linha das Listas e Gráficos Inferiores -->
+<!-- ===========================
+     SEÇÃO: MÉTRICAS SUPERIORES
+=========================== -->
+<div class="row" id="metric-cards-container">
+    <!-- Placeholder de carregamento -->
+    <div class="col-12 text-center p-5">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Carregando métricas...</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===========================
+     SEÇÃO: LISTAS E GRÁFICOS
+=========================== -->
 <div class="row mt-4">
+    <!-- Equipamentos Próximos do Fim da Vida Útil -->
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-body d-flex flex-column ">
-                <h6 class="card-title text-muted">Equipamentos Próximos do Fim da Vida Útil</h6>
-                <!-- Espaço para a lista dinâmica de equipamentos a vencer -->
-                <div id="listaFimVidaUtil" class="mt-3 flex-grow-1" style="max-height: 200px; overflow-y: auto;padding-right: 5px"></div>
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-header bg-transparent border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0 fw-semibold">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Equipamentos Próximos do Fim da Vida Útil
+                </h6>
+            </div>
+            <div class="card-body mt-2" style="max-height: 220px; overflow-y: auto;">
+                <div id="listaFimVidaUtil">
+                    <p class="text-muted text-center small mt-3">Carregando...</p>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Equipamentos Próximos da Manutenção -->
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-body d-flex flex-column">
-                <h6 class="card-title text-muted">Equipamentos Próximos da Manutenção</h6>
-                <!-- Espaço para a lista dinâmica de próximas manutenções -->
-                <div id="listaProximaManutencao" class="mt-3 flex-grow-1" style="max-height: 200px; overflow-y: auto;padding-right: 5px"></div>
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-header bg-transparent border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-muted mb-0 fw-semibold">
+                    <i class="bi bi-tools text-primary me-2"></i>
+                    Equipamentos Próximos da Manutenção
+                </h6>
+            </div>
+            <div class="card-body mt-2" style="max-height: 220px; overflow-y: auto;">
+                <div id="listaProximaManutencao">
+                    <p class="text-muted text-center small mt-3">Carregando...</p>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Gráficos -->
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
-                <h6 class="card-title text-muted">Consumo total (kWh) no Mês</h6>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="card-title text-muted fw-semibold mb-0">
+                        <i class="bi bi-bar-chart-line me-2 text-success"></i>
+                        Consumo total (kWh) no Mês
+                    </h6>
+                </div>
                 <canvas id="graficoConsumoMes"></canvas>
             </div>
         </div>
     </div>
+
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body">
-                <h6 class="card-title text-muted">Consumo total (kWh) no Ano</h6>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="card-title text-muted fw-semibold mb-0">
+                        <i class="bi bi-graph-up-arrow me-2 text-success"></i>
+                        Consumo total (kWh) no Ano
+                    </h6>
+                </div>
                 <canvas id="graficoConsumoAno"></canvas>
             </div>
         </div>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        /* ===== Melhorias visuais gerais ===== */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+            }
+
+        .progress-bar {
+            transition: width 0.8s ease-in-out;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            transition: all 0.2s ease;
+        }
+
+            .metric-card:hover {
+                background: #f9fafb;
+                transform: translateY(-3px);
+            }
+
+            .metric-card .icon {
+                font-size: 1.5rem;
+                opacity: 0.6;
+            }
+
+        table thead th {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #6c757d;
+        }
+
+        table tbody td {
+            font-size: 0.9rem;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cfcfcf;
+            border-radius: 10px;
+        }
+        /* ===== SOMBRA E ESTILO DOS CARDS DE MÉTRICAS SUPERIORES ===== */
+        #metric-cards-container .metric-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* sombra suave */
+            transition: all 0.25s ease;
+            border: 1px solid #f1f1f1; /* leve contorno */
+            padding: 1.2rem 1rem;
+        }
+
+            #metric-cards-container .metric-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); /* aumenta a sombra no hover */
+            }
+
+            #metric-cards-container .metric-card .icon {
+                font-size: 1.8rem;
+                opacity: 0.7;
+                color: #8A2BE2; /* usa o roxo padrão do sistema */
+            }
+
+            #metric-cards-container .metric-card h6 {
+                font-size: 0.9rem;
+                color: #6c757d;
+                font-weight: 500;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/site.js"></script>
+    @* O seu site.js (que me forneceu) já contém toda a lógica necessária *@
+    @* <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> *@ @* Chart.js já está no _Layout.cshtml *@
+}
 

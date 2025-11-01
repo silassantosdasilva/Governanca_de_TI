@@ -1,229 +1,260 @@
-﻿
-:root {
-    --primary-purple: #8A2BE2; /* Roxo principal */
-    --light-purple-bg: #F3F0FD; /* Fundo lilás claro */
-    --dark-purple-wave: #6a0dad; /* Roxo mais escuro para a onda */
-    --text-color: #333;
-    --input-border: #ccc;
-    --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
+﻿/* ======= BASE ======= */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--light-purple-bg);
+    font-family: "Poppins", sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    overflow: hidden;
+    color: #fff;
 }
 
-/* Navbar */
+/* ======= VÍDEO DE FUNDO ======= */
+video.bg-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+/* ======= CAMADA ESCURA ======= */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 10, 70, 0.55);
+    z-index: 1;
+}
+
+/* ======= NAVBAR ======= */
 .navbar-login {
-    background-color: white;
-    padding: 1rem 4rem;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    padding: 1.2rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: var(--box-shadow);
+    z-index: 5;
 }
 
 .navbar-logo {
-    display: flex;
-    align-items: center;
     font-weight: 700;
-    color: var(--primary-purple);
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    color: #fff;
+    text-decoration: none;
 }
 
-    .navbar-logo img {
-        height: 25px; /* Ajuste conforme o seu logo */
-        margin-right: 0.5rem;
-    }
-
 .navbar-btn {
-    background-color: var(--primary-purple);
-    color: white;
-    border: none;
-    padding: 0.7rem 1.8rem;
-    border-radius: 0.5rem;
+    color: #fff;
     font-weight: 500;
+    border: 1px solid #fff;
+    padding: 0.4rem 1.2rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
     text-decoration: none;
-    transition: background-color 0.3s ease;
 }
 
     .navbar-btn:hover {
-        background-color: #7A1AD1;
+        background: #fff;
+        color: #6b34f5;
     }
 
-/* Container Principal do Login */
+/* ======= CONTAINER LOGIN ======= */
 .login-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: relative;
-    overflow: hidden; /* Para esconder a parte da onda que sai */
-}
-
-.wave-bg {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 50%; /* Ajuste a largura da onda */
-    height: 100%;
-    background-color: var(--dark-purple-wave);
-    border-top-left-radius: 100%; /* Curvatura no canto superior esquerdo */
-    border-bottom-left-radius: 100%; /* Curvatura no canto inferior esquerdo */
-    transform: translateX(40%); /* Ajuste para mover a onda mais para a direita ou esquerda */
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 1rem;
 }
 
 .login-card {
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: var(--box-shadow);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     display: flex;
+    flex-direction: row;
+    align-items: stretch;
     overflow: hidden;
-    max-width: 900px; /* Largura máxima do card */
-    width: 100%;
-    z-index: 10; /* Para ficar acima da onda */
+    width: 900px;
+    max-width: 95%;
+    animation: fadeIn 1.3s ease;
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ======= LADO ILUSTRAÇÃO ======= */
 .login-illustration {
-    background-color: var(--primary-purple);
-    padding: 2rem;
+    background: rgba(255, 255, 255, 0.08);
     display: flex;
-    justify-content: center;
     align-items: center;
-    border-top-left-radius: 1rem;
-    border-bottom-left-radius: 1rem;
-    flex: 1; /* Ocupa espaço igual */
+    justify-content: center;
+    padding: 2rem;
+    flex: 1;
 }
 
     .login-illustration img {
-        max-width: 100%;
-        height: auto;
+        width: 100%;
+        max-width: 330px;
+        animation: float 6s ease-in-out infinite;
     }
 
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ======= FORM ======= */
 .login-form-area {
-    padding: 2.5rem;
-    flex: 1; /* Ocupa espaço igual */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex: 1;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.1);
 }
 
     .login-form-area h2 {
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: #fff;
     }
 
-.input-group-login {
-    position: relative;
+.input-wrapper {
     margin-bottom: 1.5rem;
 }
 
-    .input-group-login .icon {
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
+.input-group-login {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+    .input-group-login:focus-within {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .input-group-login i {
+        margin-right: 10px;
+        color: #fff;
+        font-size: 1.2rem;
     }
 
     .input-group-login input {
-        width: calc(100% - 40px); /* Ajusta a largura para o ícone */
-        padding: 0.8rem 0.8rem 0.8rem 40px; /* Espaçamento para o ícone */
-        border: 1px solid var(--input-border);
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        color: var(--text-color);
+        background: transparent;
+        border: none;
+        outline: none;
+        flex: 1;
+        color: #fff;
+        font-size: 0.95rem;
     }
 
         .input-group-login input::placeholder {
-            color: #aaa;
+            color: #e1d8ff;
         }
+
+/* ======= ERROS DE VALIDAÇÃO ======= */
+.text-danger {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #ffb3b3 !important;
+    margin-bottom: 0.4rem;
+    text-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
+    animation: fadeInError 0.3s ease-in-out;
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 .checkbox-label {
     display: flex;
     align-items: center;
-    margin-bottom: 1.5rem;
     font-size: 0.9rem;
-    color: var(--text-color);
+    color: #ddd;
+    margin-bottom: 1.5rem;
 }
 
-    .checkbox-label input[type="checkbox"] {
-        margin-right: 0.5rem;
-        accent-color: var(--primary-purple); /* Cor do checkbox */
+    .checkbox-label input {
+        margin-right: 8px;
     }
 
 .btn-logar {
-    background-color: var(--primary-purple);
-    color: white;
-    border: none;
-    padding: 0.8rem 0;
     width: 100%;
-    border-radius: 0.5rem;
+    background: #fff;
+    color: #6b34f5;
+    border: none;
+    border-radius: 25px;
+    padding: 0.8rem;
     font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    font-size: 1rem;
+    transition: all 0.3s ease;
 }
 
     .btn-logar:hover {
-        background-color: #7A1AD1;
+        background: #f0eaff;
+        transform: translateY(-3px);
     }
 
+/* ======= LINKS ======= */
 .login-links {
-    text-align: center;
-    margin-top: 1.5rem;
+    margin-top: 1.8rem;
     font-size: 0.9rem;
+    color: #e1d8ff;
+    text-align: center;
+    line-height: 1.8;
 }
 
     .login-links a {
-        color: var(--primary-purple);
+        color: #fff;
         text-decoration: none;
-        margin: 0 0.5rem;
         font-weight: 500;
+        margin: 0 0.3rem;
     }
 
         .login-links a:hover {
             text-decoration: underline;
         }
 
-.validation-summary-errors ul {
-    list-style-type: none;
-    padding: 0;
-    color: #dc3545; /* Cor de erro do Bootstrap */
-    font-size: 0.9rem;
-    margin-top: -1rem; /* Ajuste para não ter muito espaçamento */
-    margin-bottom: 1rem;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .navbar-login {
-        padding: 1rem 1.5rem;
-    }
-
+/* ======= RESPONSIVO ======= */
+@media (max-width: 992px) {
     .login-card {
         flex-direction: column;
-        max-width: 400px;
     }
 
     .login-illustration {
-        border-radius: 1rem 1rem 0 0; /* Arredondar topo no mobile */
-        height: 200px;
+        display: none;
     }
 
-    .wave-bg {
-        width: 100%;
-        height: 50%;
-        top: auto;
-        bottom: 0;
-        left: 0;
-        transform: translateY(40%);
-        border-radius: 100% 100% 0 0;
+    .login-form-area {
+        padding: 2rem;
     }
 }

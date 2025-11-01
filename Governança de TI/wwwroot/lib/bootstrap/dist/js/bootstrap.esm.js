@@ -3022,7 +3022,8 @@ class Modal extends BaseComponent {
     }
 
     const {
-      classList,
+      
+        ,
       scrollHeight,
       style
     } = this._element;

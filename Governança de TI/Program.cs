@@ -22,6 +22,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         //options.AccessDeniedPath = "/Conta/AcessoNegado"; // opcional
     });
 
+
+
+
 //Gamificacao
 builder.Services.AddScoped<IGamificacaoService, GamificacaoService>();
 // --- Configuração dos Serviços ---
@@ -30,6 +33,7 @@ builder.Services.AddScoped<IEmailService, MailKitEmailService>();
 
 // Adiciona os serviços do MVC ao contentor.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

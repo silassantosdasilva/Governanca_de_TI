@@ -99,7 +99,7 @@ namespace Governança_de_TI.Controllers
             );
 
             TempData["SuccessMessage"] = $"Bem-vindo, {user.Nome}!";
-            return RedirectToLocal(returnUrl);
+            return RedirectToAction("Index", "Home");
         }
 
 

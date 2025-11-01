@@ -131,6 +131,9 @@ namespace Governança_de_TI.Migrations
                     b.Property<int>("EquipamentoId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ImagemEquipamentoUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Observacao")
                         .IsRequired()
                         .HasMaxLength(500)

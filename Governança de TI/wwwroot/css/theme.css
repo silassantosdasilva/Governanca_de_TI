@@ -1,0 +1,155 @@
+﻿/* ===========================================================
+   TEMA GLOBAL AJUSTADO - TECHGREEN DARK MODE (v2)
+   =========================================================== */
+
+/* ===== Tema Claro ===== */
+:root {
+    --bg-main: #f8f9fa;
+    --card-bg: #ffffff;
+    --container-bg: #ffffff;
+    --sidebar-bg: #ffffff;
+    --header-bg: #ffffff;
+    --text-color: #212529;
+    --border-color: #e9ecef;
+    --icon-color: #212529;
+    --btn-bg: #8A2BE2;
+    --btn-text: #ffffff;
+    --primary: #8A2BE2;
+    --primary-hover: #a470f5;
+}
+
+/* ===== Tema Escuro ===== */
+body.dark-mode {
+    --bg-main: #160b24; /* fundo geral */
+    --card-bg: #241337; /* fundo de cards */
+    --container-bg: rgba(255, 255, 255, 0.08); /* fundo translúcido para seções claras */
+    --sidebar-bg: #1c0f2f; /* sidebar roxo escuro */
+    --header-bg: rgba(30, 15, 45, 0.95);
+    --text-color: #f3f3f3;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --icon-color: #ffffff;
+    --btn-bg: #b48bff;
+    --btn-text: #1b1128;
+    --primary: #b48bff;
+    --primary-hover: #d1b6ff;
+}
+
+/* ===== Fundo geral ===== */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+/* ===== Header e Sidebar ===== */
+.sidebar {
+    background-color: var(--sidebar-bg) !important;
+    color: var(--text-color) !important;
+}
+
+.main-header {
+    background-color: var(--header-bg) !important;
+    color: var(--text-color) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* ===== Cartões ===== */
+.card,
+.dashboard-card,
+.card-body {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+    transition: all 0.3s ease;
+}
+
+/* ===== Containers de blocos maiores ===== */
+.container,
+.content-area,
+.section-bg {
+    background-color: var(--container-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* ===== Títulos, textos e ícones ===== */
+h1, h2, h3, h4, h5, h6,
+label, span, strong, p {
+    color: var(--text-color) !important;
+}
+
+i, .bi, svg {
+    color: var(--icon-color) !important;
+}
+
+/* ===== Botões ===== */
+button, .btn {
+    background-color: var(--btn-bg) !important;
+    color: var(--btn-text) !important;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+    button:hover, .btn:hover {
+        background-color: var(--primary-hover) !important;
+    }
+
+/* ===== Gráficos ===== */
+.chart-container,
+canvas {
+    background-color: #ffffff !important; /* deixa o gráfico sobre fundo branco */
+    border-radius: 10px;
+    padding: 8px;
+}
+
+/* ===== Barra de progresso ESG ===== */
+.progress,
+.progress-bar,
+.esg-container {
+    background-color: #ffffff !important; /* fundo branco */
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+/* ===== Tabelas ===== */
+.table {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+    .table th {
+        color: #e3d7ff !important;
+    }
+
+/* ===== Inputs e selects ===== */
+input, select, textarea {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* ===== Links ===== */
+a {
+    color: var(--primary) !important;
+    text-decoration: none;
+}
+
+    a:hover {
+        color: var(--primary-hover) !important;
+    }
+
+/* ===== Logo ===== */
+.logo img {
+    filter: brightness(0) invert(0);
+    transition: filter 0.3s ease;
+}
+
+body.dark-mode .logo img {
+    filter: brightness(0) invert(1);
+}
+
+/* ===== Transições suaves ===== */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, filter 0.3s ease;
+}
