@@ -33,8 +33,22 @@ namespace Governança_de_TI.Models
         [StringLength(50)]
         public string Perfil { get; set; }
 
+        // ================================
+        // FOTO DE PERFIL
+        // ================================
+
+        [Display(Name = "Caminho da Foto de Perfil")]
+        [StringLength(255)]
+        public string? CaminhoFotoPerfil { get; set; }
+
+        // Campo temporário apenas para upload (não mapeado no banco)
+        [NotMapped]
         [Display(Name = "Foto de Perfil")]
-        public byte[]? FotoPerfil { get; set; }
+        public IFormFile? FotoUpload { get; set; }
+
+        // ================================
+        // RELACIONAMENTOS E CAMPOS ADICIONAIS
+        // ================================
 
         [Display(Name = "Departamento")]
         public int? DepartamentoId { get; set; }
@@ -62,14 +76,14 @@ namespace Governança_de_TI.Models
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, Email),
-                    new Claim("FullName", Nome),
+                    new Claim(ClaimTypes.Name, Email ?? string.Empty),
+                    new Claim("FullName", Nome ?? string.Empty),
                     new Claim(ClaimTypes.Role, Perfil ?? string.Empty)
                 };
 
-                // Armazena imagem de perfil (opcional)
-                if (FotoPerfil != null && FotoPerfil.Length > 0)
-                    claims.Add(new Claim("FotoPerfil", Convert.ToBase64String(FotoPerfil)));
+                // Armazena apenas o caminho da imagem (sem bytes)
+                if (!string.IsNullOrEmpty(CaminhoFotoPerfil))
+                    claims.Add(new Claim("FotoPerfilPath", CaminhoFotoPerfil));
 
                 return claims;
             }
@@ -78,17 +92,11 @@ namespace Governança_de_TI.Models
         // ============================================================
         // Propriedades de Navegação para Gamificação
         // ============================================================
-
-        // Relação Muitos-para-Muitos com Premios (via UsuarioPremioModel)
         public virtual ICollection<UsuarioPremioModel> UsuarioPremios { get; set; } = new List<UsuarioPremioModel>();
-
-        // Relação One-to-One com GamificacaoModel
         public virtual GamificacaoModel Gamificacao { get; set; }
 
-        // Adicionado para busca de logs na view Detalhes.cshtml via @inject (Não mapeado)
+        // Usado para exibir logs recentes na tela de detalhes
         [NotMapped]
         public List<AuditLogModel> RecentActivity { get; set; } = new List<AuditLogModel>();
-
     }
 }
-

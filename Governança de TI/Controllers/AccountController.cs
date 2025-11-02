@@ -81,22 +81,28 @@ namespace Governança_de_TI.Controllers
 
 
             // === [CRIAÇÃO DE CLAIMS] ===
-            // (Esta lógica foi refatorada para usar a propriedade 'Claims' do UsuarioModel)
-            var claims = user.Claims.ToList(); // Usamos a lógica já definida no UsuarioModel
 
+            // === [CRIAÇÃO DE CLAIMS] ===
+            var claims = new List<Claim>
+                {
+              new Claim(ClaimTypes.Name, user.Email),
+              new Claim("FullName", user.Nome ?? string.Empty),
+              new Claim(ClaimTypes.Role, user.Perfil ?? string.Empty),
+              new Claim("CaminhoFotoPerfil", user.CaminhoFotoPerfil ?? string.Empty)
+            };
+
+            // Cria a identidade e autentica o usuário
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = true,
-                ExpiresUtc = DateTime.UtcNow.AddHours(2)
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
             };
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
-                authProperties
-            );
+                authProperties);
 
             TempData["SuccessMessage"] = $"Bem-vindo, {user.Nome}!";
             return RedirectToAction("Index", "Home");

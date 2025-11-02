@@ -1,74 +1,68 @@
 using Governança_de_TI.Data;
-using Governança_de_TI.Services; // Adiciona o namespace dos seus serviços
+using Governança_de_TI.Services;
 using Governança_de_TI.Views.Services.Gamificacao;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- Configuração da Base de Dados ---
+// ========== BANCO DE DADOS ==========
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 builder.Services.AddScoped(p =>
     p.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
 
-// --- Configuração da Autenticação ---
+// ========== SERVIÇOS ==========
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IEmailService, MailKitEmailService>();
+builder.Services.AddScoped<IGamificacaoService, GamificacaoService>();
+builder.Services.AddHttpContextAccessor();
+
+// ========== AUTENTICAÇÃO ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";       // rota da página de login
-        //options.LogoutPath = "/Account/Logout";      // rota do logout (geralmente gerida por POST)
-        //options.AccessDeniedPath = "/Conta/AcessoNegado"; // opcional
+        options.Cookie.Name = "GovernancaTI.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AcessoNegado";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(2);
     });
 
-
-
-
-//Gamificacao
-builder.Services.AddScoped<IGamificacaoService, GamificacaoService>();
-// --- Configuração dos Serviços ---
-builder.Services.AddScoped<IAuditService, AuditService>();
-builder.Services.AddScoped<IEmailService, MailKitEmailService>();
-
-// Adiciona os serviços do MVC ao contentor.
+// MVC
 builder.Services.AddControllersWithViews();
-builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// Configura o pipeline de pedidos HTTP.
+// ========== MIDDLEWARE ==========
 if (!app.Environment.IsDevelopment())
 {
-    // --- [AJUSTE AQUI] ---
-    // Middleware de tratamento de exceções para produção.
-    // Redireciona para a nossa página de erro personalizada.
     app.UseExceptionHandler("/Home/Error");
-
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    // Garante que HSTS está ativo para segurança.
     app.UseHsts();
 }
 else
 {
-    // Em desenvolvimento, continuamos a usar a página de erro detalhada.
     app.UseDeveloperExceptionPage();
 }
 
+// HTTPS e arquivos estáticos
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// --- [ORDEM IMPORTANTE] ---
-// UseRouting deve vir DEPOIS do UseExceptionHandler
 app.UseRouting();
-
-// UseAuthentication e UseAuthorization devem vir DEPOIS de UseRouting
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Landing}/{id?}");
+
+// === HTTPS LIMPO: força somente 5005 ===
+app.Urls.Clear();
+app.Urls.Add("https://localhost:5005");
 
 app.Run();
-

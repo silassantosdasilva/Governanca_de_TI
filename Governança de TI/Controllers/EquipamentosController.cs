@@ -65,100 +65,125 @@ namespace Governança_de_TI.Controllers
         }
         #endregion
 
-        #region Detalhes
-        public async Task<IActionResult> Detalhes(int? id)
-        {
-            if (id == null) return NotFound();
 
+        public async Task<IActionResult> Detalhes(int id)
+        {
             var equipamento = await _context.Equipamentos
                 .Include(e => e.TipoEquipamento)
                 .FirstOrDefaultAsync(e => e.CodigoItem == id);
 
-            if (equipamento == null) return NotFound();
+            if (equipamento == null)
+                return NotFound();
 
+            // Detecta se é uma chamada AJAX (modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                // Retorna apenas a partial, sem layout
+                return PartialView("_DetalhesEquipamentosPartial", equipamento);
+            }
+
+            // Caso contrário, abre página normal (fallback)
             return View(equipamento);
         }
-        #endregion
 
         #region Criar
         public async Task<IActionResult> Criar()
         {
             await PopulaTiposEquipamentoViewData();
-            return View(new EquipamentoModel { DataCompra = DateTime.Today }); // Sugere data de hoje
+
+            var model = new EquipamentoModel
+            {
+                DataCompra = DateTime.Today
+            };
+
+            // 🔹 Verifica se a requisição veio via AJAX (abrindo em modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                // Retorna apenas o conteúdo da partial sem layout
+                return PartialView("_CriarEquipamentosPartial", model);
+            }
+
+            // 🔹 Caso contrário, abre a tela completa (modo tradicional)
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // [Bind] mais explícito com as propriedades do Model
         public async Task<IActionResult> Criar(
-            [Bind("Descricao,TipoEquipamentoId,Serie,Modelo,DataCompra,VidaUtilAnos,DataFimGarantia,Status,FrequenciaManutencao,DataUltimaManutencao,DiasAlertaManutencao,EnviarEmailAlerta")] EquipamentoModel equipamento,
-            IFormFile ImagemUpload, IFormFile AnexoUpload)
+         [Bind("Descricao,TipoEquipamentoId,Serie,Modelo,DataCompra,VidaUtilAnos,DataFimGarantia,Status,FrequenciaManutencao,DataUltimaManutencao,DiasAlertaManutencao,EnviarEmailAlerta")]
+         EquipamentoModel equipamento,
+         IFormFile ImagemUpload,
+         IFormFile AnexoUpload)
         {
-            // Validação manual
-            if (equipamento.TipoEquipamentoId == 0) // Assume que 0 não é um ID válido
+            // --- Validação do model ---
+            if (equipamento.TipoEquipamentoId == 0)
             {
                 ModelState.AddModelError("TipoEquipamentoId", "O campo Tipo de Equipamento é obrigatório.");
             }
 
-                // Calcular VidaUtilFim
-                var dataBase = equipamento.DataCompra ?? DateTime.Now;
-                if (equipamento.VidaUtilAnos.HasValue && equipamento.VidaUtilAnos > 0)
+            // --- Regras de negócio ---
+            var dataBase = equipamento.DataCompra ?? DateTime.Now;
+            if (equipamento.VidaUtilAnos.HasValue && equipamento.VidaUtilAnos > 0)
+                equipamento.VidaUtilFim = dataBase.AddYears(equipamento.VidaUtilAnos.Value);
+
+            if (ImagemUpload != null)
+                equipamento.ImagemUrl = await SalvarFicheiro(ImagemUpload, "imagens");
+
+            if (AnexoUpload != null)
+                equipamento.AnexoUrl = await SalvarFicheiro(AnexoUpload, "anexos");
+
+            equipamento.DataDeCadastro = DateTime.Now;
+            equipamento.Status ??= "Ativo";
+
+            _context.Add(equipamento);
+            await _context.SaveChangesAsync();
+
+            // --- Gamificação ---
+            var userId = await GetCurrentUserId();
+            if (userId.HasValue)
+            {
+                await _gamificacaoService.AdicionarPontosAsync(userId.Value, "CadastrouEquipamento", 5);
+                _ = Task.Run(() => _auditService.RegistrarAcao(userId.Value, "Criou Equipamento",
+                    $"ID: {equipamento.CodigoItem} - {equipamento.Descricao}"));
+            }
+
+            // 🔹 Se for AJAX (modal), retorna JSON em vez de recarregar página
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new
                 {
-                    equipamento.VidaUtilFim = dataBase.AddYears(equipamento.VidaUtilAnos.Value);
-                }
+                    success = true,
+                    message = $"Equipamento '{equipamento.Descricao}' cadastrado com sucesso!"
+                });
+            }
 
-                // Salvar arquivos
-                if (ImagemUpload != null)
-                    equipamento.ImagemUrl = await SalvarFicheiro(ImagemUpload, "imagens");
-
-                if (AnexoUpload != null)
-                    equipamento.AnexoUrl = await SalvarFicheiro(AnexoUpload, "anexos");
-
-                equipamento.DataDeCadastro = DateTime.Now;
-                if (string.IsNullOrEmpty(equipamento.Status))
-                    equipamento.Status = "Ativo"; // Garante status padrão
-
-                _context.Add(equipamento);
-                await _context.SaveChangesAsync();
-
-                var userId = await GetCurrentUserId();
-
-                // --- [NOVO] GAMIFICAÇÃO ---
-                if (userId.HasValue)
-                {
-                    await _gamificacaoService.AdicionarPontosAsync(userId.Value, "CadastrouEquipamento", 5);
-                    // Adiciona a mensagem para o Toast
-                    TempData["GamificationMessage"] = "Oba! Você ganhou 5 pontos por cadastrar um novo equipamento. Continue assim!";
-                }
-                // --- Fim Gamificação ---
-
-                // Auditoria (em background)
-                if (userId.HasValue)
-                {
-                    _ = Task.Run(async () => {
-                        await _auditService.RegistrarAcao(userId.Value, "Criou Equipamento", $"ID: {equipamento.CodigoItem} Descrição: {equipamento.Descricao}");
-                    });
-                }
-
-                TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
-             
-            
-
-            // Se o modelo for inválido, recarrega o dropdown
-            await PopulaTiposEquipamentoViewData(equipamento.TipoEquipamentoId);
-            return View(equipamento); // Retorna com erros
+            // 🔹 Caso normal (página inteira)
+            TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
+            return RedirectToAction(nameof(Consulta));
         }
-        #endregion
 
-        #region Editar
+
         public async Task<IActionResult> Editar(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
-            var equipamento = await _context.Equipamentos.FindAsync(id);
-            if (equipamento == null) return NotFound();
+            var equipamento = await _context.Equipamentos
+                .Include(e => e.TipoEquipamento)
+                .FirstOrDefaultAsync(e => e.CodigoItem == id);
+
+            if (equipamento == null)
+                return NotFound();
 
             await PopulaTiposEquipamentoViewData(equipamento.TipoEquipamentoId);
+
+            // 🔹 Se for chamada AJAX (modal), retorna a partial
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_EditarEquipamentosPartial", equipamento);
+            }
+
+            // 🔹 Caso contrário, renderiza a página completa
             return View(equipamento);
         }
 
@@ -168,7 +193,7 @@ namespace Governança_de_TI.Controllers
             [Bind("CodigoItem,Descricao,TipoEquipamentoId,Serie,Modelo,DataCompra,VidaUtilAnos,DataFimGarantia,Status,FrequenciaManutencao,DataUltimaManutencao,DiasAlertaManutencao,EnviarEmailAlerta,DataDeCadastro,ImagemUrl,AnexoUrl")] EquipamentoModel equipamento,
             IFormFile ImagemUpload, IFormFile AnexoUpload)
         {
-            if (id != equipamento.CodigoItem) return BadRequest();
+            //if (id != equipamento.CodigoItem) return BadRequest();
 
             // Busca a entidade original com tracking
             var equipamentoOriginal = await _context.Equipamentos.FirstOrDefaultAsync(e => e.CodigoItem == id);
@@ -216,8 +241,7 @@ namespace Governança_de_TI.Controllers
 
                     // Não precisa chamar _context.Update() pois a entidade 'equipamentoOriginal' está sendo rastreada
                     await _context.SaveChangesAsync();
-
-                    TempData["SuccessMessage"] = "Equipamento atualizado com sucesso!";
+   
 
                     // Auditoria (background)
                     _ = Task.Run(async () => {
@@ -237,55 +261,77 @@ namespace Governança_de_TI.Controllers
            
 
             // Se inválido, recarrega dropdown e retorna
-            await PopulaTiposEquipamentoViewData(equipamento.TipoEquipamentoId);
-            return View(equipamento);
+            //await PopulaTiposEquipamentoViewData(equipamento.TipoEquipamentoId);
+            TempData["SuccessMessage"] = $"Equipamento {id} atualizado com sucesso!";
+            return RedirectToAction(nameof(Consulta));
         }
         #endregion
 
         #region Excluir
         public async Task<IActionResult> Excluir(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
+
             var equipamento = await _context.Equipamentos
                 .Include(e => e.TipoEquipamento)
                 .FirstOrDefaultAsync(e => e.CodigoItem == id);
-            if (equipamento == null) return NotFound();
+
+            if (equipamento == null)
+                return NotFound();
+
+            // 🔹 Se for uma chamada AJAX (abertura via modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_ExcluirEquipamentosPartial", equipamento);
+            }
+
+            // 🔹 Caso contrário, navegação normal (rota direta)
             return View(equipamento);
         }
+
 
         [HttpPost, ActionName("Excluir")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExcluirConfirmado(int id)
         {
             var equipamento = await _context.Equipamentos.FindAsync(id);
-            if (equipamento != null)
+            if (equipamento == null)
+                return NotFound();
+
+            bool hasDescartes = await _context.Descartes.AnyAsync(d => d.EquipamentoId == id);
+            if (hasDescartes)
             {
-                // Verificação de dependência
-                bool hasDescartes = await _context.Descartes.AnyAsync(d => d.EquipamentoId == id);
-                if (hasDescartes)
+                var msg = "Não é possível excluir este equipamento, pois existem descartes associados a ele.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, message = msg });
+
+                TempData["ErrorMessage"] = msg;
+                return RedirectToAction(nameof(Consulta));
+            }
+
+            _context.Equipamentos.Remove(equipamento);
+            await _context.SaveChangesAsync();
+
+            // Caso AJAX (modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new
                 {
-                    TempData["ErrorMessage"] = "Não é possível excluir este equipamento pois existem registos de descarte associados a ele.";
-                    return RedirectToAction(nameof(Consulta));
-                }
-
-                // Opcional: Deletar arquivos do wwwroot aqui
-                // if (!string.IsNullOrEmpty(equipamento.ImagemUrl)) { ... File.Delete ... }
-                // if (!string.IsNullOrEmpty(equipamento.AnexoUrl)) { ... File.Delete ... }
-
-                _context.Equipamentos.Remove(equipamento);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Equipamento excluído com sucesso!";
-
-                // Auditoria (background)
-                _ = Task.Run(async () => {
-                    var userId = await GetCurrentUserId();
-                    if (userId.HasValue)
-                    {
-                        await _auditService.RegistrarAcao(userId.Value, "Excluiu Equipamento", $"ID: {equipamento.CodigoItem} Descrição: {equipamento.Descricao}");
-                    }
+                    success = true,
+                    message = $"Equipamento '{equipamento.Descricao}' foi excluído com sucesso!"
                 });
             }
+            // Auditoria (background)
+            _ = Task.Run(async () => {
+                var userId = await GetCurrentUserId();
+                if (userId.HasValue)
+                {
+                    await _auditService.RegistrarAcao(userId.Value, "Excluiu Equipamento", $"Equipamento Excluido: ID={equipamento.Descricao}");
+                }
+            });
+            // Caso tradicional
+            TempData["SuccessMessage"] = $"Equipamento '{equipamento.Descricao}' excluído com sucesso!";
             return RedirectToAction(nameof(Consulta));
         }
         #endregion

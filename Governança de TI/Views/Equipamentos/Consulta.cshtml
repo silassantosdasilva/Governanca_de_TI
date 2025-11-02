@@ -4,70 +4,105 @@
 }
 
 @section Styles {
-    <!-- Link para o ficheiro de estilos específico desta página, que faz a tabela ocupar a altura total -->
-@*     <link rel="stylesheet" href="~/css/equipamento.css" asp-append-version="true" /> *@
+    <!-- Estilos adicionais (opcional) -->
+    <style>
+        /* Aparência mais moderna para a tabela */
+        .table thead th {
+            background-color: var(--tg-header-bg, #f8f9fa);
+            color: var(--tg-text, #333);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(138, 43, 226, 0.05);
+        }
+
+        /* Modal TechGreen (herda tema) */
+        #equipamentosModal .modal-content {
+            background-color: var(--tg-card-bg, #fff);
+            color: var(--tg-text, #222);
+            border-radius: 16px;
+            border: 1px solid var(--tg-border, #e5e5e5);
+        }
+
+        #equipamentosModal .modal-header,
+        #equipamentosModal .modal-footer {
+            background-color: var(--tg-header-bg, #f8f9fa);
+            border-color: var(--tg-border, #e5e5e5);
+        }
+
+        #equipamentosModal .modal-title {
+            color: var(--tg-primary, #8A2BE2);
+        }
+    </style>
 }
 
-<!-- Bloco para exibir mensagens de sucesso (Ex: após criar, editar ou excluir um registo) -->
+<!-- ===================== ALERTA DE SUCESSO ===================== -->
 @if (TempData["SuccessMessage"] != null)
 {
-    <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
+    <div id="success-alert" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
         @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
     </div>
 }
 
-<!-- Wrapper que garante que o conteúdo ocupe a altura total da tela -->
+<!-- ===================== CONTEÚDO PRINCIPAL ===================== -->
 <div class="content-wrapper">
-    <!-- Secção de Filtros -->
+    <!-- FILTROS -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-                <h4 class="mb-0">Controle de Vida de Equipamentos</h4>
-                <a asp-action="Criar" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-plus-lg me-2"></i>Novo Registo
+                <h4 class="mb-0 text-muted fw-semibold">
+                    <i class="bi bi-hdd-stack me-2"></i>Controle de Vida de Equipamentos
+                </h4>
+
+                <!-- Botão que abre a modal de criação -->
+                <a asp-action="Criar"
+                   class="btn btn-sm btn-outline-primary js-open-equip-modal"
+                   data-title="Novo Equipamento">
+                    <i class="bi bi-plus-lg me-1"></i>Novo Registro
                 </a>
             </div>
 
-            <form asp-action="Consulta" method="get">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="codigoItem" class="form-label">Código do Item</label>
-                        <input type="text" name="codigoItem" class="form-control form-control-sm" id="codigoItem">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select id="status" name="status" class="form-select form-select-sm">
-                            <option value="">Todos...</option>
-                            <option>Ativo</option>
-                            <option>Em Manutenção</option>
-                            <option>Descartado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="descricao" class="form-label">Descrição</label>
-                        <input type="text" name="descricao" class="form-control form-control-sm" id="descricao">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="dataCompra" class="form-label">Data de Compra</label>
-                        <input type="date" name="dataCompra" class="form-control form-control-sm" id="dataCompra">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="dataUltimaManutencao" class="form-label">Data da Última Manutenção</label>
-                        <input type="date" name="dataUltimaManutencao" class="form-control form-control-sm" id="dataUltimaManutencao">
-                    </div>
-                    <div class="col-md-6 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100" style="background-color: #8A2BE2; border-color: #8A2BE2;">
-                            <i class="bi bi-search me-2"></i>Consultar
-                        </button>
-                    </div>
+            <form asp-action="Consulta" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="codigoItem" class="form-label text-muted small">Código</label>
+                    <input type="text" name="codigoItem" class="form-control form-control-sm" id="codigoItem">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label text-muted small">Status</label>
+                    <select id="status" name="status" class="form-select form-select-sm">
+                        <option value="">Todos...</option>
+                        <option>Ativo</option>
+                        <option>Em Manutenção</option>
+                        <option>Descartado</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="descricao" class="form-label text-muted small">Descrição</label>
+                    <input type="text" name="descricao" class="form-control form-control-sm" id="descricao">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="dataCompra" class="form-label text-muted small">Data de Compra</label>
+                    <input type="date" name="dataCompra" class="form-control form-control-sm" id="dataCompra">
+                </div>
+                <div class="col-md-3">
+                    <label for="dataUltimaManutencao" class="form-label text-muted small">Última Manutenção</label>
+                    <input type="date" name="dataUltimaManutencao" class="form-control form-control-sm" id="dataUltimaManutencao">
+                </div>
+
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"
+                            style="background-color: #8A2BE2; border-color: #8A2BE2;">
+                        <i class="bi bi-search me-2"></i>Consultar
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Secção da Lista de Equipamentos -->
-    <div class="card shadow-sm table-card">
+    <!-- ===================== LISTA DE EQUIPAMENTOS ===================== -->
+    <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover table-sm align-middle">
@@ -77,16 +112,16 @@
                             <th>Descrição</th>
                             <th>Série</th>
                             <th>Modelo</th>
-                            <th>Data da Compra</th>
-                            <th>Fim da Garantia</th>
+                            <th>Compra</th>
+                            <th>Fim Garantia</th>
                             <th>Status</th>
-                            <th>Ações</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model != null && Model.Any())
                         {
-                            @foreach (var item in Model)
+                            foreach (var item in Model)
                             {
                                 <tr>
                                     <td>@item.CodigoItem</td>
@@ -96,10 +131,31 @@
                                     <td>@item.DataCompra?.ToShortDateString()</td>
                                     <td>@item.DataFimGarantia?.ToShortDateString()</td>
                                     <td>@item.Status</td>
-                                    <td>
-                                        <a  asp-action="Detalhes" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Detalhes"><i class="bi bi-search"></i></a>
-                                        <a  asp-action="Editar" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-secondary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
-                                        <a  asp-action="Excluir" asp-route-id="@item.CodigoItem" class="btn btn-sm btn-outline-danger border-0" title="Excluir"><i class="bi bi-trash"></i></a>
+                                    <td class="text-center">
+                                        <!-- Botões que chamam modais -->
+                                        <a asp-action="Detalhes"
+                                           asp-route-id="@item.CodigoItem"
+                                           class="btn btn-sm btn-outline-secondary border-0 js-open-equip-modal"
+                                           data-title="Detalhes do Equipamento #@item.CodigoItem"
+                                           title="Detalhes">
+                                            <i class="bi bi-search"></i>
+                                        </a>
+
+                                        <a asp-action="Editar"
+                                           asp-route-id="@item.CodigoItem"
+                                           class="btn btn-sm btn-outline-secondary border-0 js-open-equip-modal"
+                                           data-title="Editar Equipamento #@item.CodigoItem"
+                                           title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <a asp-action="Excluir"
+                                           asp-route-id="@item.CodigoItem"
+                                           class="btn btn-sm btn-outline-danger border-0 js-open-equip-modal"
+                                           data-title="Excluir Equipamento #@item.CodigoItem"
+                                           title="Excluir">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             }
@@ -107,7 +163,9 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center py-4">Nenhum equipamento encontrado.</td>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    Nenhum equipamento encontrado.
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -116,14 +174,90 @@
         </div>
     </div>
 </div>
+
+<!-- ===================== MODAL REUTILIZÁVEL ===================== -->
+<div class="modal fade" id="equipamentosModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header">
+                <h5 class="modal-title fw-semibold" id="equipModalTitle">Carregando...</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="equipModalBody" class="p-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== SCRIPTS ===================== -->
 @section Scripts {
     <script>
-        // Script para fechar o alerta de sucesso automaticamente após 5 segundos
-        window.setTimeout(function() {
-            var alert = document.getElementById('success-alert');
-            if (alert) { new bootstrap.Alert(alert).close(); }
-        }, 5000);
-    </script>
-   
-}
+        (function () {
+            const modalEl = document.getElementById('equipamentosModal');
+            const modalBody = document.getElementById('equipModalBody');
+            const modalTitle = document.getElementById('equipModalTitle');
+            const bsModal = new bootstrap.Modal(modalEl);
 
+            const hasLoader = typeof showLoader === 'function' && typeof hideLoader === 'function';
+
+            document.addEventListener('click', async (ev) => {
+                const a = ev.target.closest('.js-open-equip-modal');
+                if (!a) return;
+                ev.preventDefault();
+
+                const url = a.getAttribute('href');
+                const title = a.dataset.title || 'Equipamento';
+                if (!url) return;
+
+                       try {
+            hasLoader && showLoader();
+            modalTitle.textContent = title;
+
+            // Mostra loading temporário
+            modalBody.innerHTML = `
+                <div class="p-5 text-center text-muted">
+                    <div class="spinner-border text-primary me-2"></div>
+                    Carregando conteúdo…
+                </div>`;
+
+            const resp = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const html = await resp.text();
+
+            //  Aplica o HTML recebido direto no corpo do modal
+            modalBody.innerHTML = html;
+
+            // Reativa validação Unobtrusive (para formulários)
+            if (window.jQuery && $.validator && $.validator.unobtrusive) {
+                $.validator.unobtrusive.parse(modalBody);
+            }
+
+            bsModal.show();
+
+            // Ajusta automaticamente o tamanho da modal se o conteúdo for grande
+            setTimeout(() => {
+                const modalDialog = modalEl.querySelector('.modal-dialog');
+                if (modalDialog) modalDialog.classList.add('modal-xxl');
+            }, 200);
+
+        } catch (e) {
+            modalBody.innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Erro ao carregar o conteúdo do modal.
+                </div>`;
+            console.error("Erro ao carregar modal:", e);
+        } finally {
+            hasLoader && hideLoader();
+        }
+
+            });
+        })();
+
+        // Alerta automático (fecha sucesso)
+        setTimeout(() => {
+            const alert = document.getElementById('success-alert');
+            if (alert) new bootstrap.Alert(alert).close();
+        }, 4000);
+    </script>
+}

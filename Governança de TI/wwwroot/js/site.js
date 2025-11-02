@@ -1,9 +1,15 @@
 ﻿// ============================================================
+// SITE.JS - TechGreen Neo 2025
+// ============================================================
+
+// ============================================================
 // NOTIFICAÇÕES
 // ============================================================
 
-// Evita recarregar notificações mais de uma vez
+// Define a cor padrão dos gráficos (com base no tema atual)
 Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-color');
+
+// Evita recarregar notificações mais de uma vez
 let notificationsLoaded = false;
 
 // Elementos do DOM usados nas notificações
@@ -20,7 +26,7 @@ $('#notification-bell-icon').one('click', function () {
 
     $.get('/api/NotificationApi/summary')
         .done(function (data) {
-            // Renderiza gamificação
+            // Renderiza gamificação ESG
             renderNotificationGamification(data.gamificacao);
 
             // Renderiza notificações de equipamentos
@@ -32,7 +38,7 @@ $('#notification-bell-icon').one('click', function () {
                 data.equipamentosVencendo,
                 item => `<strong>${item.descricao}</strong> vence em ${item.diasRestantes} dias.`,
                 "Nenhum equipamento vencendo.",
-                '@Url.Action("Consulta", "Equipamentos")'
+                '/Equipamentos/Consulta'
             );
 
             // Renderiza notificações de descartes
@@ -44,7 +50,7 @@ $('#notification-bell-icon').one('click', function () {
                 data.descartesRecentes,
                 item => `<strong>${item.empresaColetora}</strong> coletou ${item.descricaoEquipamento}.`,
                 "Nenhum descarte recente.",
-                '@Url.Action("Consulta", "Descarte")'
+                '/Descarte/Consulta'
             );
 
             notificationsLoaded = true;
@@ -55,6 +61,96 @@ $('#notification-bell-icon').one('click', function () {
         })
         .always(() => $loader.hide());
 });
+
+// ============================================================
+// FUNÇÕES AUXILIARES DE NOTIFICAÇÕES
+// ============================================================
+
+/**
+ * Renderiza a notificação de gamificação ESG dentro do menu suspenso.
+ */
+function renderNotificationGamification(gamificacao) {
+    const container = $('#notification-gamification-content');
+    container.empty();
+
+    if (!gamificacao) {
+        container.html(`
+            <li>
+                <div class="dropdown-item text-muted small px-3">
+                    Nenhuma conquista recente.
+                </div>
+            </li>
+        `);
+        return;
+    }
+
+    container.html(`
+        <li>
+            <div class="notification-item">
+                <div class="notification-icon text-primary">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <div>
+                    <p class="text-body mb-1">
+                        <strong>${gamificacao.titulo || 'Nova Conquista!'}</strong>
+                    </p>
+                    <small class="text-muted">
+                        ${gamificacao.mensagem || 'Você avançou em seu progresso ESG!'}
+                    </small>
+                </div>
+            </div>
+        </li>
+    `);
+}
+
+/**
+ * Renderiza uma lista genérica de notificações (equipamentos, descartes, etc).
+ */
+function renderNotificationList(container, titulo, icon, iconColor, lista, formatItem, vazioMsg, link) {
+    container.empty();
+
+    // Cabeçalho
+    container.append(`
+        <li>
+            <h6 class="dropdown-header fw-semibold">
+                <i class="bi ${icon} ${iconColor} me-2"></i>${titulo}
+            </h6>
+        </li>
+    `);
+
+    // Lista de itens
+    if (lista && lista.length > 0) {
+        lista.forEach(item => {
+            container.append(`
+                <li>
+                    <div class="notification-item">
+                        <div class="notification-icon ${iconColor}">
+                            <i class="bi ${icon}"></i>
+                        </div>
+                        <div>
+                            <p class="text-body mb-1">${formatItem(item)}</p>
+                            <small class="text-muted">${new Date().toLocaleDateString('pt-BR')}</small>
+                        </div>
+                    </div>
+                </li>
+            `);
+        });
+
+        container.append(`
+            <li>
+                <a href="${link}" class="dropdown-item text-center small text-primary">
+                    Ver todos
+                </a>
+            </li>
+        `);
+    } else {
+        container.append(`
+            <li>
+                <div class="dropdown-item text-muted small px-3">${vazioMsg}</div>
+            </li>
+        `);
+    }
+}
 
 // ============================================================
 // DASHBOARD PRINCIPAL
@@ -88,7 +184,7 @@ async function carregarDashboard() {
 }
 
 // ============================================================
-// GAMIFICAÇÃO ESG
+// GAMIFICAÇÃO ESG (Painel principal)
 // ============================================================
 
 function renderizarGamificacao(g) {

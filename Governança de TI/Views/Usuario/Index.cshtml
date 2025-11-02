@@ -63,26 +63,32 @@
                             {
                                 <tr>
                                     <td>
-                                        @if (item.FotoPerfil != null && item.FotoPerfil.Length > 0)
-                                        {
-                                            var base64 = Convert.ToBase64String(item.FotoPerfil);
-                                            <img src="data:image/png;base64,@base64"
-                                                 class="rounded-circle border shadow-sm"
-                                                 style="width:45px;height:45px;object-fit:cover;" />
+                                        @{
+                                            // Define imagem padrão
+                                            var fotoSrc = Url.Content("~/img/default-user.png");
+
+                                            // Se o usuário tiver uma imagem, exibe ela
+                                            if (!string.IsNullOrEmpty(item.CaminhoFotoPerfil))
+                                            {
+                                                fotoSrc = Url.Content(item.CaminhoFotoPerfil);
+                                            }
                                         }
-                                        else
-                                        {
-                                            <img src="~/img/default-user.png"
-                                                 class="rounded-circle border shadow-sm"
-                                                 style="width:45px;height:45px;object-fit:cover;" />
-                                        }
+
+                                        <img src="@fotoSrc"
+                                             class="rounded-circle border shadow-sm"
+                                             style="width:45px;height:45px;object-fit:cover;" />
                                     </td>
+
                                     <td class="fw-semibold">@item.Nome</td>
                                     <td class="text-muted">@item.Email</td>
                                     <td>@(item.Departamento?.Nome ?? "-")</td>
+
                                     <td>
-                                        <span class="badge bg-secondary-subtle text-secondary px-3 py-1 rounded-pill">@item.Perfil</span>
+                                        <span class="badge bg-secondary-subtle text-secondary px-3 py-1 rounded-pill">
+                                            @item.Perfil
+                                        </span>
                                     </td>
+
                                     <td>
                                         @if (item.Status == "Ativo")
                                         {
@@ -93,24 +99,39 @@
                                             <span class="badge bg-danger-subtle text-danger px-3 py-1 rounded-pill">Inativo</span>
                                         }
                                     </td>
+
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-outline-primary btn-editar-usuario"
-                                                    data-usuario-id="@item.Id" title="Editar">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary btn-editar-usuario"
+                                                    data-usuario-id="@item.Id"
+                                                    title="Editar">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary btn-detalhes-usuario"
-                                                    data-usuario-id="@item.Id" title="Detalhes">
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-secondary btn-detalhes-usuario"
+                                                    data-usuario-id="@item.Id"
+                                                    title="Detalhes">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger btn-excluir-usuario"
-                                                    data-usuario-id="@item.Id" title="Excluir">
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger btn-excluir-usuario"
+                                                    data-usuario-id="@item.Id"
+                                                    title="Excluir">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
-                                            <form asp-action="RedefinirSenha" asp-route-id="@item.Id" method="post" class="d-inline"
+
+                                            <form asp-action="RedefinirSenha"
+                                                  asp-route-id="@item.Id"
+                                                  method="post"
+                                                  class="d-inline"
                                                   onsubmit="return confirm('Deseja redefinir a senha deste usuário?');">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Redefinir Senha">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-warning"
+                                                        title="Redefinir Senha">
                                                     <i class="bi bi-key"></i>
                                                 </button>
                                             </form>

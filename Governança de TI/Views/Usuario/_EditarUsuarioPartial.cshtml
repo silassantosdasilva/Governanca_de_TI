@@ -5,9 +5,11 @@
 
     <div asp-validation-summary="All" class="text-danger mb-3 validation-summary-placeholder"></div>
 
+    <!-- Campos ocultos necessários -->
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="Senha" />
     <input type="hidden" asp-for="DataDeCadastro" />
+    <input type="hidden" asp-for="CaminhoFotoPerfil" />
 
     <!-- ===================== INFORMAÇÕES PRINCIPAIS ===================== -->
     <div class="row g-3">
@@ -35,7 +37,10 @@
         </label>
         <div class="input-group">
             <select asp-for="DepartamentoId" class="form-select shadow-sm" asp-items="ViewBag.DepartamentoId" id="DepartamentoIdModalEditar"></select>
-            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalGerenciarDepartamentos" title="Adicionar novo departamento">
+            <button type="button" class="btn btn-outline-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalGerenciarDepartamentos"
+                    title="Adicionar novo departamento">
                 <i class="bi bi-plus-lg"></i>
             </button>
         </div>
@@ -71,54 +76,58 @@
     <!-- ===================== FOTO DE PERFIL ===================== -->
     <hr class="my-4" />
     <div class="text-center">
-        <label class="form-label d-block text-muted mb-2">
+        <label asp-for="FotoUpload" class="form-label d-block text-muted mb-2">
             <i class="bi bi-camera me-1"></i>Foto de Perfil
         </label>
 
         @{
-            var fotoSrcEditar = "~/img/default-user.png";
-            if (Model.FotoPerfil != null && Model.FotoPerfil.Length > 0)
-            {
-                fotoSrcEditar = $"data:image/png;base64,{Convert.ToBase64String(Model.FotoPerfil)}";
-            }
+            // Determina a imagem a ser exibida (cadastrada ou padrão)
+            var fotoSrcEditar = string.IsNullOrEmpty(Model.CaminhoFotoPerfil)
+            ? Url.Content("~/img/default-user.png")
+            : Url.Content(Model.CaminhoFotoPerfil.StartsWith("/") ? Model.CaminhoFotoPerfil : "/" + Model.CaminhoFotoPerfil);
         }
 
         <img id="previewImagemModalEditar"
-             src="@Url.Content(fotoSrcEditar)"
+             src="@fotoSrcEditar"
              class="rounded-circle shadow-sm mb-3 border"
-             style="width: 100px; height: 100px; object-fit: cover;" />
+             style="width:100px;height:100px;object-fit:cover;transition:all 0.3s ease;" />
 
         <div class="d-flex justify-content-center">
-            <input type="file" name="Imagem" id="inputImagemModalEditar" class="form-control form-control-sm w-75" accept="image/*" />
+            <input asp-for="FotoUpload"
+                   type="file"
+                   id="inputImagemModalEditar"
+                   class="form-control form-control-sm w-75"
+                   accept="image/*" />
         </div>
 
         <small class="text-muted d-block mt-2">
-            Carregue uma nova imagem apenas se desejar substituí-la.
+            Carregue uma nova imagem apenas se desejar substituí-la.<br />
+            O sistema salvará automaticamente em <strong>wwwroot/perfil/perfil-X.jpg</strong>.
         </small>
     </div>
 </form>
 
-<!-- ===================== SCRIPTS ===================== -->
+<!-- ===================== SCRIPT: Preview da Imagem ===================== -->
 <script>
-    // Preview da imagem ao escolher arquivo
-    const imageInput = document.getElementById('inputImagemModalEditar');
-    const preview = document.getElementById('previewImagemModalEditar');
+    const inputEditar = document.getElementById('inputImagemModalEditar');
+    const previewEditar = document.getElementById('previewImagemModalEditar');
 
-    if (imageInput && preview) {
-        imageInput.addEventListener('change', function (e) {
+    // Atualiza preview quando o usuário escolhe nova imagem
+    if (inputEditar && previewEditar) {
+        inputEditar.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = ev => preview.src = ev.target.result;
+                reader.onload = ev => previewEditar.src = ev.target.result;
                 reader.readAsDataURL(file);
             }
         });
     }
 
-    // Remove obrigatoriedade do campo imagem na edição
+    // Remove obrigatoriedade da imagem no modo edição
     $('#inputImagemModalEditar').removeAttr('data-val-required');
 
-    // Reativa validação jQuery Unobtrusive
+    // Reativa validação jQuery Unobtrusive (necessário em modais AJAX)
     if ($.validator && $.validator.unobtrusive) {
         $.validator.unobtrusive.parse("#formEditarUsuario");
     }

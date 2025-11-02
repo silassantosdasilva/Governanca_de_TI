@@ -1,54 +1,32 @@
-﻿/* ============================================================
-   ===== LAYOUT GERAL - PADRÃO TECHGREEN - FINAL (CODINGLAB) =====
+﻿/* ============================================================ 
+   ===== LAYOUT GERAL - PADRÃO TECHGREEN (FINAL 2025) =====
    ============================================================ */
 
 /* ===== VARIÁVEIS GLOBAIS ===== */
 :root {
     --sidebar-width: 80px;
     --sidebar-width-expanded: 250px;
-    --header-bg: #ffffff;
-    --content-bg: #f8f9fa;
-    --border-color: #e9ecef;
-    --active-color: #7b4dff;
-    --hover-bg: #f2ecff;
-    --active-bg: #e7dcff;
-    --text-dark: #333;
-    --text-muted: #6c757d;
     --radius: 12px;
 }
 
 /* ===== BASE ===== */
 body {
-    background-color: var(--content-bg);
+    background-color: var(--tg-bg);
     overflow-x: hidden;
     font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--tg-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .page-container {
     display: flex;
     min-height: 100vh;
     transition: all 0.35s ease;
-}
-/*darktema */
-.theme-toggle-btn {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 10px;
-    background-color: var(--btn-bg);
-    color: var(--btn-text);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    background: var(--tg-bg);
 }
 
-.theme-toggle-btn:hover {
-    background-color: var(--primary-hover);
-}
 /* ============================================================
-   SIDEBAR - ESTILO CODINGLAB
+   SIDEBAR - TECHGREEN
    ============================================================ */
 .sidebar {
     position: fixed;
@@ -56,21 +34,20 @@ body {
     left: 0;
     height: 100vh;
     width: var(--sidebar-width);
-    background: #fff;
-    border-right: 1px solid var(--border-color);
+    background: var(--tg-sidebar-bg) !important;
+    border-right: 1px solid var(--tg-sidebar-bg);
     transition: all 0.35s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-    border-radius: 0 20px 20px 0;
     z-index: 1030;
     overflow: hidden;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
 }
 
-    .sidebar.sidebar-expanded {
-        width: var(--sidebar-width-expanded);
-    }
+.sidebar.sidebar-expanded {
+    width: var(--sidebar-width-expanded);
+}
 
 /* ===== Cabeçalho e perfil ===== */
 .sidebar-header {
@@ -80,39 +57,37 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    border-bottom: 1px solid var(--border-color);
-    background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%);
-    border-radius: 0 0 20px 20px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
+    background: var(--tg-sidebar-bg) !important;
+    border-bottom: none !important;
 }
 
-    /* Botão de expandir/recolher */
-    .sidebar-header .sidebar-collapse {
-        position: absolute;
-        right: 10px;
-        top: 10px;
-        background: #f5f5f5 !important;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: grid;
-        place-items: center;
-        color: var(--active-color);
-        transition: all 0.3s ease;
-        z-index: 10;
-    }
+.sidebar-header .sidebar-collapse {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: var(--tg-sidebar-hover);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    color: var(--tg-primary);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
 
-        .sidebar-header .sidebar-collapse:hover {
-            background: var(--hover-bg) !important;
-        }
+.sidebar-header .sidebar-collapse:hover {
+    background: var(--tg-sidebar-active);
+}
 
-/* Ícone rotaciona ao expandir */
 .sidebar.sidebar-expanded .sidebar-collapse i {
     transform: rotate(180deg);
     transition: transform 0.3s ease;
 }
 
-/* Avatar e perfil */
+/* ============================================================
+   PERFIL E AVATAR (atualizado 2025)
+   ============================================================ */
 .sidebar-profile {
     display: flex;
     align-items: center;
@@ -122,95 +97,110 @@ body {
     transition: all 0.3s ease;
 }
 
-    .sidebar-profile .avatar {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #8A2BE2, #b28cff);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 2.3rem;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(138, 43, 226, 0.25);
-    }
+/* Avatar - substitui o círculo roxo grande */
+.sidebar-profile .avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tg-sidebar-bg);
+    position: relative;
+}
 
-        .sidebar-profile .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
+.sidebar-profile .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(138, 43, 226, 0.6);
+    box-shadow: 0 0 5px rgba(138, 43, 226, 0.25);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
 
-    .sidebar-profile .identity {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: 10px;
-        transition: all 0.3s ease;
-    }
+.sidebar-profile .avatar img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(138, 43, 226, 0.45);
+}
 
-        .sidebar-profile .identity .name {
-            font-weight: 600;
-            color: var(--text-dark);
-            font-size: 0.95rem;
-        }
+/* Identidade */
+.sidebar-profile .identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
 
-        .sidebar-profile .identity .email {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            line-height: 1.2;
-        }
+.sidebar-profile .identity .name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--tg-text);
+}
 
-/* Marca TechGreen */
+.sidebar-profile .identity .email {
+    color: var(--tg-text);
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+
+/* ============================================================
+   AVATAR FIXO (caso usado fora do bloco acima)
+   ============================================================ */
+.sidebar-avatar {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid rgba(138, 43, 226, 0.6);
+    box-shadow: 0 0 5px rgba(138, 43, 226, 0.25);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.sidebar-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(138, 43, 226, 0.45);
+}
+
 .brand-title {
     font-size: 0.75rem;
-    color: var(--active-color);
+    color: var(--tg-primary);
     margin-top: 6px;
     font-weight: 700;
-    letter-spacing: 0.08em;
     text-transform: uppercase;
-    transition: all 0.3s ease;
 }
 
 /* Estado recolhido */
 .sidebar:not(.sidebar-expanded) .sidebar-profile .identity,
 .sidebar:not(.sidebar-expanded) .brand-title {
-    opacity: 0;
-    transform: translateY(-5px);
-    pointer-events: none;
-}
-
-.sidebar:not(.sidebar-expanded) .sidebar-profile .avatar {
-    width: 52px;
-    height: 52px;
-    transition: width 0.3s ease, height 0.3s ease;
+    display: none !important;
 }
 
 /* ===== Campo de busca ===== */
 .sidebar-search {
     display: none;
     align-items: center;
-    background: #f6f6f9;
+    background: var(--tg-sidebar-hover);
     margin: 14px;
     border-radius: 8px;
     padding: 8px 12px;
     gap: 8px;
 }
 
-    .sidebar-search i {
-        color: var(--text-muted);
-        font-size: 1rem;
-    }
+.sidebar-search i {
+    color: var(--tg-text);
+    opacity: 0.6;
+}
 
-    .sidebar-search input {
-        border: none;
-        background: transparent;
-        outline: none;
-        font-size: 0.9rem;
-        flex-grow: 1;
-    }
+.sidebar-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.9rem;
+    flex-grow: 1;
+    color: var(--tg-text);
+}
 
 .sidebar.sidebar-expanded .sidebar-search {
     display: flex;
@@ -235,49 +225,50 @@ body {
     padding: 10px 14px;
     border-radius: 10px;
     text-decoration: none;
-    color: var(--text-dark);
+    color: var(--tg-text);
     font-weight: 500;
     transition: all 0.25s ease;
 }
 
-    .sidebar-nav-link i {
-        font-size: 1.25rem;
-        color: #7a7a7a;
-        min-width: 26px;
-        text-align: center;
-        transition: color 0.3s;
-    }
+.sidebar-nav-link i {
+    font-size: 1.25rem;
+    color: var(--tg-text);
+    opacity: 0.7;
+    min-width: 26px;
+    text-align: center;
+    transition: color 0.3s;
+}
 
-    .sidebar-nav-link span {
-        white-space: nowrap;
-        opacity: 0;
-        max-width: 0;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
+.sidebar .sidebar-nav-link span {
+    display: inline-block;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: middle;
+    text-overflow: ellipsis;
+    transition: all 0.3s ease;
+}
 
 .sidebar.sidebar-expanded .sidebar-nav-link span {
+    max-width: 180px;
     opacity: 1;
-    max-width: 200px;
+    margin-left: 4px;
 }
 
 .sidebar-nav-link:hover {
-    background: var(--hover-bg);
-    color: var(--active-color);
+    background: var(--tg-sidebar-hover);
+    color: var(--tg-primary);
 }
-
-    .sidebar-nav-link:hover i {
-        color: var(--active-color);
-    }
 
 .sidebar-nav-item.active > .sidebar-nav-link {
-    background: var(--active-bg);
-    color: var(--active-color);
+    background: var(--tg-sidebar-active);
+    color: var(--tg-primary);
 }
 
-    .sidebar-nav-item.active > .sidebar-nav-link i {
-        color: var(--active-color);
-    }
+.sidebar-nav-item.active > .sidebar-nav-link i {
+    color: var(--tg-primary);
+}
 
 /* ===== Submenu ===== */
 .submenu-panel {
@@ -296,109 +287,100 @@ body {
     gap: 10px;
     padding: 7px 0;
     border-radius: 8px;
-    color: #5f5f5f;
+    color: var(--tg-text);
+    opacity: 0.8;
     text-decoration: none;
     transition: all 0.25s ease;
 }
 
-    .submenu-link i {
-        font-size: 1rem;
-        color: var(--text-muted);
-        margin-right: 4px;
-    }
+.submenu-link:hover {
+    color: var(--tg-primary);
+}
 
-    .submenu-link:hover {
-        color: var(--active-color);
-    }
+/* ============================================================
+   RODAPÉ E BOTÃO DE TEMA
+   ============================================================ */
+.sidebar-footer {
+    border-top: 1px solid var(--tg-border);
+    padding: 10px 14px 16px;
+    background: var(--tg-sidebar-bg) !important;
+    transition: background-color 0.3s ease;
+}
 
-/* Remove bolinhas dos submenus */
-.submenu-panel ul,
-.submenu-list {
+.sidebar-footer ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-/* ===== Rodapé ===== */
-.sidebar-footer {
-    border-top: 1px solid var(--border-color);
-    padding: 10px 14px 16px;
-    background: #fff;
+.sidebar-footer .sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: var(--tg-text);
+    transition: all 0.3s ease;
 }
 
-    .sidebar-footer ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+.sidebar-footer .sidebar-nav-link:hover {
+    background-color: var(--tg-sidebar-hover);
+    color: var(--tg-primary);
+}
 
-    .sidebar-footer .sidebar-nav-link {
-        padding: 10px;
-    }
-
-/* ===== Botão de modo escuro ===== */
+/* Botão Modo Escuro/Claro */
 .toggle-theme {
+    margin-top: 10px;
+    background-color: var(--tg-sidebar-hover) !important;
+    border: none;
+    color: var(--tg-text);
+    padding: 10px 12px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #f5f5f5;
-    border-radius: 12px;
-    padding: 8px 10px;
-    cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9rem;
-    color: var(--text-dark);
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-    .toggle-theme i {
-        font-size: 1.2rem;
-        transition: transform 0.3s ease, color 0.3s ease;
-        color: var(--active-color);
-    }
-
-.toggle-label {
-    margin-left: 8px;
-    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .toggle-theme:hover {
-    background: #f0e9ff;
-    color: var(--active-color);
+    background-color: var(--tg-sidebar-active) !important;
+    color: var(--tg-primary) !important;
 }
 
-/* Quando sidebar está recolhido, esconde o texto */
-.sidebar:not(.sidebar-expanded) .toggle-label {
+.toggle-theme i {
+    color: var(--tg-primary);
+    font-size: 1.2rem;
+}
+
+/* Oculta label no modo recolhido */
+.sidebar .toggle-label {
+    display: inline-block;
+    max-width: 0;
     opacity: 0;
-    transform: translateX(-10px);
-    pointer-events: none;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: middle;
+    transition: all 0.3s ease;
 }
 
-/* Botão ativo (modo escuro ligado) */
-body.dark-mode .toggle-theme {
-    background: #2b2b2b;
-    color: #f1f1f1;
+.sidebar.sidebar-expanded .toggle-label {
+    max-width: 100px;
+    opacity: 1;
+    margin-left: 6px;
 }
 
-    body.dark-mode .toggle-theme i {
-        color: #ffd43b;
-    }
-
-body.dark-mode {
-    background-color: #1e1e1e;
-}
-
-/* ===============================
+/* ============================================================
    HEADER MODERNO - TECHGREEN FINAL
-   =============================== */
+   ============================================================ */
 .main-header {
     position: sticky;
     top: 0;
     z-index: 100;
     height: 65px;
-    background: #fff;
-    border-bottom: 1px solid var(--border-color);
+    background: var(--tg-header-bg) !important;
+    border-bottom: 1px solid var(--tg-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -408,14 +390,12 @@ body.dark-mode {
 .header-title h5 {
     font-weight: 700;
     font-size: 1.15rem;
-    background: linear-gradient(90deg, #7b4dff, #a47eff);
+    background: linear-gradient(90deg, var(--tg-primary), #a47eff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    letter-spacing: 0.03em;
     margin: 0;
 }
 
-/* Ícones de ação (notificação, configurações) */
 .header-actions {
     display: flex;
     align-items: center;
@@ -429,99 +409,86 @@ body.dark-mode {
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    color: var(--text-dark);
+    color: var(--tg-text);
     font-size: 1.25rem;
     transition: all 0.25s ease;
-    background: transparent;
 }
 
-    .header-icon:hover {
-        background: var(--hover-bg);
-        color: var(--active-color);
-    }
-
-    .header-icon.active,
-    .header-icon:focus {
-        background: var(--active-bg);
-        color: var(--active-color);
-    }
-
-/* ============================================================
-   HEADER + CONTEÚDO MOVENDO JUNTOS
-   ============================================================ */
-.main-wrapper {
-    flex-grow: 1;
-    margin-left: var(--sidebar-width);
-    transition: margin-left 0.35s ease;
+.header-icon:hover {
+    background: var(--tg-sidebar-hover);
+    color: var(--tg-primary);
 }
+/* ==========================================================
+   LOADER GLOBAL (TechGreen Neo 2025)
+   ========================================================== */
 
-.sidebar.sidebar-expanded ~ .main-wrapper {
-    margin-left: var(--sidebar-width-expanded);
-}
-
-/* HEADER acompanha o movimento */
-.main-wrapper .main-header {
-    position: sticky;
-    top: 0;
-    background: var(--header-bg);
-    border-bottom: 1px solid var(--border-color);
-    z-index: 100;
-}
-
-/* ============================================================
-   LOADER TRANSLÚCIDO
-   ============================================================ */
 #global-loader {
     position: fixed;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.6);
-    z-index: 2000;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 10, 15, 0.85); /* fundo translúcido escuro */
+    backdrop-filter: blur(4px);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    z-index: 9999;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease;
+    transition: opacity 1s ease, visibility 1s ease; /* 🕒 transição de 1s */
 }
 
-    #global-loader.show {
+    #global-loader.active {
         opacity: 1;
         visibility: visible;
     }
 
-.loader-ring {
-    border: 4px solid rgba(138, 43, 226, 0.2);
-    border-top: 4px solid var(--active-color);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-}
-
+/* ===== Texto "CARREGANDO..." ===== */
 .loader-text {
-    margin-top: 12px;
-    color: var(--active-color);
+    color: #b77cff;
     font-weight: 600;
+    font-size: 1.5rem;
+    margin-top: 18px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px rgba(183, 124, 255, 0.7);
+    animation: fadeText 1.4s ease-in-out infinite alternate;
 }
 
+/* ===== Animação de anel ===== */
+.loader-ring {
+    width: 65px;
+    height: 65px;
+    border: 5px solid rgba(138, 43, 226, 0.2);
+    border-top-color: #a15bff;
+    border-radius: 50%;
+    animation: spin 1.1s linear infinite;
+    box-shadow: 0 0 15px rgba(161, 91, 255, 0.25);
+}
+
+/* ===== Barra de progresso ===== */
 .loader-bar-container {
-    margin-top: 10px;
-    width: 120px;
+    width: 160px;
     height: 6px;
-    background: #e9ecef;
-    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin-top: 20px;
     overflow: hidden;
+    position: relative;
 }
 
 .loader-bar {
-    width: 40%;
+    width: 60px;
     height: 100%;
-    background: var(--active-color);
-    border-radius: 999px;
-    animation: progressMove 1.6s ease-in-out infinite;
+    background: linear-gradient(90deg, #7a38ff, #b77cff);
+    position: absolute;
+    left: -60px;
+    border-radius: 10px;
+    animation: progressMove 1.2s linear infinite;
 }
 
+/* ===== Animações ===== */
 @keyframes spin {
     to {
         transform: rotate(360deg);
@@ -530,30 +497,64 @@ body.dark-mode {
 
 @keyframes progressMove {
     0% {
-        transform: translateX(-100%);
+        left: -60px;
     }
 
     50% {
-        transform: translateX(20%);
+        left: 50%;
     }
 
     100% {
-        transform: translateX(100%);
+        left: 110%;
     }
 }
 
+@keyframes fadeText {
+    from {
+        opacity: 0.5;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
 /* ============================================================
-   RESPONSIVO
+   CONTEÚDO E RESPONSIVIDADE
    ============================================================ */
+.main-wrapper {
+    flex-grow: 1;
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.35s ease;
+    border-left: none !important;
+    background: var(--tg-bg) !important;
+}
+
+.sidebar.sidebar-expanded ~ .main-wrapper {
+    margin-left: var(--sidebar-width-expanded);
+}
+
 @media (max-width: 991.98px) {
     .sidebar {
-        width: 280px;
+        width: 260px; /* leve redução para caber melhor na tela */
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
         transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
+        transition: transform 0.35s ease, opacity 0.3s ease;
+        background-color: var(--tg-sidebar-bg) !important;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+        z-index: 2000;
+        opacity: 0; /* invisível até abrir */
+        overflow-y: auto; /* permite rolagem do menu */
+        overflow-x: hidden;
     }
 
         .sidebar.is-open {
             transform: translateX(0);
+            opacity: 1; /* visível quando aberto */
         }
 
     .main-wrapper {
@@ -561,26 +562,65 @@ body.dark-mode {
         width: 100% !important;
     }
 
-        .main-wrapper .main-header {
-            margin-left: 0 !important;
-            width: 100% !important;
-        }
-
-    .submenu-panel {
-        position: static;
-        transform: none;
-        opacity: 1;
-        visibility: visible;
-        height: auto;
-        width: 100%;
-        border-left: none;
-        box-shadow: none;
-        padding-top: 0;
-    }
-
-    .sidebar-nav-link span {
-        max-width: 100% !important;
+    /* Garante que ícones e textos apareçam normalmente */
+    .sidebar.is-open .sidebar-nav-link span,
+    .sidebar.is-open .sidebar-profile .identity,
+    .sidebar.is-open .brand-title {
+        display: inline-block !important;
         opacity: 1 !important;
-        transform: none !important;
+        max-width: 100% !important;
     }
+
+    /* Fundo semitransparente ao abrir o menu (efeito modal leve) */
+    .sidebar::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(2px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s ease;
+        z-index: -1;
+    }
+
+    .sidebar.is-open::after {
+        opacity: 1;
+        pointer-events: all;
+    }
+}
+@media (max-width: 991.98px) {
+    :root[data-bs-theme="light"] .sidebar::after {
+        background: rgba(255, 255, 255, 0); /* totalmente transparente */
+        backdrop-filter: none;
+    }
+
+    :root[data-bs-theme="light"] .sidebar.is-open::after {
+        background: rgba(255, 255, 255, 0); /* sem overlay no claro */
+    }
+}
+
+/* ============================================================
+   CORREÇÃO VISUAL FINAL - FUNDO CONTÍNUO
+   ============================================================ */
+.sidebar,
+.sidebar-header,
+.sidebar-footer {
+    background: var(--tg-sidebar-bg) !important;
+    border-color: var(--tg-sidebar-bg) !important;
+}
+
+.page-container {
+    box-shadow: none !important;
+    background: var(--tg-bg) !important;
+}
+
+.main-header {
+    background: var(--tg-header-bg) !important;
+    border-color: var(--tg-border);
+}
+
+.sidebar {
+    min-height: 100vh;
+    height: 100%;
 }

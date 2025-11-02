@@ -8,87 +8,95 @@
     <!-- ===================== INFORMAÇÕES PRINCIPAIS ===================== -->
     <div class="row g-3">
         <div class="col-md-6">
-            <label for="Nome" class="form-label text-muted small mb-1">
+            <label asp-for="Nome" class="form-label text-muted small mb-1">
                 <i class="bi bi-person-circle me-1"></i>Nome
             </label>
-            @Html.TextBox("Nome", null, new { @class = "form-control shadow-sm", placeholder = "Digite o nome completo" })
-            @Html.ValidationMessage("Nome", null, new { @class = "text-danger small" })
+            <input asp-for="Nome" class="form-control shadow-sm" placeholder="Digite o nome completo" />
+            <span asp-validation-for="Nome" class="text-danger small"></span>
         </div>
 
         <div class="col-md-6">
-            <label for="Email" class="form-label text-muted small mb-1">
+            <label asp-for="Email" class="form-label text-muted small mb-1">
                 <i class="bi bi-envelope-at me-1"></i>Email
             </label>
-            @Html.TextBox("Email", null, new { @class = "form-control shadow-sm", type = "email", placeholder = "exemplo@email.com" })
-            @Html.ValidationMessage("Email", null, new { @class = "text-danger small" })
+            <input asp-for="Email" type="email" class="form-control shadow-sm" placeholder="exemplo@email.com" />
+            <span asp-validation-for="Email" class="text-danger small"></span>
         </div>
     </div>
 
     <!-- ===================== DEPARTAMENTO ===================== -->
     <div class="mt-3">
-        <label for="DepartamentoId" class="form-label text-muted small mb-1">
+        <label asp-for="DepartamentoId" class="form-label text-muted small mb-1">
             <i class="bi bi-building me-1"></i>Departamento
         </label>
         <div class="input-group">
-            @Html.DropDownList(
-            "DepartamentoId",
-                        ViewBag.DepartamentoId as SelectList,
-                        htmlAttributes: new { @class = "form-select shadow-sm", id = "DepartamentoIdModal" }
-                        )
-            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalGerenciarDepartamentos" title="Adicionar novo departamento">
+            @Html.DropDownListFor(model => model.DepartamentoId,
+            ViewBag.DepartamentoId as SelectList,
+                        "Selecione...",
+                        new { @class = "form-select shadow-sm", id = "DepartamentoIdModal" })
+            <button type="button" class="btn btn-outline-secondary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalGerenciarDepartamentos"
+                    title="Adicionar novo departamento">
                 <i class="bi bi-plus-lg"></i>
             </button>
         </div>
-        @Html.ValidationMessage("DepartamentoId", null, new { @class = "text-danger small" })
+        <span asp-validation-for="DepartamentoId" class="text-danger small"></span>
     </div>
 
     <!-- ===================== PERFIL E STATUS ===================== -->
     <div class="row mt-3 g-3">
         <div class="col-md-6">
-            <label for="Perfil" class="form-label text-muted small mb-1">
+            <label asp-for="Perfil" class="form-label text-muted small mb-1">
                 <i class="bi bi-person-gear me-1"></i>Perfil
             </label>
-            @Html.DropDownList("Perfil", new List<SelectListItem> {
+            @Html.DropDownListFor(model => model.Perfil,
+                        new List<SelectListItem> {
                         new SelectListItem { Value = "", Text = "Selecione..." },
                         new SelectListItem { Value = "Admin", Text = "Administrador/TI" },
                         new SelectListItem { Value = "Usuario", Text = "Utilizador Comum" }
                         },
                         new { @class = "form-select shadow-sm" })
-            @Html.ValidationMessage("Perfil", null, new { @class = "text-danger small" })
+            <span asp-validation-for="Perfil" class="text-danger small"></span>
         </div>
 
         <div class="col-md-6">
-            <label for="Status" class="form-label text-muted small mb-1">
+            <label asp-for="Status" class="form-label text-muted small mb-1">
                 <i class="bi bi-circle-half me-1"></i>Status
             </label>
-            @Html.DropDownList("Status", new List<SelectListItem> {
+            @Html.DropDownListFor(model => model.Status,
+                        new List<SelectListItem> {
                         new SelectListItem { Value = "Ativo", Text = "Ativo" },
                         new SelectListItem { Value = "Inativo", Text = "Inativo" }
                         },
                         new { @class = "form-select shadow-sm" })
-            @Html.ValidationMessage("Status", null, new { @class = "text-danger small" })
+            <span asp-validation-for="Status" class="text-danger small"></span>
         </div>
     </div>
 
     <!-- ===================== FOTO DE PERFIL ===================== -->
     <hr class="my-4" />
     <div class="text-center">
-        <label class="form-label d-block text-muted mb-2">
+        <label asp-for="FotoUpload" class="form-label d-block text-muted mb-2">
             <i class="bi bi-camera me-1"></i>Foto de Perfil
         </label>
 
-        <img id="previewImagemModal" src="~/img/default-user.png"
+        <!-- Pré-visualização -->
+        <img id="previewImagemModal"
+             src="~/img/default-user.png"
              class="rounded-circle shadow-sm border mb-3"
              style="width:100px; height:100px; object-fit:cover;" />
 
         <div class="d-flex justify-content-center">
-            <input type="file" name="Imagem" id="inputImagemModal"
+            <input asp-for="FotoUpload"
+                   type="file"
                    class="form-control form-control-sm w-75"
-                   accept="image/*" />
+                   accept="image/*"
+                   id="inputImagemModal" />
         </div>
 
         <small class="text-muted d-block mt-2">
-            Escolha uma imagem de perfil (opcional).
+            A imagem será salva automaticamente em <strong>wwwroot/perfil/perfil-X.jpg</strong>
         </small>
     </div>
 
@@ -99,7 +107,7 @@
     </div>
 </form>
 
-<!-- ===================== SCRIPT: Preview + Validação ===================== -->
+<!-- ===================== SCRIPT: Preview da Imagem ===================== -->
 <script>
     const inputImg = document.getElementById('inputImagemModal');
     const previewImg = document.getElementById('previewImagemModal');
@@ -115,7 +123,7 @@
         });
     }
 
-    // Reativa validação jQuery Unobtrusive
+    // Reativa validação jQuery Unobtrusive (em recarregamentos AJAX)
     if ($.validator && $.validator.unobtrusive) {
         $.validator.unobtrusive.parse("#formCriarUsuario");
     }

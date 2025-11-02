@@ -1,24 +1,27 @@
 ﻿@model Governança_de_TI.Models.UsuarioModel
 @{
-    // Recebe as últimas atividades que foram passadas pelo controller
     var atividadesRecentes = ViewBag.Atividades as List<Governança_de_TI.Models.AuditLogModel> ?? new();
 }
+
 <!-- ===================== DETALHES DO USUÁRIO ===================== -->
 <div class="container-fluid">
 
     <!-- PERFIL -->
     <div class="d-flex align-items-center mb-4">
         @{
-            var fotoSrc = "~/img/default-user.png";
-            if (Model.FotoPerfil != null && Model.FotoPerfil.Length > 0)
-            {
-                fotoSrc = $"data:image/png;base64,{Convert.ToBase64String(Model.FotoPerfil)}";
-            }
+            // Define imagem padrão
+            var fotoSrc = string.IsNullOrEmpty(Model.CaminhoFotoPerfil)
+            ? Url.Content("~/img/default-user.png")
+            : Url.Content(Model.CaminhoFotoPerfil.StartsWith("/") ? Model.CaminhoFotoPerfil : "/" + Model.CaminhoFotoPerfil);
+
+            // Cache-busting para evitar exibição de imagem antiga
+            fotoSrc += $"?v={DateTime.Now.Ticks}";
         }
 
-        <img src="@Url.Content(fotoSrc)" alt="Foto de @Model.Nome"
-             class="rounded-circle shadow-sm me-3"
-             style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;" />
+        <img src="@fotoSrc"
+             alt="Foto de @Model.Nome"
+             class="rounded-circle shadow-sm me-3 border"
+             style="width:100px;height:100px;object-fit:cover;transition:all 0.3s ease;" />
 
         <div>
             <h4 class="mb-1">@Model.Nome</h4>

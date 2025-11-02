@@ -3,7 +3,7 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-bs-theme="light">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,12 +14,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
     <!-- CSS do projeto -->
-   @*  <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" /> *@
-
+    <!-- 1) Tema (variáveis light/dark via data-bs-theme) -->
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <!-- 2) Estilos estruturais/visuais da aplicação -->
     <link rel="stylesheet" href="~/css/Layout.css" asp-append-version="true" />
+
     @await RenderSectionAsync("Styles", required: false)
 
-    <!-- Estilos de Notificação (mantidos) -->
+    <!-- Estilo leve do dropdown de notificações (mantido) -->
     <style>
         .notification-dropdown {
             width: 340px;
@@ -46,7 +48,7 @@
             align-items: center;
             padding: 0.75rem 1.25rem;
             border-bottom: 1px solid #e9ecef;
-            transition: background-color 0.2s ease;
+            transition: background-color .2s;
         }
 
             .notification-item:last-child {
@@ -70,39 +72,40 @@
         }
 
             .notification-icon.text-warning {
-                background-color: #fff8e1 !important;
+                background: #fff8e1 !important;
                 color: #ffc107 !important;
             }
 
             .notification-icon.text-success {
-                background-color: #e6f7ec !important;
+                background: #e6f7ec !important;
                 color: #198754 !important;
             }
 
             .notification-icon.text-primary {
-                background-color: #e8eaf6 !important;
+                background: #e8eaf6 !important;
                 color: #8A2BE2 !important;
             }
 
         .notification-item .text-body {
-            font-size: 0.9rem;
+            font-size: .9rem;
             margin-bottom: 0;
             white-space: normal;
             line-height: 1.4;
         }
 
         .notification-item .text-muted {
-            font-size: 0.75rem;
+            font-size: .75rem;
         }
     </style>
 </head>
-
-<body class="bg-light">
+<body>
     <!-- ===== LOADER TRANSLÚCIDO ROXO ===== -->
     <div id="global-loader">
         <div class="loader-ring"></div>
         <div class="loader-text">CARREGANDO...</div>
-        <div class="loader-bar-container"><div class="loader-bar"></div></div>
+        <div class="loader-bar-container">
+            <div class="loader-bar"></div>
+        </div>
     </div>
 
     <!-- ===== CONTAINER GERAL ===== -->
@@ -112,26 +115,32 @@
         <nav class="sidebar shadow-sm">
             <!-- ===== HEADER / PERFIL ===== -->
             <div class="sidebar-header text-center py-4">
-                <!-- Botão expandir/recolher -->
+                <!-- Botão expandir/recolher (desktop) -->
                 <button type="button" class="btn btn-sm btn-light border-0 sidebar-collapse d-none d-lg-inline-flex" title="Expandir/recolher">
                     <i class="bi bi-chevron-double-left"></i>
                 </button>
 
                 <!-- Avatar e identidade -->
                 <div class="sidebar-profile d-flex align-items-center flex-column mt-3">
-                    <div class="avatar mb-2 position-relative">
+                    <div class="avatar mb-2 position-relative text-center">
                         @{
-                            var fotoClaim = HttpContextAccessor.HttpContext?.User?.FindFirst("FotoPerfil")?.Value;
-                            if (!string.IsNullOrEmpty(fotoClaim))
-                            {
-                                <img src="data:image/png;base64,@fotoClaim" alt="Avatar" class="avatar-img" />
-                            }
-                            else
-                            {
-                                <i class="bi bi-person-circle avatar-icon"></i>
-                            }
+                            // Recupera o caminho salvo nas Claims
+                            var caminhoFoto = HttpContextAccessor.HttpContext?.User?.FindFirst("CaminhoFotoPerfil")?.Value;
+
+                            // Garante que o caminho comece com "/" e define fallback padrão
+                            var fotoSrc = string.IsNullOrWhiteSpace(caminhoFoto)
+                            ? Url.Content("~/img/default-user.png")
+                            : Url.Content(caminhoFoto.StartsWith("/") ? caminhoFoto : "/" + caminhoFoto);
+
+                            // Adiciona um parâmetro de cache-busting para evitar imagens antigas em cache
+                            fotoSrc += $"?v={DateTime.UtcNow.Ticks}";
                         }
+
+                        <img src="@fotoSrc"
+                             alt="Foto de perfil"
+                             class="sidebar-avatar rounded-circle border border-2 border-light shadow-sm" />
                     </div>
+
 
                     @{
                         var nomeUsuario = HttpContextAccessor.HttpContext?.User?.FindFirst("FullName")?.Value ?? "Usuário";
@@ -146,11 +155,11 @@
                 <h6 class="fw-bold brand-title mt-2 text-accent">TECHGREEN</h6>
             </div>
 
-            <!-- ===== CAMPO DE BUSCA ===== -->
+       @*      <!-- ===== CAMPO DE BUSCA ===== -->
             <div class="sidebar-search">
                 <i class="bi bi-search"></i>
                 <input type="text" placeholder="Pesquisar...">
-            </div>
+            </div> *@
 
             <!-- ===== MENU PRINCIPAL ===== -->
             <ul class="sidebar-nav">
@@ -216,7 +225,7 @@
                     </li>
                 </ul>
 
-                <!-- Botão de Modo Escuro -->
+                <!-- Botão de Modo Escuro/Claro -->
                 <div class="toggle-theme mt-3" id="darkModeToggle">
                     <i class="bi bi-moon"></i>
                     <span class="toggle-label">Modo Escuro</span>
@@ -226,7 +235,7 @@
 
         <!-- ===== CONTEÚDO PRINCIPAL ===== -->
         <div class="main-wrapper flex-grow-1">
-            <!-- ===== HEADER MODERNO TECHGREEN ===== -->
+            <!-- ===== HEADER ===== -->
             <header class="main-header bg-white shadow-sm d-flex align-items-center justify-content-between px-4 py-3">
                 <!-- Botão Mobile -->
                 <button id="sidebar-toggle" class="btn btn-outline-secondary d-lg-none">
@@ -273,7 +282,7 @@
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
     </div>
 
-    <!-- TOAST GAMIFICAÇÃO -->
+    <!-- TOAST GAMIFICAÇÃO (mantido) -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100">
         <div id="gamificationToast" class="toast gamification-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
             <div class="toast-header">
@@ -285,223 +294,229 @@
             <div class="toast-body" id="gamificationToastBody">Mensagem de gamificação aqui.</div>
         </div>
     </div>
+
+    <!-- JS base -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script>
 
-          document.addEventListener("DOMContentLoaded", function () {
+    <!-- =========================================================
+         JS DO LAYOUT
+         - Tema (Bootstrap data-bs-theme + localStorage)
+         - Sidebar (expandir/recolher, mobile, submenu)
+         ========================================================= -->
+    <script>
+        window.addEventListener("beforeunload", () => {
+         document.getElementById("global-loader").classList.add("show");
+        });
+        window.addEventListener("load", () => {
+            document.getElementById("global-loader").classList.remove("show");
+        });
+        // ===========================
+        // THEME (Bootstrap 5.3)
+        // ===========================
+        document.addEventListener("DOMContentLoaded", function () {
             const toggle = document.getElementById("darkModeToggle");
             const icon = toggle.querySelector("i");
-            const label = document.getElementById("themeLabel");
-            const body = document.body;
+            const label = toggle.querySelector(".toggle-label");
+            const htmlTag = document.documentElement;
 
-            // Pega o tema salvo no navegador
+            // Recupera o tema salvo (default: light)
             const savedTheme = localStorage.getItem("theme") || "light";
             applyTheme(savedTheme);
 
             toggle.addEventListener("click", () => {
-                const isDark = body.classList.contains("dark-mode");
-                const newTheme = isDark ? "light" : "dark";
-                applyTheme(newTheme);
-                localStorage.setItem("theme", newTheme);
+                const next = htmlTag.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+                applyTheme(next);
+                localStorage.setItem("theme", next);
             });
 
             function applyTheme(theme) {
-                body.classList.remove("light-mode", "dark-mode");
-                body.classList.add(`${theme}-mode`);
-
+                htmlTag.setAttribute("data-bs-theme", theme);
                 if (theme === "dark") {
-                    icon.classList.replace("bi-moon", "bi-sun");
+                    icon.classList.replace("bi-moon", "bi-brightness-high");
                     label.textContent = "Modo Claro";
                 } else {
-                    icon.classList.replace("bi-sun", "bi-moon");
+                    icon.classList.replace("bi-brightness-high", "bi-moon");
                     label.textContent = "Modo Escuro";
                 }
             }
         });
 
-
+        // ===========================
+        // SIDEBAR (Desktop + Mobile)
+        // ===========================
         (function ($) {
-          'use strict';
+            'use strict';
 
-          // ================================================
-          // TECHGREEN SIDEBAR - VERSÃO FINAL (2025)
-          // ================================================
-          const $sidebar       = $('.sidebar');
-          const $collapseBtn   = $('.sidebar-collapse');
-          const $mobileToggle  = $('#sidebar-toggle');
-          const $overlay       = $('#sidebar-overlay');
-          const $doc           = $(document);
+            // Referências
+            const $sidebar      = $('.sidebar');
+            const $collapseBtn  = $('.sidebar-collapse');
+            const $mobileToggle = $('#sidebar-toggle');
+            const $overlay      = $('#sidebar-overlay');
+            const $doc          = $(document);
 
-          const CLASS_EXPANDED = 'sidebar-expanded';
-          const CLASS_OPEN     = 'is-open';
+            // Classes de estado
+            const CLASS_EXPANDED = 'sidebar-expanded';
+            const CLASS_OPEN     = 'is-open';
 
-          // ============================
-          // FUNÇÕES BASE
-          // ============================
-        function expandSidebar() {
-          $sidebar.addClass(CLASS_EXPANDED);
-          // Garante que o ícone mude visualmente
-          $collapseBtn.find('i')
-            .removeClass('bi-chevron-double-right')
-            .addClass('bi-chevron-double-left');
-        }
-
-        function collapseSidebar() {
-          $sidebar.removeClass(CLASS_EXPANDED);
-          closeAllSubmenus();
-          // Atualiza o ícone ao recolher
-          $collapseBtn.find('i')
-            .removeClass('bi-chevron-double-left')
-            .addClass('bi-chevron-double-right');
-        }
-
-          function openMobileSidebar() {
-            $sidebar.addClass(CLASS_OPEN);
-            $overlay.addClass('is-visible');
-          }
-
-          function closeMobileSidebar() {
-            $sidebar.removeClass(CLASS_OPEN);
-            $overlay.removeClass('is-visible');
-          }
-
-          function toggleChevron($link, isOpen) {
-            const $icon = $link.find('.submenu-chevron i');
-            if ($icon.length) {
-              $icon.toggleClass('bi-chevron-down', !isOpen);
-              $icon.toggleClass('bi-chevron-up', isOpen);
+            // --------- Funções base ----------
+            function expandSidebar() {
+                $sidebar.addClass(CLASS_EXPANDED);
+                $collapseBtn.find('i').removeClass('bi-chevron-double-right').addClass('bi-chevron-double-left');
             }
-          }
 
-          function closeAllSubmenus() {
-            $('.sidebar-nav-item.active')
-              .removeClass('active')
-              .find('.submenu-panel')
-              .stop(true, true)
-              .slideUp(150)
-              .prev('.sidebar-nav-link.has-submenu')
-              .each(function () {
-                toggleChevron($(this), false);
-              });
-          }
-
-          // ============================
-          // ESTADO INICIAL
-          // ============================
-          $('.submenu-panel').hide();
-          $('.sidebar-nav-item').removeClass('active');
-
-          // ============================
-          // EVENTOS
-          // ============================
-
-          // 1️⃣ Botão de recolher (Desktop << >>)
-          $collapseBtn.on('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $sidebar.toggleClass(CLASS_EXPANDED);
-            $(this).find('i').toggleClass('bi-chevron-double-left bi-chevron-double-right');
-            if (!$sidebar.hasClass(CLASS_EXPANDED)) closeAllSubmenus();
-          });
-
-          // 2️⃣ Toggle Mobile (Hamburger)
-          $mobileToggle.on('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
-            else openMobileSidebar();
-          });
-
-          // 3️⃣ Overlay fecha Mobile
-          $overlay.on('click', () => closeMobileSidebar());
-
-          // 4️⃣ Clique em botão principal (Dashboard, Ferramentas etc)
-          $doc.on('click', '.sidebar-nav-link', function (e) {
-            const $link = $(this);
-            const $item = $link.closest('.sidebar-nav-item');
-            const $submenu = $item.children('.submenu-panel');
-
-            // Se for submenu
-            if ($link.hasClass('has-submenu')) {
-              e.preventDefault();
-              e.stopPropagation();
-
-              // Expande sidebar se estiver recolhido
-              if (!$sidebar.hasClass(CLASS_EXPANDED)) {
-                expandSidebar();
-              }
-
-              const isActive = $item.hasClass('active');
-
-              // Fecha todos os outros
-              closeAllSubmenus();
-
-              if (!isActive) {
-                $item.addClass('active');
-                $submenu.stop(true, true).slideDown(200);
-                toggleChevron($link, true);
-              } else {
-                $item.removeClass('active');
-                $submenu.stop(true, true).slideUp(200);
-                toggleChevron($link, false);
-              }
+            function collapseSidebar() {
+                $sidebar.removeClass(CLASS_EXPANDED);
+                closeAllSubmenus();
+                $collapseBtn.find('i').removeClass('bi-chevron-double-left').addClass('bi-chevron-double-right');
             }
-            // Se for item sem submenu (Dashboard etc)
-            else {
-              expandSidebar();
-              closeAllSubmenus();
+
+            function openMobileSidebar() {
+                $sidebar.addClass(CLASS_OPEN);
+                $overlay.addClass('is-visible');
             }
-          });
 
-          // 5️⃣ Clique fora do Sidebar (fecha tudo)
-          $doc.on('click', function (e) {
-            const clickInside = $(e.target).closest('.sidebar').length > 0;
-            const clickMobileBtn = $(e.target).closest('#sidebar-toggle').length > 0;
-
-            if (!clickInside && !clickMobileBtn) {
-              closeAllSubmenus();
-              if ($sidebar.hasClass(CLASS_EXPANDED)) collapseSidebar();
-              if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
+            function closeMobileSidebar() {
+                $sidebar.removeClass(CLASS_OPEN);
+                $overlay.removeClass('is-visible');
             }
-          });
 
-          // 6️⃣ Impede fechamento ao clicar dentro do submenu
-          $doc.on('click', '.submenu-panel', function (e) {
-            e.stopPropagation();
-          });
+            function toggleChevron($link, isOpen) {
+                const $icon = $link.find('.toggle-icon');
+                if ($icon.length) {
+                    $icon.toggleClass('bi-chevron-down', !isOpen);
+                    $icon.toggleClass('bi-chevron-up', isOpen);
+                }
+            }
 
-          // 7️⃣ Expor funções globais (opcional)
-          window.TGSidebar = {
-            expandSidebar,
-            collapseSidebar,
-            openMobileSidebar,
-            closeMobileSidebar,
-            closeAllSubmenus
-          };
+            function closeAllSubmenus() {
+                $('.sidebar-nav-item.active')
+                    .removeClass('active')
+                    .find('.submenu-panel')
+                    .stop(true, true)
+                    .slideUp(150)
+                    .prev('.sidebar-nav-link.has-submenu')
+                    .each(function () { toggleChevron($(this), false); });
+            }
 
+            // Estado inicial
+            $('.submenu-panel').hide();
+            $('.sidebar-nav-item').removeClass('active');
+
+            // Botão recolher/expandir (desktop)
+            $collapseBtn.on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $sidebar.toggleClass(CLASS_EXPANDED);
+                $(this).find('i').toggleClass('bi-chevron-double-left bi-chevron-double-right');
+                if (!$sidebar.hasClass(CLASS_EXPANDED)) closeAllSubmenus();
+            });
+
+            // Toggle Mobile (hamburger)
+            $mobileToggle.on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
+                else openMobileSidebar();
+            });
+
+            // Overlay fecha Mobile
+            $overlay.on('click', () => closeMobileSidebar());
+
+            // Clique em itens do menu
+            $doc.on('click', '.sidebar-nav-link', function (e) {
+                const $link = $(this);
+                const $item = $link.closest('.sidebar-nav-item');
+                const $submenu = $item.children('.submenu-panel');
+
+                if ($link.hasClass('has-submenu')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Garante expansão no desktop ao abrir submenu
+                    if (!$sidebar.hasClass(CLASS_EXPANDED)) {
+                        expandSidebar();
+                    }
+
+                    const isActive = $item.hasClass('active');
+                    closeAllSubmenus();
+
+                    if (!isActive) {
+                        $item.addClass('active');
+                        $submenu.stop(true, true).slideDown(200);
+                        toggleChevron($link, true);
+                    } else {
+                        $item.removeClass('active');
+                        $submenu.stop(true, true).slideUp(200);
+                        toggleChevron($link, false);
+                    }
+                } else {
+                    // Itens simples: mantém padrão de expandir e fechar submenus
+                    expandSidebar();
+                    closeAllSubmenus();
+                }
+            });
+
+            // Clique fora fecha tudo (desktop + mobile)
+            $doc.on('click', function (e) {
+                const clickInsideSidebar = $(e.target).closest('.sidebar').length > 0;
+                const clickHamburger = $(e.target).closest('#sidebar-toggle').length > 0;
+
+                if (!clickInsideSidebar && !clickHamburger) {
+                    closeAllSubmenus();
+                    if ($sidebar.hasClass(CLASS_EXPANDED)) collapseSidebar();
+                    if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
+                }
+            });
+
+            // Impede fechamento ao clicar dentro do submenu
+            $doc.on('click', '.submenu-panel', function (e) { e.stopPropagation(); });
+
+            // Expor utilitários globais (opcional)
+            window.TGSidebar = { expandSidebar, collapseSidebar, openMobileSidebar, closeMobileSidebar, closeAllSubmenus };
         })(jQuery);
-
-
-        // ======== DARK MODE - AJUSTE FINAL ========
-        const $darkToggle = $('#darkModeToggle');
-        $darkToggle.on('click', function () {
-          $('body').toggleClass('dark-mode');
-          const isDark = $('body').hasClass('dark-mode');
-          const $icon = $(this).find('i');
-
-          // Alterna ícone e texto
-          if (isDark) {
-            $icon.removeClass('bi-moon').addClass('bi-brightness-high');
-            $(this).find('.toggle-label').text('Modo Claro');
-          } else {
-            $icon.removeClass('bi-brightness-high').addClass('bi-moon');
-            $(this).find('.toggle-label').text('Modo Escuro');
-          }
+                document.addEventListener("DOMContentLoaded", () => {
+            const loader = document.getElementById("global-loader");
+            if (loader) {
+                // Mostra brevemente e oculta após 800ms
+                loader.classList.add("show");
+                setTimeout(() => {
+                    loader.classList.remove("show");
+                    loader.style.display = "none";
+                }, 800);
+            }
         });
+          // ===== LOADER GLOBAL =====
+        document.addEventListener("DOMContentLoaded", () => {
+            const loader = document.getElementById("global-loader");
+            if (loader) {
+                // Mostra brevemente e oculta após 800ms
+                loader.classList.add("active");
+                setTimeout(() => {
+                    loader.classList.remove("active");
+                }, 800);
+            }
+        });
+
+        function showLoader() {
+            const loader = document.getElementById("global-loader");
+            loader.classList.add("active");
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById("global-loader");
+            loader.classList.remove("active");
+        }
+
+        // Exibe durante carregamentos de página
+        window.addEventListener("beforeunload", showLoader);
+        window.addEventListener("load", hideLoader);
+
+
     </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

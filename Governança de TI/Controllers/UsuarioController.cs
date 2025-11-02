@@ -2,6 +2,8 @@
 using Governança_de_TI.Data;
 using Governança_de_TI.Models;
 using Governança_de_TI.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Governança_de_TI.Controllers
@@ -19,12 +22,18 @@ namespace Governança_de_TI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
         private readonly IAuditService _auditService;
+        private readonly string _pastaPerfil;
 
         public UsuarioController(ApplicationDbContext context, IEmailService emailService, IAuditService auditService)
         {
             _context = context;
             _emailService = emailService;
             _auditService = auditService;
+
+            // Caminho físico da pasta de imagens de perfil
+            _pastaPerfil = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "perfil");
+            if (!Directory.Exists(_pastaPerfil))
+                Directory.CreateDirectory(_pastaPerfil);
         }
 
         // ============================================================
@@ -74,7 +83,7 @@ namespace Governança_de_TI.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Criar(UsuarioModel usuario, IFormFile Imagem)
+        public async Task<IActionResult> Criar(UsuarioModel usuario)
         {
             ModelState.Remove("Senha");
 
@@ -91,11 +100,19 @@ namespace Governança_de_TI.Controllers
                 return PartialView("_CriarUsuarioPartial", usuario);
             }
 
-            if (Imagem?.Length > 0)
+            // === [UPLOAD DE IMAGEM COM NOME SEQUENCIAL] ===
+            if (usuario.FotoUpload != null && usuario.FotoUpload.Length > 0)
             {
-                using var ms = new MemoryStream();
-                await Imagem.CopyToAsync(ms);
-                usuario.FotoPerfil = ms.ToArray();
+                var arquivosExistentes = Directory.GetFiles(_pastaPerfil, "perfil-*").Length;
+                var proximoNumero = arquivosExistentes + 1;
+                var extensao = Path.GetExtension(usuario.FotoUpload.FileName);
+                var nomeArquivo = $"perfil-{proximoNumero}{extensao}";
+                var caminhoArquivo = Path.Combine(_pastaPerfil, nomeArquivo);
+
+                using (var stream = new FileStream(caminhoArquivo, FileMode.Create))
+                    await usuario.FotoUpload.CopyToAsync(stream);
+
+                usuario.CaminhoFotoPerfil = $"/perfil/{nomeArquivo}";
             }
 
             string senhaAleatoria = GerarSenhaAleatoria();
@@ -106,7 +123,6 @@ namespace Governança_de_TI.Controllers
             _context.Add(usuario);
             await _context.SaveChangesAsync();
 
-            // Auditoria e envio de email
             _ = Task.Run(async () =>
             {
                 var id = await GetCurrentUserId();
@@ -115,7 +131,10 @@ namespace Governança_de_TI.Controllers
 
                 try
                 {
-                    await _emailService.EnviarEmailAsync(usuario.Email, "Bem-vindo", $"<p>Olá {usuario.Nome},</p><p>Sua senha: <strong>{senhaAleatoria}</strong></p>");
+                    await _emailService.EnviarEmailAsync(
+                        usuario.Email,
+                        "Bem-vindo",
+                        $"<p>Olá {usuario.Nome},</p><p>Sua senha: <strong>{senhaAleatoria}</strong></p>");
                 }
                 catch (Exception ex)
                 {
@@ -142,27 +161,74 @@ namespace Governança_de_TI.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(UsuarioModel model, IFormFile Imagem)
+        public async Task<IActionResult> Editar(UsuarioModel model)
         {
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == model.Id);
             if (usuario == null)
                 return BadRequest(new { message = "Usuário não encontrado." });
 
+            // Atualiza dados principais
             usuario.Nome = model.Nome;
             usuario.Email = model.Email;
             usuario.Perfil = model.Perfil;
             usuario.Status = model.Status;
             usuario.DepartamentoId = model.DepartamentoId;
 
-            if (Imagem?.Length > 0)
+            // === [ATUALIZA IMAGEM SE ENVIADA COM NOME SEQUENCIAL] ===
+            if (model.FotoUpload != null && model.FotoUpload.Length > 0)
             {
-                using var ms = new MemoryStream();
-                await Imagem.CopyToAsync(ms);
-                usuario.FotoPerfil = ms.ToArray();
+                // Remove imagem antiga (se existir)
+                if (!string.IsNullOrEmpty(usuario.CaminhoFotoPerfil))
+                {
+                    var caminhoAntigo = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", usuario.CaminhoFotoPerfil.TrimStart('/'));
+                    if (System.IO.File.Exists(caminhoAntigo))
+                        System.IO.File.Delete(caminhoAntigo);
+                }
+
+                // Cria novo nome sequencial
+                var arquivosExistentes = Directory.GetFiles(_pastaPerfil, "perfil-*").Length;
+                var proximoNumero = arquivosExistentes + 1;
+                var extensao = Path.GetExtension(model.FotoUpload.FileName);
+                var nomeArquivo = $"perfil-{proximoNumero}{extensao}";
+                var caminhoArquivo = Path.Combine(_pastaPerfil, nomeArquivo);
+
+                using (var stream = new FileStream(caminhoArquivo, FileMode.Create))
+                    await model.FotoUpload.CopyToAsync(stream);
+
+                usuario.CaminhoFotoPerfil = $"/perfil/{nomeArquivo}";
             }
 
             await _context.SaveChangesAsync();
 
+            // === [ATUALIZA CLAIMS SE O USUÁRIO LOGADO FOR O MESMO] ===
+            var currentEmail = User?.Identity?.Name;
+            if (!string.IsNullOrEmpty(currentEmail) &&
+                string.Equals(currentEmail, usuario.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, usuario.Email),
+            new Claim("FullName", usuario.Nome ?? string.Empty),
+            new Claim(ClaimTypes.Role, usuario.Perfil ?? string.Empty),
+            new Claim("CaminhoFotoPerfil", usuario.CaminhoFotoPerfil ?? string.Empty)
+        };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                };
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties);
+            }
+
+            // === [REGISTRA AUDITORIA] ===
             _ = Task.Run(async () =>
             {
                 var id = await GetCurrentUserId();
@@ -174,7 +240,7 @@ namespace Governança_de_TI.Controllers
         }
 
         // ============================================================
-        // DETALHES USUÁRIO (MODAL)
+        // DETALHES
         // ============================================================
         [HttpGet]
         public async Task<IActionResult> _DetalhesUsuarioPartial(int id)
@@ -187,7 +253,6 @@ namespace Governança_de_TI.Controllers
             if (usuario == null)
                 return NotFound($"Usuário com ID {id} não encontrado.");
 
-            // === [TRECHO CORRIGIDO] ===
             var atividades = await _context.AuditLogs
                 .Where(a => a.UsuarioId == id)
                 .OrderByDescending(a => a.Timestamp)
@@ -195,77 +260,12 @@ namespace Governança_de_TI.Controllers
                 .AsNoTracking()
                 .ToListAsync();
 
-            // Envia as atividades para a partial
             ViewBag.Atividades = atividades;
-
             return PartialView("_DetalhesUsuarioPartial", usuario);
         }
 
         // ============================================================
-        // REDEFINIR SENHA
-        // ============================================================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RedefinirSenha(int id)
-        {
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null)
-            {
-                TempData["ErrorMessage"] = "Usuário não encontrado.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            string novaSenha = GerarSenhaAleatoria();
-            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(novaSenha);
-            await _context.SaveChangesAsync();
-
-            _ = Task.Run(async () =>
-            {
-                var executorId = await GetCurrentUserId();
-                if (executorId.HasValue)
-                    await _auditService.RegistrarAcao(executorId.Value, "Redefiniu Senha", $"Usuário: {usuario.Email}");
-
-                try
-                {
-                    await _emailService.EnviarEmailAsync(usuario.Email, "Redefinição de Senha", $"<p>Olá {usuario.Nome},</p><p>Sua nova senha: <strong>{novaSenha}</strong></p>");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Falha no envio de e-mail: {ex.Message}");
-                }
-            });
-
-            TempData["SuccessMessage"] = $"Nova senha enviada para {usuario.Email}.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        // ============================================================
-        // GET: Usuario/_ExcluirUsuarioPartial/{id} (Para o Modal de Exclusão)
-        // ============================================================
-        [HttpGet("_ExcluirUsuarioPartial/{id}")]
-        [HttpGet("Usuario/_ExcluirUsuarioPartial/{id}")]
-        public async Task<IActionResult> _ExcluirUsuarioPartial(int id)
-        {
-            var usuario = await _context.Usuarios
-                .AsNoTracking()
-                .Select(u => new UsuarioModel
-                {
-                    Id = u.Id,
-                    Nome = u.Nome,
-                    Email = u.Email,
-                    FotoPerfil = u.FotoPerfil,
-                    Perfil = u.Perfil
-                })
-                .FirstOrDefaultAsync(u => u.Id == id);
-
-            if (usuario == null)
-                return NotFound($"Usuário com ID {id} não encontrado.");
-
-            return PartialView("_ExcluirUsuarioPartial", usuario);
-        }
-
-        // ============================================================
-        // EXCLUSÃO CONFIRMADA (POST)
+        // EXCLUIR
         // ============================================================
         [HttpPost("Usuario/Excluir/{id}")]
         [ActionName("ExcluirConfirmado")]
@@ -276,10 +276,14 @@ namespace Governança_de_TI.Controllers
             if (usuario == null)
                 return BadRequest(new { message = "Utilizador não encontrado." });
 
-            // Verifica se é o único admin
             if (usuario.Perfil == "Admin" && await _context.Usuarios.CountAsync(u => u.Perfil == "Admin" && u.Id != id) == 0)
-            {
                 return BadRequest(new { message = "Não é possível excluir o único administrador." });
+
+            if (!string.IsNullOrEmpty(usuario.CaminhoFotoPerfil))
+            {
+                var caminho = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", usuario.CaminhoFotoPerfil.TrimStart('/'));
+                if (System.IO.File.Exists(caminho))
+                    System.IO.File.Delete(caminho);
             }
 
             _context.Usuarios.Remove(usuario);
@@ -300,7 +304,7 @@ namespace Governança_de_TI.Controllers
         }
 
         // ============================================================
-        // MÉTODOS AUXILIARES
+        // AUXILIARES
         // ============================================================
         private string GerarSenhaAleatoria(int length = 10)
         {

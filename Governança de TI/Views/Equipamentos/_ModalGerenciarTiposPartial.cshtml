@@ -1,0 +1,172 @@
+﻿@* ============================================================
+   MODAL: GERENCIAR TIPOS DE EQUIPAMENTO
+   Usado dentro de CriarEquipamentosPartial
+   ============================================================ *@
+
+<div class="modal fade" id="modalGerenciarTipos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header bg-dark border-0">
+                <h5 class="modal-title text-white fw-semibold">
+                    <i class="bi bi-tags me-2 text-purple"></i>Gerenciar Tipos de Equipamento
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body bg-dark text-light">
+                <!-- Formulário para adicionar novo tipo -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-muted">Adicionar Novo Tipo</label>
+                    <div class="input-group">
+                        <input type="text" id="novoTipoNome" class="form-control bg-dark border-secondary text-light shadow-sm"
+                               placeholder="Digite o nome do novo tipo..." />
+                        <button type="button" id="btnSalvarNovoTipo" class="btn btn-purple">
+                            <i class="bi bi-plus-circle me-1"></i>Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="border-secondary mb-4" />
+
+                <!-- Lista de tipos existentes -->
+                <div>
+                    <h6 class="fw-semibold text-muted mb-3">Tipos Existentes</h6>
+                    <ul id="listaTiposExistentes" class="list-group list-group-flush"></ul>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-dark border-0">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* <style>
+    .btn-purple {
+        background-color: #8A2BE2;
+        color: #fff;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+        .btn-purple:hover {
+            background-color: #7b24cc;
+            transform: scale(1.03);
+        }
+
+    .modal-content {
+        background-color: #181818 !important;
+    }
+
+    .list-group-item {
+        background-color: #222;
+        color: #ddd;
+        border-color: #333;
+    }
+
+        .list-group-item .btn-close {
+            filter: invert(1) grayscale(1);
+        }
+
+    .text-purple {
+        color: #8A2BE2 !important;
+    }
+</style> *@
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEl = document.getElementById('modalGerenciarTipos');
+        const listaTiposExistentes = document.getElementById('listaTiposExistentes');
+        const novoTipoNome = document.getElementById('novoTipoNome');
+        const btnSalvarNovoTipo = document.getElementById('btnSalvarNovoTipo');
+        const tipoEquipamentoSelect = document.getElementById('TipoEquipamentoId');
+
+        // Quando o modal abre → carregar tipos existentes
+        modalEl.addEventListener('show.bs.modal', async () => {
+            listaTiposExistentes.innerHTML =
+                '<li class="list-group-item text-muted text-center"><div class="spinner-border spinner-border-sm me-2"></div>Carregando tipos...</li>';
+
+            try {
+                const resp = await fetch('/api/TipoEquipamento');
+                if (!resp.ok) throw new Error('Erro ao buscar tipos');
+                const tipos = await resp.json();
+
+                listaTiposExistentes.innerHTML = tipos.length
+                    ? tipos.map(t =>
+                        `<li class="list-group-item d-flex justify-content-between align-items-center" data-id="${t.id}">
+                            <span>${t.nome}</span>
+                            <button class="btn btn-sm btn-outline-danger border-0 text-light">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </li>`).join('')
+                    : '<li class="list-group-item text-center text-muted">Nenhum tipo cadastrado.</li>';
+            } catch (err) {
+                listaTiposExistentes.innerHTML =
+                    '<li class="list-group-item text-danger text-center">Erro ao carregar tipos.</li>';
+                console.error(err);
+            }
+        });
+
+        // Adicionar novo tipo
+        btnSalvarNovoTipo.addEventListener('click', async () => {
+            const nome = novoTipoNome.value.trim();
+            if (!nome) return alert('Informe um nome válido para o tipo.');
+
+            try {
+                const resp = await fetch('/api/TipoEquipamento', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome })
+                });
+
+                if (!resp.ok) throw new Error('Erro ao adicionar tipo');
+                const novoTipo = await resp.json();
+
+                // Adiciona no select principal
+                const opt = new Option(novoTipo.nome, novoTipo.id, true, true);
+                tipoEquipamentoSelect.add(opt);
+
+                // Atualiza lista no modal
+                listaTiposExistentes.insertAdjacentHTML('beforeend',
+                    `<li class="list-group-item d-flex justify-content-between align-items-center" data-id="${novoTipo.id}">
+                        <span>${novoTipo.nome}</span>
+                        <button class="btn btn-sm btn-outline-danger border-0 text-light">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </li>`);
+
+                novoTipoNome.value = '';
+            } catch (err) {
+                alert('Erro ao salvar tipo.');
+                console.error(err);
+            }
+        });
+
+        // Excluir tipo
+        listaTiposExistentes.addEventListener('click', async e => {
+            const btn = e.target.closest('.btn-outline-danger');
+            if (!btn) return;
+            const li = btn.closest('li');
+            const id = li.dataset.id;
+            const nome = li.querySelector('span').textContent.trim();
+
+            if (!confirm(`Excluir o tipo "${nome}"?`)) return;
+
+            try {
+                const resp = await fetch(`/api/TipoEquipamento/${id}`, { method: 'DELETE' });
+                if (!resp.ok) throw new Error('Erro ao excluir tipo');
+                li.remove();
+
+                // Remove do select principal
+                const opt = tipoEquipamentoSelect.querySelector(`option[value="${id}"]`);
+                if (opt) opt.remove();
+            } catch (err) {
+                alert('Erro ao excluir tipo.');
+                console.error(err);
+            }
+        });
+    });
+</script>
