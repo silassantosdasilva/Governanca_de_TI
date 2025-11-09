@@ -1,0 +1,91 @@
+﻿@model (Governança_de_TI.Models.DashboardWidgetModel widget, object dados)
+@{
+    var tipo = Model.widget.TipoVisualizacao;
+}
+
+@if (tipo == "Total")
+{
+    var valor = (Model.dados as Governança_de_TI.Models.DashboardWidgetModel)?.Resultado
+              ?? (Model.dados as dynamic)?.Valor
+              ?? 0;
+    <div class="card h-100 border-0 shadow-sm text-center p-4">
+        <h6 class="fw-semibold text-muted">@Model.widget.Titulo</h6>
+        <h2 class="fw-bold text-primary mt-2">@valor</h2>
+    </div>
+}
+else if (tipo is "Pizza" or "Barra" or "Rolo")
+{
+    var chartId = $"chart_{Model.widget.Id}";
+    <canvas id="@chartId" style="height:220px"></canvas>
+
+    <script>
+        (() => {
+            const chartId = "@chartId";
+            const ctx = document.getElementById(chartId);
+            const chartData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.dados ?? new List<object>()));
+
+            if (!chartData || !Array.isArray(chartData)) {
+                console.warn("Nenhum dado encontrado para o widget:", chartId);
+                return;
+            }
+
+            const labels = chartData.map(x => x.Categoria);
+            const values = chartData.map(x => x.Valor);
+
+            new Chart(ctx, {
+                type: '@(tipo == "Barra" ? "bar" : (tipo == "Pizza" ? "pie" : "doughnut"))',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '@Model.widget.Titulo',
+                        data: values,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: true, position: 'bottom' } },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        })();
+    </script>
+}
+else if (tipo == "Lista")
+{
+    var lista = Model.dados as IEnumerable<Dictionary<string, object>>;
+    if (lista == null || !lista.Any())
+    {
+        <p class="text-muted small">Nenhum dado encontrado.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        @foreach (var col in lista.First().Keys)
+                        {
+                            <th>@col</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var linha in lista)
+                    {
+                        <tr>
+                            @foreach (var valor in linha.Values)
+                            {
+                                <td>@valor</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+else
+{
+    <p class="text-muted small">Tipo de visualização não suportado.</p>
+}

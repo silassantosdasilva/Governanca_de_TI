@@ -1,28 +1,26 @@
 ﻿@model List<Governança_de_TI.Models.DescarteModel>
+
 @{
     ViewData["Title"] = "Consulta de Descarte";
 }
 
-<!-- Bloco para exibir mensagens de sucesso (Ex: após criar, editar ou excluir um registo) -->
-@if (TempData["SuccessMessage"] != null)
-{
-    <div id="success-alert" class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-
-<!-- Wrapper que garante que o conteúdo ocupe a altura total da tela -->
+<!-- ===== CONTEÚDO PRINCIPAL ===== -->
 <div class="content-wrapper">
-    <!-- Formulário de Filtro -->
+    <!-- ===== FORMULÁRIO DE FILTRO ===== -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="mb-0">Gestão de Descarte Sustentável</h4>
-                <a asp-action="Criar" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-plus-lg me-2"></i>Novo Registo
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold text-dark mb-0">Gestão de Descarte Sustentável</h4>
+
+                <!-- BOTÃO DE NOVO REGISTRO (AGORA CARREGA VIA MODAL DINÂMICA) -->
+                <a href="@Url.Action("Criar", "Descarte")"
+                   class="btn btn-primary js-open-descarte-modal"
+                   data-title="Novo Descarte Sustentável"
+                   style="background-color:#8A2BE2;border-color:#8A2BE2;">
+                    <i class="bi bi-plus-lg me-2"></i> Novo Registro
                 </a>
             </div>
+
             <form asp-action="Consulta" method="get">
                 <div class="row g-3">
                     <div class="col-md-4"><label class="form-label">ID</label><input type="text" name="ID" class="form-control form-control-sm" /></div>
@@ -53,7 +51,7 @@
         </div>
     </div>
 
-    <!-- Tabela de Resultados -->
+    <!-- ===== TABELA DE RESULTADOS ===== -->
     <div class="card shadow-sm table-card">
         <div class="card-body">
             <div class="table-responsive">
@@ -68,7 +66,7 @@
                             <th>Responsável</th>
                             <th>Data de Cadastro</th>
                             <th>Status</th>
-                            <th>Ações</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -85,17 +83,37 @@
                                     <td>@item.PessoaResponsavelColeta</td>
                                     <td>@item.DataDeCadastro.ToShortDateString()</td>
                                     <td>@item.Status</td>
-                                    <td>
-                                        <a asp-action="Detalhes" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0" title="Detalhes"><i class="bi bi-search"></i></a>
-                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0" title="Editar"><i class="bi bi-pencil-square"></i></a>
-                                        <a asp-action="Excluir" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-0" title="Excluir"><i class="bi bi-trash"></i></a>
+                                    <td class="text-center">
+                                        <!-- DETALHES -->
+                                        <a href="@Url.Action("Detalhes", "Descarte", new { id = item.Id })"
+                                           class="btn btn-sm btn-outline-secondary border-0 js-open-descarte-modal"
+                                           data-title="Detalhes do Descarte #@item.Id"
+                                           title="Detalhes">
+                                            <i class="bi bi-search"></i>
+                                        </a>
+
+                                        <!-- EDITAR -->
+                                        <a href="@Url.Action("Editar", "Descarte", new { id = item.Id })"
+                                           class="btn btn-sm btn-outline-secondary border-0 js-open-descarte-modal"
+                                           data-title="Editar Descarte #@item.Id"
+                                           title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <!-- EXCLUIR -->
+                                        <a href="@Url.Action("Excluir", "Descarte", new { id = item.Id })"
+                                           class="btn btn-sm btn-outline-danger border-0 js-open-descarte-modal"
+                                           data-title="Excluir Descarte #@item.Id"
+                                           title="Excluir">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             }
                         }
                         else
                         {
-                            <tr><td colspan="9" class="text-center py-4">Nenhum registo de descarte encontrado.</td></tr>
+                            <tr><td colspan="9" class="text-center py-4">Nenhum registro de descarte encontrado.</td></tr>
                         }
                     </tbody>
                 </table>
@@ -104,13 +122,110 @@
     </div>
 </div>
 
+<!-- ===== MODAL GLOBAL PARA OS DESCARTES ===== -->
+<div class="modal fade" id="descarteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow border-0 rounded-4">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-semibold text-dark" id="descarteModalTitle">
+                    <i class="bi bi-recycle text-success me-2"></i>Descarte
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="descarteModalBody">
+                <div class="text-center text-muted py-5">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-3 mb-0 small">Carregando conteúdo…</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        // Script para fechar o alerta de sucesso automaticamente após 5 segundos
-        window.setTimeout(function() {
-            var alert = document.getElementById('success-alert');
-            if (alert) { new bootstrap.Alert(alert).close(); }
-        }, 5000);
+        (function () {
+            const modalEl = document.getElementById('descarteModal');
+            const modalBody = document.getElementById('descarteModalBody');
+            const modalTitle = document.getElementById('descarteModalTitle');
+            const bsModal = new bootstrap.Modal(modalEl);
+            const hasLoader = typeof showLoader === 'function' && typeof hideLoader === 'function';
+
+            // === Clique em qualquer botão de modal (criar, editar, detalhes, excluir) ===
+            document.addEventListener('click', async (ev) => {
+                const a = ev.target.closest('.js-open-descarte-modal, .js-open-detalhes-descarte');
+                if (!a) return;
+                ev.preventDefault();
+
+                const url = a.getAttribute('href');
+                const title = a.dataset.title || 'Descarte Sustentável';
+                if (!url) return;
+
+                try {
+                    hasLoader && showLoader();
+
+                    // Define título e loader temporário
+                    modalTitle.textContent = title;
+                    modalBody.innerHTML = `
+                        <div class="p-5 text-center text-muted">
+                            <div class="spinner-border text-primary me-2"></div>
+                            Carregando conteúdo…
+                        </div>`;
+
+                    // === Chamada AJAX com header completo ===
+                    const resp = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    });
+                    const html = await resp.text();
+
+                    // === Injeta conteúdo ===
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html.trim();
+
+                    let mainContent =
+                        tempDiv.querySelector('form') ||
+                        tempDiv.querySelector('.card') ||
+                        tempDiv.querySelector('main') ||
+                        tempDiv.querySelector('body > div');
+
+                    // === Injeta conteúdo sem filtragem (garante que partials simples apareçam) ===
+                    modalBody.innerHTML = html;
+
+                    // Reativa validação jQuery Unobtrusive (caso necessário)
+                    if (window.jQuery && $.validator && $.validator.unobtrusive) {
+                        $.validator.unobtrusive.parse(modalBody);
+                    }
+
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                    bsModal.show();
+
+                    // Ajusta modal grande
+                    setTimeout(() => {
+                        const modalDialog = modalEl.querySelector('.modal-dialog');
+                        if (modalDialog) modalDialog.classList.add('modal-xxl');
+                    }, 300);
+
+                } catch (e) {
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger m-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Erro ao carregar o conteúdo do modal.
+                        </div>`;
+                    console.error("Erro ao carregar modal:", e);
+                } finally {
+                    hasLoader && hideLoader();
+                }
+            });
+
+            // === Fecha alertas de sucesso automaticamente ===
+            setTimeout(() => {
+                const alert = document.getElementById('success-alert');
+                if (alert) new bootstrap.Alert(alert).close();
+            }, 4000);
+        })();
     </script>
 }
 

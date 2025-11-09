@@ -4,6 +4,7 @@ using Governança_de_TI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Governança_de_TI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251109020906_AdicionarDashboardDinamica")]
+    partial class AdicionarDashboardDinamica
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,9 +89,6 @@ namespace Governança_de_TI.Migrations
                     b.Property<string>("Campo2")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CampoDataFiltro")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CampoDimensao")
                         .HasColumnType("nvarchar(max)");
 
@@ -97,12 +97,6 @@ namespace Governança_de_TI.Migrations
 
                     b.Property<string>("CamposLista")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DataFiltroFim")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataFiltroInicio")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Operacao")
                         .HasColumnType("nvarchar(max)");

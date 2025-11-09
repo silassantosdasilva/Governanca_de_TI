@@ -1,0 +1,110 @@
+﻿@model Governança_de_TI.Models.ConsumoEnergiaModel
+
+<form id="formCriarConsumo"
+      asp-action="Criar"
+      asp-controller="ConsumoEnergia"
+      method="post"
+      class="p-3">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+    <!-- ===== Cabeçalho ===== -->
+    <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-lightning-charge-fill text-warning fs-5 me-2"></i>
+        <h5 class="mb-0 fw-semibold text-dark">Novo Registo de Consumo de Energia</h5>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="DataReferencia" class="form-label text-muted small">
+                <i class="bi bi-calendar-event me-1"></i> Mês de Referência
+            </label>
+            <input asp-for="DataReferencia" class="form-control shadow-sm" type="month" />
+            <span asp-validation-for="DataReferencia" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label asp-for="ValorKwh" class="form-label text-muted small">
+                <i class="bi bi-speedometer2 me-1"></i> Consumo Total (kWh)
+            </label>
+            <div class="input-group shadow-sm">
+                <input asp-for="ValorKwh" class="form-control" type="number" step="0.01" placeholder="0,00" />
+                <span class="input-group-text bg-light fw-semibold">kWh</span>
+            </div>
+            <span asp-validation-for="ValorKwh" class="text-danger small"></span>
+        </div>
+    </div>
+
+    <hr class="my-3" />
+
+    <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-outline-secondary px-4 me-2" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-2"></i>Cancelar
+        </button>
+
+        <button type="submit" class="btn btn-primary px-4"
+                style="background-color:#8A2BE2; border-color:#8A2BE2;">
+            <i class="bi bi-check-lg me-2"></i>Salvar
+        </button>
+    </div>
+</form>
+@section Scripts {
+    <script>
+        // Função para inicializar o comportamento AJAX do formulário
+        function initConsumoForm() {
+            const form = document.getElementById('formCriarConsumo');
+            if (!form) return;
+
+            form.addEventListener('submit', async (ev) => {
+                ev.preventDefault();
+                const formData = new FormData(form);
+
+                try {
+                    const resp = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    const contentType = resp.headers.get('content-type');
+
+                    // === Caso haja erros de validação ===
+                    if (contentType && contentType.includes('text/html')) {
+                        const html = await resp.text();
+                        const parser = new DOMParser();
+                        const newDoc = parser.parseFromString(html, 'text/html');
+                        const newForm = newDoc.querySelector('form');
+                        if (newForm) {
+                            const modalBody = document.getElementById('energiaModalBody');
+                            modalBody.innerHTML = newForm.outerHTML;
+                            initConsumoForm(); // Reanexa o evento ao novo form renderizado
+                        }
+                        return;
+                    }
+
+                    // === Caso sucesso (JSON) ===
+                    const data = await resp.json();
+                    if (data.success) {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('energiaModal'));
+                        modal.hide();
+
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show m-3 shadow-sm';
+                        alertDiv.innerHTML = `
+                            <i class="bi bi-check-circle me-2"></i>${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+                        document.body.prepend(alertDiv);
+
+                        setTimeout(() => location.reload(), 1500);
+                    }
+                } catch (err) {
+                    console.error('Erro ao enviar formulário:', err);
+                    alert('Erro ao registrar consumo.');
+                }
+            });
+        }
+
+        // Inicializa assim que o conteúdo for carregado
+        document.addEventListener('DOMContentLoaded', initConsumoForm);
+    </script>
+}

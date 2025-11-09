@@ -2,32 +2,38 @@
 
 @{
     ViewData["Title"] = "Usuários";
+
+    // ====================================================================
+    // 1. LÊ E REMOVE as mensagens para que o _Layout não as mostre.
+    // Esta página terá seu próprio tratamento de alertas.
+    // ====================================================================
+    var localSuccessMessage = TempData["SuccessMessage"] as string;
+    var localErrorMessage = TempData["ErrorMessage"] as string;
+
+    // Garante que o _Layout.cshtml (que roda depois) não veja estas chaves
+    if (localSuccessMessage != null) { TempData.Remove("SuccessMessage"); }
+    if (localErrorMessage != null) { TempData.Remove("ErrorMessage"); }
 }
 
-<!-- ===========================
-     CABEÇALHO E ALERTAS
-=========================== -->
 <div class="container-fluid px-3">
     <div id="ajax-success-alert-placeholder"></div>
 
-    @if (TempData["SuccessMessage"] != null)
+    @* Use as VARIÁVEIS LOCAIS que acabamos de criar. *@
+    @if (!string.IsNullOrEmpty(localSuccessMessage))
     {
         <div id="success-alert" class="alert alert-success alert-dismissible fade show shadow-sm mt-3" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <i class="bi bi-check-circle-fill me-2"></i>@localSuccessMessage
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
     }
-    @if (TempData["ErrorMessage"] != null)
+    @if (!string.IsNullOrEmpty(localErrorMessage))
     {
         <div id="error-alert" class="alert alert-danger alert-dismissible fade show shadow-sm mt-3" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@localErrorMessage
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
     }
 
-    <!-- ===========================
-         CARD PRINCIPAL
-    ============================ -->
     <div class="card shadow-sm mt-4 border-0 rounded-3">
         <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -40,9 +46,6 @@
                 </button>
             </div>
 
-            <!-- ===========================
-                 TABELA DE USUÁRIOS
-            ============================ -->
             <div class="table-responsive rounded-3 border">
                 <table class="table align-middle table-hover mb-0 text-center">
                     <thead class="table-light">
@@ -155,9 +158,6 @@
     </div>
 </div>
 
-<!-- ===========================
-     MODAL PRINCIPAL (USUÁRIO)
-=========================== -->
 <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
@@ -183,9 +183,6 @@
     </div>
 </div>
 
-<!-- ===========================
-     ESTILO VISUAL MODERNO
-=========================== -->
 <style>
     .modal.fade .modal-dialog {
         transition: transform 0.25s ease-out, opacity 0.25s ease-out;
@@ -199,9 +196,6 @@
     }
 </style>
 
-<!-- ===========================
-     SCRIPTS MODERNOS E OTIMIZADOS
-=========================== -->
 @section Scripts {
     <script>
         $(function () {

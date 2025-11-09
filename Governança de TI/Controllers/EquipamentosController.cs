@@ -156,6 +156,13 @@ namespace Governança_de_TI.Controllers
                     message = $"Equipamento '{equipamento.Descricao}' cadastrado com sucesso!"
                 });
             }
+            // Auditoria (em background)
+            if (userId.HasValue)
+            {
+                _ = Task.Run(async () => {
+                    await _auditService.RegistrarAcao(userId.Value, "Criou Equipamento", $"={equipamento.CodigoItem}, Descricao={equipamento.Descricao}");
+                });
+            }
 
             // 🔹 Caso normal (página inteira)
             TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
@@ -341,16 +348,28 @@ namespace Governança_de_TI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEquipamentoDados(int id)
         {
-            var equipamento = await _context.Equipamentos.FindAsync(id);
+            var equipamento = await _context.Equipamentos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.CodigoItem == id);
+
             if (equipamento == null) return Json(null);
+
+            // ✅ Usa caminho público completo, sempre relativo a wwwroot
+            var caminhoImagem = !string.IsNullOrEmpty(equipamento.ImagemUrl)
+                ? equipamento.ImagemUrl
+                : "/img/default-equip.png";
+
+            // Se faltar a barra inicial, adiciona
+            if (!caminhoImagem.StartsWith("/"))
+                caminhoImagem = "/" + caminhoImagem;
 
             return Json(new
             {
-                // Garante que a URL é absoluta ou relativa correta
-                imageUrl = string.IsNullOrEmpty(equipamento.ImagemUrl) ? Url.Content("~/img/default-equip.png") : Url.Content("~" + equipamento.ImagemUrl),
+                imageUrl = caminhoImagem,
                 descricao = equipamento.Descricao
             });
         }
+
         #endregion
 
         #region Métodos Auxiliares

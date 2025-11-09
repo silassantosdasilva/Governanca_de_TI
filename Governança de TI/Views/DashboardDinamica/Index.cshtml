@@ -1,0 +1,63 @@
+﻿@model IEnumerable<Governança_de_TI.Models.DashboardWidgetModel>
+@{
+    ViewData["Title"] = "Dashboard Dinâmico";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold text-dark mb-0">Dashboard Dinâmico</h4>
+    <div class="btn-group">
+        <button class="btn btn-outline-primary" id="btnConfig"><i class="bi bi-gear"></i> Configuração</button>
+    </div>
+</div>
+
+<div id="dashboardGrid" class="row g-3">
+    @for (int i = 1; i <= 6; i++)
+    {
+        var widget = Model.FirstOrDefault(w => w.Posicao == i);
+        <div class="col-md-4 col-sm-12">
+            <div class="card h-100 shadow-sm border-0 text-center p-3 position-relative">
+                @if (widget == null)
+                {
+                    <button class="btn btn-light w-100 h-100 js-add-widget"
+                            data-posicao="@i">
+                        <i class="bi bi-plus-circle fs-3 d-block"></i>
+                        <span>Adicionar Widget (Posição @i)</span>
+                    </button>
+                }
+                else
+                {
+                    <div id="widget-@widget.Id" class="widget-container">
+                        <div class="dropdown position-absolute top-0 end-0 m-2">
+                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a href="#" class="dropdown-item js-edit-widget" data-id="@widget.Id">Editar</a></li>
+                                <li><a href="#" class="dropdown-item text-danger js-delete-widget" data-id="@widget.Id">Excluir</a></li>
+                            </ul>
+                        </div>
+
+                        <h6 class="fw-semibold mb-2">@widget.Titulo</h6>
+                        <div class="widget-body p-2">
+                            <div class="text-muted small">Carregando...</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal do Wizard -->
+<div class="modal fade" id="widgetWizardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow border-0 rounded-4" id="wizardContainer">
+            <div class="modal-body p-4 text-center text-muted">Carregando...</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/dashboard.js"></script>
+}

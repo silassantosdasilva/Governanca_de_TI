@@ -75,7 +75,7 @@ namespace Governança_de_TI.Models
         /// </summary>
         [NotMapped]
         [Display(Name = "Certificado de Coleta")]
-        public IFormFile CertificadoUpload { get; set; }
+        public IFormFile? CertificadoUpload { get; set; }
 
         [Display(Name = "URL Imagem Equip.")] // Nome curto para exibição
         public string? ImagemEquipamentoUrl { get; set; }

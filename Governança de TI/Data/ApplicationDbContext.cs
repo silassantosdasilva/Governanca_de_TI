@@ -19,7 +19,7 @@ namespace Governança_de_TI.Data
         public DbSet<TipoEquipamentoModel> TiposEquipamento { get; set; }
         public DbSet<AuditLogModel> AuditLogs { get; set; } // Verifique se o nome do modelo está correto
         public DbSet<DepartamentoModel> Departamentos { get; set; }
-
+        public DbSet<DashboardWidgetModel> DashboardWidgets { get; set; }
         // DbSets da Gamificação
         public DbSet<PremioModel> Premios { get; set; } // Nome do DbSet corrigido para plural
         public DbSet<GamificacaoModel> Gamificacoes { get; set; } // Nome do DbSet corrigido para plural

@@ -14,9 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
     <!-- CSS do projeto -->
-    <!-- 1) Tema (variáveis light/dark via data-bs-theme) -->
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
-    <!-- 2) Estilos estruturais/visuais da aplicação -->
     <link rel="stylesheet" href="~/css/Layout.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
@@ -39,10 +37,6 @@
                 border-bottom: 1px solid #e9ecef;
             }
 
-            .notification-dropdown .dropdown-divider {
-                margin: 0;
-            }
-
         .notification-item {
             display: flex;
             align-items: center;
@@ -50,10 +44,6 @@
             border-bottom: 1px solid #e9ecef;
             transition: background-color .2s;
         }
-
-            .notification-item:last-child {
-                border-bottom: none;
-            }
 
             .notification-item:hover {
                 background-color: #f8f9fa;
@@ -85,17 +75,6 @@
                 background: #e8eaf6 !important;
                 color: #8A2BE2 !important;
             }
-
-        .notification-item .text-body {
-            font-size: .9rem;
-            margin-bottom: 0;
-            white-space: normal;
-            line-height: 1.4;
-        }
-
-        .notification-item .text-muted {
-            font-size: .75rem;
-        }
     </style>
 </head>
 <body>
@@ -113,34 +92,24 @@
 
         <!-- ===== SIDEBAR ===== -->
         <nav class="sidebar shadow-sm">
-            <!-- ===== HEADER / PERFIL ===== -->
             <div class="sidebar-header text-center py-4">
-                <!-- Botão expandir/recolher (desktop) -->
                 <button type="button" class="btn btn-sm btn-light border-0 sidebar-collapse d-none d-lg-inline-flex" title="Expandir/recolher">
                     <i class="bi bi-chevron-double-left"></i>
                 </button>
 
-                <!-- Avatar e identidade -->
                 <div class="sidebar-profile d-flex align-items-center flex-column mt-3">
                     <div class="avatar mb-2 position-relative text-center">
                         @{
-                            // Recupera o caminho salvo nas Claims
                             var caminhoFoto = HttpContextAccessor.HttpContext?.User?.FindFirst("CaminhoFotoPerfil")?.Value;
-
-                            // Garante que o caminho comece com "/" e define fallback padrão
                             var fotoSrc = string.IsNullOrWhiteSpace(caminhoFoto)
                             ? Url.Content("~/img/default-user.png")
                             : Url.Content(caminhoFoto.StartsWith("/") ? caminhoFoto : "/" + caminhoFoto);
-
-                            // Adiciona um parâmetro de cache-busting para evitar imagens antigas em cache
                             fotoSrc += $"?v={DateTime.UtcNow.Ticks}";
                         }
-
                         <img src="@fotoSrc"
                              alt="Foto de perfil"
                              class="sidebar-avatar rounded-circle border border-2 border-light shadow-sm" />
                     </div>
-
 
                     @{
                         var nomeUsuario = HttpContextAccessor.HttpContext?.User?.FindFirst("FullName")?.Value ?? "Usuário";
@@ -155,13 +124,6 @@
                 <h6 class="fw-bold brand-title mt-2 text-accent">TECHGREEN</h6>
             </div>
 
-       @*      <!-- ===== CAMPO DE BUSCA ===== -->
-            <div class="sidebar-search">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="Pesquisar...">
-            </div> *@
-
-            <!-- ===== MENU PRINCIPAL ===== -->
             <ul class="sidebar-nav">
                 <li class="sidebar-nav-item">
                     <a asp-controller="Home" asp-action="Index" class="sidebar-nav-link active">
@@ -169,12 +131,12 @@
                     </a>
                 </li>
                 <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link">
-                        <i class="bi bi-bar-chart-line"></i><span>Relatórios</span>
+                    <a asp-controller="DashboardDinamica" asp-action="Index" class="sidebar-nav-link">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <span>Relatórios Dinâmicos</span>
                     </a>
                 </li>
 
-                <!-- Submenu de Ferramentas -->
                 <li class="sidebar-nav-item">
                     <a href="#" class="sidebar-nav-link has-submenu">
                         <i class="bi bi-tools"></i><span>Ferramentas</span>
@@ -182,32 +144,15 @@
                     </a>
                     <div class="submenu-panel">
                         <ul class="submenu-list">
-                            <li>
-                                <a asp-controller="Equipamentos" asp-action="Consulta" class="submenu-link">
-                                    <i class="bi bi-hdd-stack"></i><span>Equipamentos</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a asp-controller="Descarte" asp-action="Consulta" class="submenu-link">
-                                    <i class="bi bi-trash2"></i><span>Descarte</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a asp-controller="ConsumoEnergia" asp-action="Index" class="submenu-link">
-                                    <i class="bi bi-lightning-charge"></i><span>Consumo</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a asp-controller="Usuario" asp-action="Index" class="submenu-link">
-                                    <i class="bi bi-people"></i><span>Responsáveis</span>
-                                </a>
-                            </li>
+                            <li><a asp-controller="Equipamentos" asp-action="Consulta" class="submenu-link"><i class="bi bi-hdd-stack"></i><span>Equipamentos</span></a></li>
+                            <li><a asp-controller="Descarte" asp-action="Consulta" class="submenu-link"><i class="bi bi-trash2"></i><span>Descarte</span></a></li>
+                            <li><a asp-controller="ConsumoEnergia" asp-action="Index" class="submenu-link"><i class="bi bi-lightning-charge"></i><span>Consumo</span></a></li>
+                            <li><a asp-controller="Usuario" asp-action="Index" class="submenu-link"><i class="bi bi-people"></i><span>Responsáveis</span></a></li>
                         </ul>
                     </div>
                 </li>
             </ul>
 
-            <!-- ===== RODAPÉ / OPÇÕES ===== -->
             <div class="sidebar-footer mt-auto">
                 <ul class="sidebar-nav">
                     <li class="sidebar-nav-item">
@@ -224,8 +169,6 @@
                         </form>
                     </li>
                 </ul>
-
-                <!-- Botão de Modo Escuro/Claro -->
                 <div class="toggle-theme mt-3" id="darkModeToggle">
                     <i class="bi bi-moon"></i>
                     <span class="toggle-label">Modo Escuro</span>
@@ -233,28 +176,16 @@
             </div>
         </nav>
 
-        <!-- ===== CONTEÚDO PRINCIPAL ===== -->
         <div class="main-wrapper flex-grow-1">
-            <!-- ===== HEADER ===== -->
             <header class="main-header bg-white shadow-sm d-flex align-items-center justify-content-between px-4 py-3">
-                <!-- Botão Mobile -->
                 <button id="sidebar-toggle" class="btn btn-outline-secondary d-lg-none">
                     <i class="bi bi-list fs-5"></i>
                 </button>
-
-                <!-- Nome do site centralizado -->
                 <div class="header-title flex-grow-1 text-center">
                     <h5 class="fw-bold text-gradient mb-0">TechGreen</h5>
                 </div>
-
-                <!-- Ícones de ação (Configurações + Notificações) -->
                 <div class="header-actions d-flex align-items-center gap-3">
-                    <!-- Configurações -->
-                    <a href="#" class="header-icon" title="Configurações">
-                        <i class="bi bi-gear"></i>
-                    </a>
-
-                    <!-- Notificações -->
+                    <a href="#" class="header-icon" title="Configurações"><i class="bi bi-gear"></i></a>
                     <div class="dropdown">
                         <a href="#" class="header-icon dropdown-toggle" id="notification-bell-icon"
                            data-bs-toggle="dropdown" aria-expanded="false" title="Notificações">
@@ -282,7 +213,7 @@
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
     </div>
 
-    <!-- TOAST GAMIFICAÇÃO (mantido) -->
+    <!-- ===== TOAST GAMIFICAÇÃO ===== -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100">
         <div id="gamificationToast" class="toast gamification-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
             <div class="toast-header">
@@ -295,7 +226,18 @@
         </div>
     </div>
 
-    <!-- JS base -->
+    <!-- ============================================================
+         MODAL GLOBAL DE FEEDBACK (SUCESSO / ERRO / AVISO)
+         ============================================================ -->
+    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center border-0 shadow-lg rounded-4 p-4">
+                <div id="feedbackIcon" class="fs-1 mb-3"></div>
+                <h5 id="feedbackMessage" class="fw-semibold"></h5>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -514,7 +456,72 @@
         window.addEventListener("beforeunload", showLoader);
         window.addEventListener("load", hideLoader);
 
+        window.showFeedbackModal = function (type, message) {
+            const icon = document.getElementById("feedbackIcon");
+            const msg = document.getElementById("feedbackMessage");
+            const modalEl = document.getElementById("feedbackModal");
 
+            // Define ícone e cor
+            switch (type) {
+                case "success":
+                    icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                    break;
+                case "error":
+                    icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                    break;
+                case "warning":
+                    icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>';
+                    break;
+                default:
+                    icon.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i>';
+                    break;
+            }
+
+            msg.textContent = message;
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            setTimeout(() => modal.hide(), 2500);
+        };
+              // ===== SOM SUAVE =====
+        const feedbackSound = new Audio('/sounds/notification.mp3');
+
+        window.showFeedbackModal = function (type, message) {
+            const icon = document.getElementById("feedbackIcon");
+            const msg = document.getElementById("feedbackMessage");
+            const modalEl = document.getElementById("feedbackModal");
+
+            switch (type) {
+                case "success": icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>'; break;
+                case "error": icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>'; break;
+                case "warning": icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>'; break;
+                default: icon.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i>'; break;
+            }
+
+            msg.textContent = message;
+
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            feedbackSound.currentTime = 0;
+            feedbackSound.play().catch(() => {});
+
+            setTimeout(() => modal.hide(), 2600);
+        };
+
+        // ===== FEEDBACK VIA TEMPDATA =====
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('success','@TempData["SuccessMessage"]');});</text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('error','@TempData["ErrorMessage"]');});</text>
+        }
+        @if (TempData["WarningMessage"] != null)
+        {
+                <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('warning','@TempData["WarningMessage"]');});</text>
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

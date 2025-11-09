@@ -96,21 +96,47 @@ namespace Governança_de_TI.Controllers
         }
 
         // GET: Descarte/Detalhes/5
+        // GET: Descarte/Detalhes/5
         public async Task<IActionResult> Detalhes(int? id)
         {
             if (id == null) return NotFound();
+
             var descarte = await _context.Descartes
-                .Include(d => d.Equipamento) // Inclui o equipamento relacionado
+                .Include(d => d.Equipamento)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (descarte == null) return NotFound();
-            return View(descarte);
+
+            // Se for chamado via AJAX (modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("_DetalhesDescartePartial", descarte);
+
+            // Caso contrário (navegação normal)
+            return View("_DetalhesDescartePartial", descarte);
         }
 
+
+        // GET: Descarte/Criar
         // GET: Descarte/Criar
         public async Task<IActionResult> Criar()
         {
             await PopulaEquipamentosViewData();
-            return View(new DescarteModel { DataColeta = DateTime.Today }); // Pré-popula data de hoje
+
+            // Corrigido: agora instanciando o tipo correto
+            var model = new DescarteModel
+            {
+                DataColeta = DateTime.Today
+            };
+
+            // 🔹 Se for uma requisição AJAX (carregada na modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                // Retorna a partial dentro da pasta Partials
+                return PartialView("_CriarDescartePartial", model);
+            }
+
+            // 🔹 Caso seja acesso direto via /Descarte/Criar
+            return View("_CriarDescartePartial", model);
         }
 
         // POST: Descarte/Criar
@@ -118,18 +144,21 @@ namespace Governança_de_TI.Controllers
         [ValidateAntiForgeryToken]
         // Bind para propriedades e IFormFile explícito
         public async Task<IActionResult> Criar(
-            [Bind("EquipamentoId,EmpresaColetora,CnpjEmpresa,PessoaResponsavelColeta,DataColeta,Status,Observacao")] DescarteModel descarte,
+            [Bind("EquipamentoId,EmpresaColetora,CnpjEmpresa,PessoaResponsavelColeta,DataColeta,Status,Observacao,EmailEmpresa")] DescarteModel descarte,
             IFormFile CertificadoUpload)
         {
             // Validação manual
             if (descarte.EquipamentoId == 0)
                 ModelState.AddModelError("EquipamentoId", "Selecione o equipamento.");
 
-            if (!ModelState.IsValid)
-            {
+           
                 await PopulaEquipamentosViewData(descarte.EquipamentoId);
-                return View(descarte); // Retorna com erros
-            }
+
+                // Se veio de AJAX (modal), devolve a partial com os erros
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return PartialView("_CriarDescartePartial", descarte);
+
+        
 
             // Busca o equipamento selecionado para copiar dados
             var equipamentoSelecionado = await _context.Equipamentos.AsNoTracking().FirstOrDefaultAsync(e => e.CodigoItem == descarte.EquipamentoId);
@@ -177,132 +206,188 @@ namespace Governança_de_TI.Controllers
         }
 
         // GET: Descarte/Editar/5
+        // GET: Descarte/Editar/5
         public async Task<IActionResult> Editar(int? id)
         {
-            if (id == null) return NotFound();
-            var descarte = await _context.Descartes.Include(d => d.Equipamento).FirstOrDefaultAsync(d => d.Id == id);
-            if (descarte == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
-            // Popula o dropdown de equipamentos (incluindo o equipamento atual, mesmo que já descartado)
+            var descarte = await _context.Descartes
+                .Include(d => d.Equipamento)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (descarte == null)
+                return NotFound();
+
+            // Popula o dropdown de equipamentos (mesmo padrão usado em criar, caso queira reuso futuro)
             await PopulaEquipamentosViewData(descarte.EquipamentoId, true);
+
+            // --- 🔹 Retorna a partial se for requisição AJAX (abrindo em modal)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_EditarDescartePartial", descarte);
+            }
+
+            // --- 🔹 Caso contrário (chamado direto), abre em tela completa (modo fallback)
             return View(descarte);
         }
 
         // POST: Descarte/Editar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(int id,
-            [Bind("Id,EquipamentoId,Descricao,ImagemEquipamentoUrl,EmpresaColetora,CnpjEmpresa,PessoaResponsavelColeta,DataColeta,Status,Observacao,CertificadoUrl,DataDeCadastro")] DescarteModel descarteModel,
-            IFormFile CertificadoUpload)
+        public async Task<IActionResult> Editar(
+         int id,
+         [Bind("Id,EquipamentoId,Descricao,ImagemEquipamentoUrl,EmpresaColetora,CnpjEmpresa,EmailEmpresa,PessoaResponsavelColeta,DataColeta,Status,Observacao,CertificadoUrl,DataDeCadastro,Quantidade,EnviarEmail")]
+    DescarteModel descarteModel,
+         IFormFile CertificadoUpload)
         {
-            if (id != descarteModel.Id) return NotFound();
+            if (id != descarteModel.Id)
+                return NotFound();
 
-            var descarteOriginal = await _context.Descartes.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
-            if (descarteOriginal == null) return NotFound();
+            var descarteOriginal = await _context.Descartes
+                .Include(d => d.Equipamento)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == id);
 
+            if (descarteOriginal == null)
+                return NotFound();
+
+            // --- 🔹 Validações básicas
             if (descarteModel.EquipamentoId == 0)
                 ModelState.AddModelError("EquipamentoId", "Selecione o equipamento.");
+                await PopulaEquipamentosViewData(descarteModel.EquipamentoId, true);
 
-            if (ModelState.IsValid)
+            try
             {
-                try
+                // Mantém informações que não podem ser alteradas
+                descarteModel.DataDeCadastro = descarteOriginal.DataDeCadastro;
+
+                // Atualiza informações do equipamento, caso ele tenha sido alterado
+                if (descarteOriginal.EquipamentoId != descarteModel.EquipamentoId)
                 {
-                    // Mantém a data de cadastro original
-                    descarteModel.DataDeCadastro = descarteOriginal.DataDeCadastro;
+                    var novoEquipamento = await _context.Equipamentos
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(e => e.CodigoItem == descarteModel.EquipamentoId);
 
-                    // Salva novo certificado se enviado, senão mantém o antigo
-                    if (CertificadoUpload != null)
+                    if (novoEquipamento != null)
                     {
-                        descarteModel.CertificadoUrl = await SalvarFicheiro(CertificadoUpload, "certificados");
+                        descarteModel.Descricao = novoEquipamento.Descricao;
+                        descarteModel.ImagemEquipamentoUrl = novoEquipamento.ImagemUrl;
                     }
-                    else
+                }
+                else
+                {
+                    descarteModel.Descricao = descarteOriginal.Descricao;
+                    descarteModel.ImagemEquipamentoUrl = descarteOriginal.ImagemEquipamentoUrl;
+                }
+
+                // --- 🔹 Upload de novo certificado (se enviado)
+                if (CertificadoUpload != null && CertificadoUpload.Length > 0)
+                {
+                    descarteModel.CertificadoUrl = await SalvarFicheiro(CertificadoUpload, "certificados");
+                }
+
+                // --- 🔹 Atualiza registro no banco
+                _context.Update(descarteModel);
+                await _context.SaveChangesAsync();
+
+                // --- 🔹 Auditoria e Gamificação (opcional)
+                var userId = await GetCurrentUserId();
+                if (userId.HasValue)
+                {
+                    _ = Task.Run(async () =>
                     {
-                        descarteModel.CertificadoUrl = descarteOriginal.CertificadoUrl; // Mantém o antigo
-                    }
-
-                    // Se o equipamento foi trocado, busca novos dados
-                    if (descarteOriginal.EquipamentoId != descarteModel.EquipamentoId)
-                    {
-                        var novoEquipamento = await _context.Equipamentos.AsNoTracking().FirstOrDefaultAsync(e => e.CodigoItem == descarteModel.EquipamentoId);
-                        descarteModel.Descricao = novoEquipamento?.Descricao;
-                        descarteModel.ImagemEquipamentoUrl = novoEquipamento?.ImagemUrl;
-
-                        // Opcional: Reverter status do equipamento antigo?
-                        // var equipamentoAntigo = await _context.Equipamentos.FindAsync(descarteOriginal.EquipamentoId);
-                        // if(equipamentoAntigo != null) { equipamentoAntigo.Status = "Ativo"; _context.Update(equipamentoAntigo); }
-                    }
-
-
-                    _context.Update(descarteModel); // Atualiza o registro de descarte
-                    await _context.SaveChangesAsync();
-
-                    // Auditoria (background)
-                    _ = Task.Run(async () => {
-                        var userId = await GetCurrentUserId();
-                        if (userId.HasValue)
-                        {
-                            await _auditService.RegistrarAcao(userId.Value, "Editou Descarte", $"Descarte editado: ID={descarteModel.Id}");
-                        }
+                        await _auditService.RegistrarAcao(userId.Value, "Editou Descarte", $"Descarte ID={descarteModel.Id} atualizado.");
                     });
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!DescarteExists(descarteModel.Id)) return NotFound();
-                    else throw;
-                }
-                TempData["SuccessMessage"] = "Registo de descarte atualizado com sucesso!";
+
+                TempData["SuccessMessage"] = $"Registo de descarte ({descarteModel.Id}) atualizado com sucesso!";
                 return RedirectToAction(nameof(Consulta));
             }
-
-            // Se inválido, recarrega dropdowns e retorna
-            await PopulaEquipamentosViewData(descarteModel.EquipamentoId, true);
-            return View(descarteModel);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Descartes.Any(e => e.Id == descarteModel.Id))
+                    return NotFound();
+                else
+                    throw;
+            }
         }
 
         // GET: Descarte/Excluir/5
         public async Task<IActionResult> Excluir(int? id)
         {
-            if (id == null) return NotFound();
-            var descarte = await _context.Descartes.Include(d => d.Equipamento).FirstOrDefaultAsync(m => m.Id == id);
-            if (descarte == null) return NotFound();
+            if (id == null)
+                return NotFound();
+
+            var descarte = await _context.Descartes
+                .Include(d => d.Equipamento)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (descarte == null)
+                return NotFound();
+
+            // 🧠 Detecta se veio via AJAX e força o retorno da Partial
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_ExcluirDescartePartial", descarte);
+            }
+
+            // Se for navegação direta, exibe a página completa
             return View(descarte);
         }
 
         // POST: Descarte/Excluir/5
-        [HttpPost, ActionName("Excluir")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ExcluirConfirmado(int id)
+        public async Task<IActionResult> Excluir(int id)
         {
-            var descarte = await _context.Descartes.FindAsync(id);
-            if (descarte != null)
-            {
-                // Opcional: Deletar arquivo de certificado do servidor
-                // if (!string.IsNullOrEmpty(descarte.CertificadoUrl)) { ... File.Delete ... }
+            var descarte = await _context.Descartes
+                .Include(d => d.Equipamento)
+                .FirstOrDefaultAsync(d => d.Id == id);
 
-                // Opcional: Reverter status do equipamento associado?
-                var equipamento = await _context.Equipamentos.FindAsync(descarte.EquipamentoId);
-                if (equipamento != null && equipamento.Status == "Descartado")
+            if (descarte == null)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, message = "Registro não encontrado." });
+                return NotFound();
+            }
+
+            try
+            {
+                // Reverte status do equipamento, se necessário
+                if (descarte.Equipamento != null && descarte.Equipamento.Status == "Descartado")
                 {
-                    equipamento.Status = "Ativo"; // Reverte para Ativo
-                    _context.Update(equipamento);
+                    descarte.Equipamento.Status = "Ativo";
+                    _context.Update(descarte.Equipamento);
                 }
 
                 _context.Descartes.Remove(descarte);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Registo de descarte excluído com sucesso!";
 
-                // Auditoria (background)
-                _ = Task.Run(async () => {
-                    var userId = await GetCurrentUserId();
-                    if (userId.HasValue)
-                    {
-                        await _auditService.RegistrarAcao(userId.Value, "Excluiu Descarte", $"Descarte Excluido: ID={descarte.Id}");
-                    }
-                });
+                // Auditoria (em background)
+                var userId = await GetCurrentUserId();
+                if (userId.HasValue)
+                {
+                    _ = Task.Run(async () => {
+                        await _auditService.RegistrarAcao(userId.Value, "Excluiu Descarte",
+                            $"Registro ID={descarte.Id}, Equipamento={descarte.Equipamento?.Descricao}");
+                    });
+                }
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = true, message = $"Registro de descarte ({descarte.Id}) excluído com sucesso!" });
+
+                TempData["SuccessMessage"] = "Registo excluído com sucesso!";
+                return RedirectToAction(nameof(Consulta));
             }
-            return RedirectToAction(nameof(Consulta));
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, message = "Erro ao excluir o registro." });
+                throw;
+            }
         }
-
         // --- MÉTODOS AUXILIARES ---
 
         private bool DescarteExists(int id)

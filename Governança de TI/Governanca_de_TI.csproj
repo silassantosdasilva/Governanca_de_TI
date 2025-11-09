@@ -28,17 +28,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\ConsumoEnergia\Criar.cshtml" />
+    <Content Remove="Views\Descarte\Criar.cshtml" />
     <Content Remove="Views\Equipamentos\Criar.cshtml" />
     <Content Remove="Views\Equipamentos\Detalhes.cshtml" />
     <Content Remove="Views\Equipamentos\Edita.cshtml" />
     <Content Remove="Views\Equipamentos\Editar.cshtml" />
     <Content Remove="Views\Equipamentos\Excluir.cshtml" />
+    <Content Remove="Views\Equipamentos\_ExcluirDescartePartial.cshtml" />
+    <Content Remove="Views\Usuario\Excluir.cshtml" />
     <Content Remove="Views\Usuario\_EditarEquipamentosPartial.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="MailKit" Version="4.14.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
@@ -46,6 +51,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MimeKit" Version="4.14.0" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.10" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,99 @@
+﻿@model Governança_de_TI.Models.DescarteModel
+
+<div class="p-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>
+        <h5 class="mb-0 fw-semibold text-danger">Confirmar Exclusão</h5>
+    </div>
+
+    <p class="text-muted">
+        Tem certeza de que deseja excluir permanentemente o seguinte descarte?
+        <strong>Esta ação não poderá ser desfeita.</strong>
+    </p>
+
+    <!-- Informações resumidas -->
+    <div class="border rounded-3 p-3 bg-light-subtle mb-4">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">ID</dt>
+            <dd class="col-sm-8">@Model.Id</dd>
+
+            <dt class="col-sm-4">Equipamento</dt>
+            <dd class="col-sm-8">@Model.Equipamento?.Descricao</dd>
+
+            <dt class="col-sm-4">Empresa Coletora</dt>
+            <dd class="col-sm-8">@Model.EmpresaColetora</dd>
+
+            <dt class="col-sm-4">Status</dt>
+            <dd class="col-sm-8">@Model.Status</dd>
+        </dl>
+    </div>
+
+    <!-- Imagem do equipamento -->
+    <div class="text-center mb-3">
+        <img src="@(string.IsNullOrEmpty(Model.Equipamento?.ImagemUrl)
+                                     ? Url.Content("~/img/default-equip.png")
+                                     : Url.Content("~" + Model.Equipamento.ImagemUrl))"
+             alt="Imagem do Equipamento"
+             class="img-thumbnail rounded shadow-sm"
+             style="max-height: 180px; object-fit: cover;" />
+    </div>
+
+    <!-- Formulário de confirmação -->
+    <form asp-action="Excluir" method="post" data-ajax="true">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="d-flex justify-content-end mt-4">
+            <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Cancelar
+            </button>
+            <button type="submit" class="btn btn-danger px-4">
+                <i class="bi bi-trash3 me-1"></i>Excluir
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form[data-ajax="true"]');
+            if (!form) return;
+
+            form.addEventListener('submit', async (ev) => {
+                ev.preventDefault();
+                const formData = new FormData(form);
+
+                try {
+                    const resp = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+
+                    const data = await resp.json();
+
+                    if (data.success) {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('descarteModal'));
+                        modal.hide();
+
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show m-3 shadow-sm';
+                        alertDiv.innerHTML = `
+                            <i class="bi bi-check-circle me-2"></i>${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+                        document.body.prepend(alertDiv);
+
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        alert(data.message || 'Erro ao excluir o descarte.');
+                    }
+                } catch (err) {
+                    console.error('Erro ao excluir:', err);
+                    alert('Falha ao excluir o descarte.');
+                }
+            });
+        });
+    </script>
+}

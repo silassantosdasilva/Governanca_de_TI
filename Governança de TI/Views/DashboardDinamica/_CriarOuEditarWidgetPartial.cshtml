@@ -1,0 +1,215 @@
+﻿@model Governança_de_TI.Models.DashboardWidgetModel
+
+@{
+    // A lógica complexa foi MOVIDA para o Controller.
+    // A View agora apenas recebe os dados prontos do ViewBag.
+    var tabelasDisponiveis = ViewBag.Tabelas as List<string> ?? new List<string>();
+
+    // Pega os campos pré-calculados pelo Controller
+    var campos = ViewBag.CamposIniciais;
+}
+
+<form id="form-widget-config"
+      asp-action="CriarOuEditar"
+      asp-controller="DashboardDinamica"
+      method="post"
+      data-campos-json='@Html.Raw(ViewBag.CamposJson)'
+      data-regras-validas='@Html.Raw(ViewBag.RegrasValidasJson)'
+      enctype="multipart/form-data">
+
+    <div class="modal-header border-0">
+        <h5 class="modal-title fw-semibold text-muted">
+            @((Model.Id == 0 ? "Adicionar" : "Editar") + " Widget (Posição " + Model.Posicao + ")")
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+    </div>
+
+    <div class="modal-body p-4">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Posicao" />
+
+        <h6 class="fw-semibold text-primary mb-3">PASSO 1: O que exibir?</h6>
+        <div class="row g-3">
+            <div class="col-md-7">
+                <label asp-for="Titulo" class="form-label fw-semibold">Título do Widget</label>
+                <input asp-for="Titulo" class="form-control" placeholder="Ex: Equipamentos por Status" />
+            </div>
+            <div class="col-md-5">
+                <label asp-for="TipoVisualizacao" class="form-label fw-semibold">Tipo de Visualização</label>
+                <select asp-for="TipoVisualizacao" id="select-tipo-visualizacao" class="form-select">
+                    <option value="Total">KPI (Total)</option>
+                    <option value="Pizza">Gráfico de Pizza</option>
+                    <option value="Rolo">Gráfico de Rosca (Rolo)</option>
+                </select>
+            </div>
+        </div>
+
+        <hr class="my-4" />
+
+        <h6 class="fw-semibold text-primary mb-3">PASSO 2: De onde virão os dados?</h6>
+        <div class="mb-3">
+            <label asp-for="TabelaFonte" class="form-label fw-semibold">Tabela Fonte</label>
+            <select asp-for="TabelaFonte" id="select-tabela-fonte" class="form-select">
+                <option value="">-- Selecione uma tabela --</option>
+                @foreach (var tabela in tabelasDisponiveis)
+                {
+                    <option value="@tabela">@tabela</option>
+                }
+            </select>
+        </div>
+
+        <hr class="my-4" />
+
+        <h6 class="fw-semibold text-primary mb-3">PASSO 3: Como calcular?</h6>
+
+        <div id="grupo-kpi" class="config-grupo">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Operacao" class="form-label fw-semibold">Operação</label>
+                    <select asp-for="Operacao" class="form-select">
+                        <option value="Contagem">Contagem Total de Itens</option>
+                        <option value="Soma">Soma</option>
+                        <option value="Media">Média</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="CampoMetrica" class="form-label fw-semibold">Campo para Soma/Média</label>
+                    <select asp-for="CampoMetrica" id="select-kpi-metrica" class="form-select">
+                        <option value="">-- (Obrigatório p/ Soma/Média) --</option>
+                        @foreach (var campo in campos.Metricas)
+                        {
+                            <option value="@campo" selected="@(campo == Model.CampoMetrica)">@campo</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="grupo-grafico" class="config-grupo">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="CampoDimensao" class="form-label fw-semibold">Agrupar por (Dimensão)</label>
+                    <select asp-for="CampoDimensao" id="select-grafico-dimensao" class="form-select">
+                        <option value="">-- Selecione um campo --</option>
+                        @foreach (var campo in campos.Dimensoes)
+                        {
+                            <option value="@campo" selected="@(campo == Model.CampoDimensao)">@campo</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Operacao" class="form-label fw-semibold">Calcular (Métrica)</label>
+                    <select asp-for="Operacao" id="select-grafico-operacao" class="form-select">
+                        <option value="Contagem">Contagem de Itens</option>
+                        <option value="Soma">Soma de um Valor</option>
+                    </select>
+                </div>
+                <div class="col-md-12 mt-3" id="grupo-grafico-metrica">
+                    <label asp-for="CampoMetrica" class="form-label fw-semibold">Campo para Soma</label>
+                    <select asp-for="CampoMetrica" id="select-grafico-metrica" class="form-select">
+                        <option value="">-- (Obrigatório se "Soma") --</option>
+                        @foreach (var campo in campos.Metricas)
+                        {
+                            <option value="@campo" selected="@(campo == Model.CampoMetrica)">@campo</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="grupo-filtros" class="mt-4 p-3 bg-light rounded-3">
+            <h6 class="fw-semibold text-muted mb-3">Filtros Opcionais</h6>
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label asp-for="CampoDataFiltro" class="form-label">Filtrar por Campo de Data</label>
+                    <select asp-for="CampoDataFiltro" id="select-filtro-data" class="form-select">
+                        <option value="">-- Nenhum filtro de data --</option>
+                        @foreach (var campo in campos.Datas)
+                        {
+                            <option value="@campo" selected="@(campo == Model.CampoDataFiltro)">@campo</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DataFiltroInicio" class="form-label">De (Data Início)</label>
+                    <input asp-for="DataFiltroInicio" type="date" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DataFiltroFim" class="form-label">Até (Data Fim)</label>
+                    <input asp-for="DataFiltroFim" type="date" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" id="btn-salvar-widget" class="btn btn-primary">Salvar Widget</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("form-widget-config");
+            if (!form) return;
+
+            // ======== Lê o JSON vindo do Controller ========
+            const camposPorTabela = JSON.parse(form.getAttribute("data-campos-json") || "{}");
+
+            // ======== Captura os selects ========
+            const selectTabela = document.getElementById("select-tabela-fonte");
+            const selectDimensao = document.getElementById("select-grafico-dimensao");
+            const selectMetrica = document.getElementById("select-grafico-metrica");
+            const selectData = document.getElementById("select-filtro-data");
+
+            // ======== Função para preencher os selects ========
+            function atualizarCamposDaTabela(tabela) {
+                const dados = camposPorTabela[tabela];
+                if (!dados) return;
+
+                // Limpa selects
+                selectDimensao.innerHTML = "<option value=''>-- Selecione Dimensão --</option>";
+                selectMetrica.innerHTML = "<option value=''>-- Selecione Métrica --</option>";
+                selectData.innerHTML = "<option value=''>-- Nenhum filtro de data --</option>";
+
+                // Popula dimensões
+                dados.Dimensoes.forEach(campo => {
+                    const opt = document.createElement("option");
+                    opt.value = campo;
+                    opt.textContent = campo;
+                    selectDimensao.appendChild(opt);
+                });
+
+                // Popula métricas
+                dados.Metricas.forEach(campo => {
+                    const opt = document.createElement("option");
+                    opt.value = campo;
+                    opt.textContent = campo;
+                    selectMetrica.appendChild(opt);
+                });
+
+                // Popula campos de data
+                dados.Datas.forEach(campo => {
+                    const opt = document.createElement("option");
+                    opt.value = campo;
+                    opt.textContent = campo;
+                    selectData.appendChild(opt);
+                });
+            }
+
+            // ======== Evento: quando mudar a tabela ========
+            selectTabela.addEventListener("change", (e) => {
+                const tabela = e.target.value;
+                atualizarCamposDaTabela(tabela);
+            });
+
+            // ======== Carrega automaticamente ao abrir ========
+            const tabelaInicial = selectTabela.value;
+            if (tabelaInicial) {
+                atualizarCamposDaTabela(tabelaInicial);
+            }
+        });
+    </script>
+}

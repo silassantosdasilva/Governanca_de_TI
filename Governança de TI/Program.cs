@@ -3,6 +3,8 @@ using Governança_de_TI.Services;
 using Governança_de_TI.Views.Services.Gamificacao;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // MVC
 builder.Services.AddControllersWithViews();
 
+//DASHBOARD DINÂMICA
+builder.Services.AddScoped<WidgetQueryService>();
+
 var app = builder.Build();
 
 // ========== MIDDLEWARE ==========
@@ -52,6 +57,13 @@ else
 // HTTPS e arquivos estáticos
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+// Permite servir arquivos da pasta "uploads"
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")),
+    RequestPath = "/uploads"
+});
 
 app.UseRouting();
 app.UseAuthentication();
@@ -59,7 +71,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Landing}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // === HTTPS LIMPO: força somente 5005 ===
 app.Urls.Clear();
