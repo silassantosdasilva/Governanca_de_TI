@@ -58,6 +58,19 @@ namespace Governança_de_TI.Controllers
             _context = context;
         }
 
+        // ============================================================
+        // 🔹 Abre o modal Wizard dinâmico
+        // ============================================================
+        public IActionResult WizardModal()
+        {
+            var model = new DashboardWidgetModel
+            {
+                Id = 0,
+                Posicao = 1 // ou defina dinamicamente, se preferir
+            };
+
+            return PartialView("_WizardModal", model);
+        }
         // =========================================================
         // 3️⃣ INDEX
         // =========================================================

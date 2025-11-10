@@ -88,7 +88,8 @@ namespace Governança_de_TI.Controllers
               new Claim(ClaimTypes.Name, user.Email),
               new Claim("FullName", user.Nome ?? string.Empty),
               new Claim(ClaimTypes.Role, user.Perfil ?? string.Empty),
-              new Claim("CaminhoFotoPerfil", user.CaminhoFotoPerfil ?? string.Empty)
+              new Claim("CaminhoFotoPerfil", user.CaminhoFotoPerfil ?? string.Empty),
+              new Claim("Perfil", user.Perfil), // <-- ESSA LINHA É NECESSÁRIA
             };
 
             // Cria a identidade e autentica o usuário

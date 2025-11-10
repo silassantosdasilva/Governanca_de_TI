@@ -1,63 +1,262 @@
-﻿@model IEnumerable<Governança_de_TI.Models.DashboardWidgetModel>
-@{
+﻿@{
     ViewData["Title"] = "Dashboard Dinâmico";
 }
 
+<!-- ========================================================= -->
+<!-- 🧭 CABEÇALHO -->
+<!-- ========================================================= -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold text-dark mb-0">Dashboard Dinâmico</h4>
     <div class="btn-group">
-        <button class="btn btn-outline-primary" id="btnConfig"><i class="bi bi-gear"></i> Configuração</button>
+        <button class="btn btn-outline-primary" id="btnConfig">
+            <i class="bi bi-gear"></i> Configuração
+        </button>
+        <button class="btn btn-primary" id="btnNovoWidget" style="background-color:#8A2BE2;border:none;">
+            <i class="bi bi-plus-circle"></i> Novo Widget
+        </button>
     </div>
 </div>
 
-<div id="dashboardGrid" class="row g-3">
-    @for (int i = 1; i <= 6; i++)
-    {
-        var widget = Model.FirstOrDefault(w => w.Posicao == i);
-        <div class="col-md-4 col-sm-12">
-            <div class="card h-100 shadow-sm border-0 text-center p-3 position-relative">
-                @if (widget == null)
-                {
-                    <button class="btn btn-light w-100 h-100 js-add-widget"
-                            data-posicao="@i">
-                        <i class="bi bi-plus-circle fs-3 d-block"></i>
-                        <span>Adicionar Widget (Posição @i)</span>
-                    </button>
-                }
-                else
-                {
-                    <div id="widget-@widget.Id" class="widget-container">
-                        <div class="dropdown position-absolute top-0 end-0 m-2">
-                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a href="#" class="dropdown-item js-edit-widget" data-id="@widget.Id">Editar</a></li>
-                                <li><a href="#" class="dropdown-item text-danger js-delete-widget" data-id="@widget.Id">Excluir</a></li>
-                            </ul>
-                        </div>
+<!-- ========================================================= -->
+<!-- 🧩 CONTAINER DE WIDGETS (KPI + GRÁFICOS) -->
+<!-- ========================================================= -->
+<div id="dashboardContainer" class="row g-4"></div>
 
-                        <h6 class="fw-semibold mb-2">@widget.Titulo</h6>
-                        <div class="widget-body p-2">
-                            <div class="text-muted small">Carregando...</div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    }
-</div>
-
-<!-- Modal do Wizard -->
+<!-- ========================================================= -->
+<!-- ⚙️ MODAL DE CRIAÇÃO / EDIÇÃO DE WIDGET -->
+<!-- ========================================================= -->
 <div class="modal fade" id="widgetWizardModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content shadow border-0 rounded-4" id="wizardContainer">
-            <div class="modal-body p-4 text-center text-muted">Carregando...</div>
+            <div class="modal-body p-4 text-center text-muted">
+                <div class="spinner-border text-primary mb-3"></div><br />
+                Carregando configurador...
+            </div>
         </div>
     </div>
 </div>
 
+<!-- ========================================================= -->
+<!-- 🎨 AJUSTES DE ESTILO -->
+<!-- ========================================================= -->
+<style>
+    /* ===== Layout base ===== */
+    body {
+        background-color: #f8f9fb;
+    }
+
+    /* ===== Espaçamento geral ===== */
+    #dashboardContainer {
+        padding: 0 0.5rem;
+    }
+
+    /* ===== Cards de KPI ===== */
+    .card.kpi {
+        border-radius: 12px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .card.kpi:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+        }
+
+    /* ===== Cards de gráficos ===== */
+    .chart-card {
+        border-radius: 12px;
+        padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+    }
+
+        .chart-card canvas {
+            height: 140px !important; /* Altura reduzida para equilibrar */
+        }
+
+    .card-header h6 {
+        font-weight: 600;
+        color: #444;
+    }
+
+    .card-header .badge {
+        font-size: 0.75rem;
+    }
+</style>
+
+<!-- ========================================================= -->
+<!-- 📜 SCRIPTS -->
+<!-- ========================================================= -->
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="~/js/dashboard.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("🟢 Dashboard visual inicializado.");
+
+            const btnNovoWidget = document.getElementById("btnNovoWidget");
+            const btnConfig = document.getElementById("btnConfig");
+            const modalEl = document.getElementById("widgetWizardModal");
+            const wizardContainer = document.getElementById("wizardContainer");
+            const modal = new bootstrap.Modal(modalEl);
+
+            // ============================================================
+            // 🔹 Renderização dos Widgets
+            // ============================================================
+            function renderizarWidgetsSalvos() {
+                const container = document.getElementById("dashboardContainer");
+                container.innerHTML = "";
+
+                const widgets = JSON.parse(localStorage.getItem("widgetsDashboard") || "[]");
+
+                if (widgets.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted p-5">
+                            Nenhum widget criado ainda. Clique em <b>Novo Widget</b> para começar.
+                        </div>`;
+                    return;
+                }
+
+                // =====================================================
+                // 🔸 KPIs (primeira linha)
+                // =====================================================
+                const kpiContainer = document.createElement("div");
+                kpiContainer.className = "row g-3 mb-4";
+
+                const kpiColors = ["#0d6efd", "#dc3545", "#198754", "#ffc107", "#6f42c1", "#20c997"];
+
+                widgets.slice(0, 4).forEach((widget, idx) => {
+                    const kpi = document.createElement("div");
+                    kpi.className = "col-lg-3 col-md-6 col-sm-12";
+
+                    kpi.innerHTML = `
+                        <div class="card kpi text-center shadow-sm border-0">
+                            <div class="card-body">
+                                <h6 class="fw-semibold text-secondary mb-1">${widget.titulo}</h6>
+                                <h3 class="fw-bold mb-0" style="color:${kpiColors[idx % kpiColors.length]}">
+                                    ${Math.floor(Math.random() * 900000).toLocaleString('pt-BR')}
+                                </h3>
+                                <small class="text-muted">${widget.operacao} de ${widget.metrica}</small>
+                            </div>
+                        </div>
+                    `;
+                    kpiContainer.appendChild(kpi);
+                });
+
+                container.appendChild(kpiContainer);
+
+                // =====================================================
+                // 🔸 Gráficos (linhas abaixo)
+                // =====================================================
+                const chartRow = document.createElement("div");
+                chartRow.className = "row g-4";
+
+                widgets.forEach(widget => {
+                    const col = document.createElement("div");
+                    col.className = "col-lg-6 col-md-12";
+
+                    const card = document.createElement("div");
+                    card.className = "card chart-card shadow-sm border-0";
+
+                    card.innerHTML = `
+                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pb-0">
+                            <h6 class="mb-0">${widget.titulo}</h6>
+                            <span class="badge bg-light text-dark">${widget.tabela} | ${widget.tipo}</span>
+                        </div>
+                        <div class="card-body pb-2 pt-2">
+                            <canvas id="chart-${widget.posicao}"></canvas>
+                        </div>
+                    `;
+
+                    col.appendChild(card);
+                    chartRow.appendChild(col);
+
+                    // Renderiza o gráfico com atraso leve para garantir carregamento
+                    setTimeout(() => renderChart(`chart-${widget.posicao}`, widget.tipo), 100);
+                });
+
+                container.appendChild(chartRow);
+            }
+
+            // ============================================================
+            // 🔹 Função para gerar os gráficos
+            // ============================================================
+            function renderChart(chartId, tipo) {
+                const ctx = document.getElementById(chartId);
+                if (!ctx) return;
+
+                const dados = {
+                    labels: ["Jan", "Fev", "Mar", "Abr", "Mai"],
+                    valores: [100, 250, 180, 320, 270]
+                };
+
+                let chartType = "bar";
+                if (tipo === "Pizza") chartType = "pie";
+                if (tipo === "Rolo") chartType = "doughnut";
+                if (tipo === "Linha") chartType = "line";
+
+                new Chart(ctx, {
+                    type: chartType,
+                    data: {
+                        labels: dados.labels,
+                        datasets: [{
+                            data: dados.valores,
+                            backgroundColor: [
+                                "#8A2BE2", "#9d4edd", "#c77dff", "#e0aaff", "#a663cc"
+                            ],
+                            borderColor: "#8A2BE2",
+                            borderWidth: 2,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: chartType === "bar" || chartType === "line"
+                            ? { y: { beginAtZero: true } }
+                            : {}
+                    }
+                });
+            }
+
+            // ============================================================
+            // 🔹 Abertura do WizardModal
+            // ============================================================
+            btnNovoWidget.addEventListener("click", async () => {
+                try {
+                    wizardContainer.innerHTML = `
+                        <div class="text-center text-muted p-5">
+                            <div class="spinner-border text-primary mb-3"></div><br>
+                            Carregando configurador do widget...
+                        </div>`;
+
+                    const response = await fetch("/DashboardDinamica/WizardModal", {
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+
+                    if (!response.ok)
+                        throw new Error(`Falha ao carregar WizardModal (HTTP ${response.status})`);
+
+                    const html = await response.text();
+                    wizardContainer.innerHTML = html;
+
+                    setTimeout(() => {
+                        if (typeof window.inicializarWizardModal === "function")
+                            window.inicializarWizardModal();
+                    }, 150);
+
+                    modal.show();
+                } catch (err) {
+                    wizardContainer.innerHTML = `
+                        <div class="alert alert-danger m-4 text-center">
+                            Erro ao carregar configurador:<br><strong>${err.message}</strong>
+                        </div>`;
+                    modal.show();
+                }
+            });
+
+            // ============================================================
+            // 🔹 Inicialização
+            // ============================================================
+            renderizarWidgetsSalvos();
+            window.addEventListener("widgetsAtualizados", renderizarWidgetsSalvos);
+        });
+    </script>
 }

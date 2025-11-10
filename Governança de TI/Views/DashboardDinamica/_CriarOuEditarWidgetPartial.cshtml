@@ -1,22 +1,6 @@
 ﻿@model Governança_de_TI.Models.DashboardWidgetModel
 
-@{
-    // A lógica complexa foi MOVIDA para o Controller.
-    // A View agora apenas recebe os dados prontos do ViewBag.
-    var tabelasDisponiveis = ViewBag.Tabelas as List<string> ?? new List<string>();
-
-    // Pega os campos pré-calculados pelo Controller
-    var campos = ViewBag.CamposIniciais;
-}
-
-<form id="form-widget-config"
-      asp-action="CriarOuEditar"
-      asp-controller="DashboardDinamica"
-      method="post"
-      data-campos-json='@Html.Raw(ViewBag.CamposJson)'
-      data-regras-validas='@Html.Raw(ViewBag.RegrasValidasJson)'
-      enctype="multipart/form-data">
-
+<form id="form-widget-config" class="needs-validation" novalidate>
     <div class="modal-header border-0">
         <h5 class="modal-title fw-semibold text-muted">
             @((Model.Id == 0 ? "Adicionar" : "Editar") + " Widget (Posição " + Model.Posicao + ")")
@@ -25,94 +9,65 @@
     </div>
 
     <div class="modal-body p-4">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="Id" />
-        <input type="hidden" asp-for="Posicao" />
 
+        <!-- ====== PASSO 1 ====== -->
         <h6 class="fw-semibold text-primary mb-3">PASSO 1: O que exibir?</h6>
         <div class="row g-3">
             <div class="col-md-7">
-                <label asp-for="Titulo" class="form-label fw-semibold">Título do Widget</label>
-                <input asp-for="Titulo" class="form-control" placeholder="Ex: Equipamentos por Status" />
+                <label for="inputTitulo" class="form-label fw-semibold">Título do Widget</label>
+                <input id="inputTitulo" type="text" class="form-control" placeholder="Ex: Equipamentos por Status" required>
             </div>
             <div class="col-md-5">
-                <label asp-for="TipoVisualizacao" class="form-label fw-semibold">Tipo de Visualização</label>
-                <select asp-for="TipoVisualizacao" id="select-tipo-visualizacao" class="form-select">
-                    <option value="Total">KPI (Total)</option>
+                <label for="selectTipoVisualizacao" class="form-label fw-semibold">Tipo de Visualização</label>
+                <select id="selectTipoVisualizacao" class="form-select" required>
+                    <option value="">-- Selecione --</option>
+                    <option value="Total">Total (KPI)</option>
                     <option value="Pizza">Gráfico de Pizza</option>
-                    <option value="Rolo">Gráfico de Rosca (Rolo)</option>
+                    <option value="Rolo">Gráfico de Rosca</option>
+                    <option value="Barra">Gráfico de Barra</option>
+                    <option value="Linha">Gráfico de Linha</option>
+                    <option value="Lista">Lista / Tabela</option>
                 </select>
             </div>
         </div>
 
         <hr class="my-4" />
 
+        <!-- ====== PASSO 2 ====== -->
         <h6 class="fw-semibold text-primary mb-3">PASSO 2: De onde virão os dados?</h6>
         <div class="mb-3">
-            <label asp-for="TabelaFonte" class="form-label fw-semibold">Tabela Fonte</label>
-            <select asp-for="TabelaFonte" id="select-tabela-fonte" class="form-select">
-                <option value="">-- Selecione uma tabela --</option>
-                @foreach (var tabela in tabelasDisponiveis)
-                {
-                    <option value="@tabela">@tabela</option>
-                }
+            <label for="selectTabela" class="form-label fw-semibold">Tabela Fonte</label>
+            <select id="selectTabela" class="form-select" required>
+                <option value="">Carregando tabelas...</option>
             </select>
         </div>
 
         <hr class="my-4" />
 
+        <!-- ====== PASSO 3 ====== -->
         <h6 class="fw-semibold text-primary mb-3">PASSO 3: Como calcular?</h6>
 
-        <div id="grupo-kpi" class="config-grupo">
+        <div id="grupoConfig" class="config-grupo">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label asp-for="Operacao" class="form-label fw-semibold">Operação</label>
-                    <select asp-for="Operacao" class="form-select">
-                        <option value="Contagem">Contagem Total de Itens</option>
+                    <label for="selectOperacao" class="form-label fw-semibold">Operação</label>
+                    <select id="selectOperacao" class="form-select">
+                        <option value="Contagem">Contagem</option>
                         <option value="Soma">Soma</option>
                         <option value="Media">Média</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label asp-for="CampoMetrica" class="form-label fw-semibold">Campo para Soma/Média</label>
-                    <select asp-for="CampoMetrica" id="select-kpi-metrica" class="form-select">
-                        <option value="">-- (Obrigatório p/ Soma/Média) --</option>
-                        @foreach (var campo in campos.Metricas)
-                        {
-                            <option value="@campo" selected="@(campo == Model.CampoMetrica)">@campo</option>
-                        }
+                    <label for="selectMetrica" class="form-label fw-semibold">Campo Métrica</label>
+                    <select id="selectMetrica" class="form-select">
+                        <option value="">-- Selecione após escolher tabela --</option>
                     </select>
                 </div>
-            </div>
-        </div>
 
-        <div id="grupo-grafico" class="config-grupo">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="CampoDimensao" class="form-label fw-semibold">Agrupar por (Dimensão)</label>
-                    <select asp-for="CampoDimensao" id="select-grafico-dimensao" class="form-select">
-                        <option value="">-- Selecione um campo --</option>
-                        @foreach (var campo in campos.Dimensoes)
-                        {
-                            <option value="@campo" selected="@(campo == Model.CampoDimensao)">@campo</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="Operacao" class="form-label fw-semibold">Calcular (Métrica)</label>
-                    <select asp-for="Operacao" id="select-grafico-operacao" class="form-select">
-                        <option value="Contagem">Contagem de Itens</option>
-                        <option value="Soma">Soma de um Valor</option>
-                    </select>
-                </div>
-                <div class="col-md-12 mt-3" id="grupo-grafico-metrica">
-                    <label asp-for="CampoMetrica" class="form-label fw-semibold">Campo para Soma</label>
-                    <select asp-for="CampoMetrica" id="select-grafico-metrica" class="form-select">
-                        <option value="">-- (Obrigatório se "Soma") --</option>
-                        @foreach (var campo in campos.Metricas)
-                        {
-                            <option value="@campo" selected="@(campo == Model.CampoMetrica)">@campo</option>
-                        }
+                <div class="col-md-12">
+                    <label for="selectDimensao" class="form-label fw-semibold">Agrupar por (Dimensão)</label>
+                    <select id="selectDimensao" class="form-select">
+                        <option value="">-- Selecione após escolher tabela --</option>
                     </select>
                 </div>
             </div>
@@ -122,22 +77,18 @@
             <h6 class="fw-semibold text-muted mb-3">Filtros Opcionais</h6>
             <div class="row g-3">
                 <div class="col-md-12">
-                    <label asp-for="CampoDataFiltro" class="form-label">Filtrar por Campo de Data</label>
-                    <select asp-for="CampoDataFiltro" id="select-filtro-data" class="form-select">
-                        <option value="">-- Nenhum filtro de data --</option>
-                        @foreach (var campo in campos.Datas)
-                        {
-                            <option value="@campo" selected="@(campo == Model.CampoDataFiltro)">@campo</option>
-                        }
+                    <label for="selectDataFiltro" class="form-label">Campo de Data</label>
+                    <select id="selectDataFiltro" class="form-select">
+                        <option value="">-- Nenhum filtro --</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label asp-for="DataFiltroInicio" class="form-label">De (Data Início)</label>
-                    <input asp-for="DataFiltroInicio" type="date" class="form-control" />
+                    <label for="dataInicio" class="form-label">De</label>
+                    <input id="dataInicio" type="date" class="form-control" />
                 </div>
                 <div class="col-md-6">
-                    <label asp-for="DataFiltroFim" class="form-label">Até (Data Fim)</label>
-                    <input asp-for="DataFiltroFim" type="date" class="form-control" />
+                    <label for="dataFim" class="form-label">Até</label>
+                    <input id="dataFim" type="date" class="form-control" />
                 </div>
             </div>
         </div>
@@ -145,71 +96,137 @@
 
     <div class="modal-footer border-0">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" id="btn-salvar-widget" class="btn btn-primary">Salvar Widget</button>
+        <button type="submit" id="btnSalvarWidget" class="btn btn-primary">Salvar Widget</button>
     </div>
 </form>
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             const form = document.getElementById("form-widget-config");
-            if (!form) return;
+            const selectTabela = document.getElementById("selectTabela");
+            const selectDimensao = document.getElementById("selectDimensao");
+            const selectMetrica = document.getElementById("selectMetrica");
+            const selectDataFiltro = document.getElementById("selectDataFiltro");
+            const selectTipo = document.getElementById("selectTipoVisualizacao");
+            const inputTitulo = document.getElementById("inputTitulo");
 
-            // ======== Lê o JSON vindo do Controller ========
-            const camposPorTabela = JSON.parse(form.getAttribute("data-campos-json") || "{}");
+            let dashboardSchema = {};
 
-            // ======== Captura os selects ========
-            const selectTabela = document.getElementById("select-tabela-fonte");
-            const selectDimensao = document.getElementById("select-grafico-dimensao");
-            const selectMetrica = document.getElementById("select-grafico-metrica");
-            const selectData = document.getElementById("select-filtro-data");
+            // ============================================================
+            // 🔹 1. Carregar Tabelas Dinamicamente via /api/dashboard/schema
+            // ============================================================
+            async function carregarTabelas() {
+                try {
+                    const resp = await fetch("/api/dashboard/schema");
+                    if (!resp.ok) throw new Error("Falha ao buscar schema do dashboard.");
 
-            // ======== Função para preencher os selects ========
-            function atualizarCamposDaTabela(tabela) {
-                const dados = camposPorTabela[tabela];
-                if (!dados) return;
+                    const schema = await resp.json();
+                    dashboardSchema = schema;
+                    const tabelas = Object.keys(schema);
 
-                // Limpa selects
-                selectDimensao.innerHTML = "<option value=''>-- Selecione Dimensão --</option>";
-                selectMetrica.innerHTML = "<option value=''>-- Selecione Métrica --</option>";
-                selectData.innerHTML = "<option value=''>-- Nenhum filtro de data --</option>";
+                    if (!tabelas.length) {
+                        selectTabela.innerHTML = "<option value=''>Nenhuma tabela disponível</option>";
+                        return;
+                    }
 
-                // Popula dimensões
-                dados.Dimensoes.forEach(campo => {
-                    const opt = document.createElement("option");
-                    opt.value = campo;
-                    opt.textContent = campo;
-                    selectDimensao.appendChild(opt);
-                });
+                    selectTabela.innerHTML = "<option value=''>-- Selecione uma tabela --</option>";
+                    tabelas.forEach(tab => {
+                        const opt = document.createElement("option");
+                        opt.value = tab;
+                        opt.textContent = tab;
+                        selectTabela.appendChild(opt);
+                    });
 
-                // Popula métricas
-                dados.Metricas.forEach(campo => {
-                    const opt = document.createElement("option");
-                    opt.value = campo;
-                    opt.textContent = campo;
-                    selectMetrica.appendChild(opt);
-                });
+                    console.log("📋 Tabelas carregadas:", tabelas);
+                } catch (err) {
+                    console.error("❌ Erro ao carregar schema:", err);
+                    selectTabela.innerHTML = "<option value=''>Erro ao carregar tabelas</option>";
 
-                // Popula campos de data
-                dados.Datas.forEach(campo => {
-                    const opt = document.createElement("option");
-                    opt.value = campo;
-                    opt.textContent = campo;
-                    selectData.appendChild(opt);
-                });
+                    // Log opcional
+                    await fetch("/api/log/registrar", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            origem: "Dashboard Wizard",
+                            tipo: "Erro",
+                            mensagem: "Falha ao carregar schema de dashboard",
+                            detalhes: err.message
+                        })
+                    });
+                }
             }
+            await carregarTabelas();
 
-            // ======== Evento: quando mudar a tabela ========
+            // ============================================================
+            // 🔹 2. Quando muda a tabela → carregar campos do schema
+            // ============================================================
             selectTabela.addEventListener("change", (e) => {
                 const tabela = e.target.value;
-                atualizarCamposDaTabela(tabela);
+                if (!tabela || !dashboardSchema[tabela]) return;
+
+                const meta = dashboardSchema[tabela];
+
+                selectDimensao.innerHTML = "<option value=''>-- Dimensão --</option>";
+                selectMetrica.innerHTML = "<option value=''>-- Métrica --</option>";
+                selectDataFiltro.innerHTML = "<option value=''>-- Nenhum filtro --</option>";
+
+                (meta.CamposDimensao || []).forEach(c =>
+                    selectDimensao.insertAdjacentHTML("beforeend", `<option value="${c}">${c}</option>`)
+                );
+                (meta.CamposMetrica || []).forEach(c =>
+                    selectMetrica.insertAdjacentHTML("beforeend", `<option value="${c}">${c}</option>`)
+                );
+                (meta.CamposData || []).forEach(c =>
+                    selectDataFiltro.insertAdjacentHTML("beforeend", `<option value="${c}">${c}</option>`)
+                );
             });
 
-            // ======== Carrega automaticamente ao abrir ========
-            const tabelaInicial = selectTabela.value;
-            if (tabelaInicial) {
-                atualizarCamposDaTabela(tabelaInicial);
-            }
+            // ============================================================
+            // 🔹 3. Salvar Widget (Front-End Only)
+            // ============================================================
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const posicao = "@Model.Posicao";
+                const tabela = selectTabela.value;
+                const tipo = selectTipo.value;
+                const titulo = inputTitulo.value;
+                const dimensao = selectDimensao.value;
+                const metrica = selectMetrica.value;
+                const operacao = document.getElementById("selectOperacao").value;
+
+                if (!tabela || !tipo || !titulo) {
+                    alert("Preencha os campos obrigatórios!");
+                    return;
+                }
+
+                const widgetConfig = { posicao, tabela, tipo, titulo, dimensao, metrica, operacao };
+                localStorage.setItem(`widget-${posicao}`, JSON.stringify(widgetConfig));
+
+                // Fecha o modal
+                const modal = bootstrap.Modal.getInstance(document.querySelector("#widgetWizardModal"));
+                if (modal) modal.hide();
+
+                // Renderiza imediatamente se a função existir
+                if (typeof carregarWidget === "function") {
+                    carregarWidget(tabela, tipo, titulo, dimensao, metrica, operacao);
+                }
+
+                console.log("✅ Widget salvo:", widgetConfig);
+
+                // Log opcional
+                await fetch("/api/log/registrar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        origem: "Dashboard",
+                        tipo: "Info",
+                        mensagem: `Widget criado: ${titulo}`,
+                        detalhes: JSON.stringify(widgetConfig)
+                    })
+                });
+            });
         });
     </script>
 }

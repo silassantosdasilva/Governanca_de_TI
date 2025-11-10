@@ -1,0 +1,33 @@
+﻿.widget-card {
+    border-radius: 12px;
+    transition: all 0.25s ease;
+}
+
+    .widget-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+    }
+
+.card-header {
+    font-size: 0.95rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-body {
+    height: 250px;
+    position: relative;
+}
+
+.alert {
+    transition: all 0.3s ease;
+}
+#sistema-status .alert {
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+#status-body {
+    max-height: 220px;
+    overflow-y: auto;
+}

@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Dinâmico";
+}
+
+<div class="container-fluid py-4">
+    <h4 class="fw-semibold text-primary mb-4">
+        <i class="bi bi-bar-chart-fill me-2"></i> Dashboard Dinâmico
+    </h4>
+
+    <!-- 🔹 Área de feedback e logs de erro -->
+    <div id="dashboard-alert" class="alert d-none" role="alert"></div>
+
+    <!-- 🔹 Área dos widgets -->
+    <div id="dashboard-grid" class="row g-4">
+        <!-- Os widgets serão carregados via JS -->
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+}

@@ -149,6 +149,42 @@ body {
     box-shadow: 0 0 10px rgba(138, 43, 226, 0.45);
 }
 
+/* =========================================
+   MODAL DE LOGS DO SISTEMA - PRIORIDADE VISUAL
+   ========================================= */
+
+/* Garante que o fundo escuro/translúcido fique sobre tudo */
+.modal-backdrop {
+    z-index: 2050 !important;
+}
+
+/* Garante que o modal (conteúdo) fique acima do backdrop */
+.modal {
+    z-index: 2060 !important;
+}
+
+/* Ajusta o container do conteúdo (modal-content) */
+.modal-content {
+    position: relative;
+    z-index: 2070;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* Versão translúcida e elegante do fundo */
+.modal-backdrop.show {
+    background-color: rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(3px);
+}
+
+/* Cabeçalho fixo no topo do modal (opcional, melhora UX em listas longas) */
+#logsModal .modal-header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bs-body-bg);
+    z-index: 2080;
+    border-bottom: 1px solid #e9ecef;
+}
 /* Identidade */
 .sidebar-profile .identity {
     display: flex;

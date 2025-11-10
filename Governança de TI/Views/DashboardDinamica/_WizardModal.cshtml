@@ -1,8 +1,8 @@
 ﻿@model Governança_de_TI.Models.DashboardWidgetModel
-@{
-    var tabelas = ViewBag.Tabelas as List<string> ?? new();
-}
 
+<!-- ========================================================= -->
+<!-- 🧭 CABEÇALHO DO MODAL -->
+<!-- ========================================================= -->
 <div class="modal-header bg-light border-0">
     <h5 class="modal-title fw-semibold text-dark">
         <i class="bi bi-grid-fill text-primary me-2"></i>
@@ -11,74 +11,96 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 
-<form id="widgetWizardForm" asp-action="CriarOuEditar" asp-controller="DashboardDinamica" method="post">
-    @Html.AntiForgeryToken()
+<!-- ========================================================= -->
+<!-- 🧩 FORMULÁRIO DO WIZARD -->
+<!-- ========================================================= -->
+<form id="widgetWizardForm" method="post">
     <div class="modal-body">
+        <!-- ========================= -->
+        <!-- ETAPA 1 -->
+        <!-- ========================= -->
         <div class="wizard-step" id="step1">
-            <h6 class="fw-semibold mb-3">1️⃣ Configuração Básica</h6>
-            <div class="mb-3">
-                <label class="form-label">Título do Widget</label>
-                <input asp-for="Titulo" class="form-control" placeholder="Ex: Equipamentos por Status" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Posição no Grid</label>
-                <select asp-for="Posicao" class="form-select">
-                    @for (int i = 1; i <= 6; i++)
-                    {
-                        <option value="@i">Posição @i</option>
-                    }
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Tipo de Visualização</label>
-                <select asp-for="TipoVisualizacao" class="form-select" id="tipoVisualizacao">
-                    <option value="Total">Cartão KPI</option>
-                    <option value="Pizza">Gráfico de Pizza</option>
-                    <option value="Barra">Gráfico de Barras</option>
-                    <option value="Rolo">Gráfico de Rosca</option>
-                    <option value="Lista">Tabela (Lista)</option>
-                </select>
+            <h6 class="fw-semibold mb-3 text-primary">PASSO 1: O que exibir?</h6>
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <label for="tituloWidget" class="form-label fw-semibold">Título do Widget</label>
+                    <input id="tituloWidget" class="form-control" placeholder="Ex: Equipamentos por Status" />
+                </div>
+                <div class="col-md-5">
+                    <label for="tipoVisualizacao" class="form-label fw-semibold">Tipo de Visualização</label>
+                    <select id="tipoVisualizacao" class="form-select">
+                        <option value="">Carregando tipos...</option>
+                    </select>
+                </div>
             </div>
         </div>
 
+        <!-- ========================= -->
+        <!-- ETAPA 2 -->
+        <!-- ========================= -->
         <div class="wizard-step d-none" id="step2">
-            <h6 class="fw-semibold mb-3">2️⃣ Fonte de Dados</h6>
+            <h6 class="fw-semibold mb-3 text-primary">PASSO 2: De onde virão os dados?</h6>
             <div class="mb-3">
-                <label class="form-label">Selecionar Tabela</label>
-                <select asp-for="TabelaFonte" class="form-select" id="tabelaFonte">
-                    <option value="">Selecione uma tabela</option>
-                    @foreach (var t in tabelas)
-                    {
-                        <option value="@t">@t</option>
-                    }
+                <label class="form-label fw-semibold">Tabela Fonte</label>
+                <select id="tabelaFonte" class="form-select">
+                    <option value="">Carregando tabelas...</option>
                 </select>
             </div>
         </div>
 
+        <!-- ========================= -->
+        <!-- ETAPA 3 -->
+        <!-- ========================= -->
         <div class="wizard-step d-none" id="step3">
-            <h6 class="fw-semibold mb-3">3️⃣ Configuração da Métrica</h6>
-            <div id="metricContainer" class="border rounded p-3 bg-light">
-                <div class="text-muted small">
-                    <em>Selecione o tipo de visualização e a tabela para exibir as opções.</em>
+            <h6 class="fw-semibold mb-3 text-primary">PASSO 3: Como calcular?</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Operação</label>
+                    <select id="operacaoWidget" class="form-select">
+                        <option value="Contagem">Contagem</option>
+                        <option value="Soma">Soma</option>
+                        <option value="Media">Média</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Campo Métrica</label>
+                    <select id="campoMetrica" class="form-select">
+                        <option value="">-- Selecione após escolher tabela --</option>
+                    </select>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Agrupar por (Dimensão)</label>
+                    <select id="campoDimensao" class="form-select">
+                        <option value="">-- Selecione após escolher tabela --</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="mt-4">
-                <button type="button" id="btnPreview" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-eye me-2"></i>Pré-visualizar Widget
-                </button>
-
-                <div id="previewContainer" class="mt-3 border rounded bg-white p-3 d-none">
-                    <div class="text-center text-muted small">
-                        <i class="bi bi-bar-chart me-2"></i>Pré-visualização gerada aqui.
+            <div class="mt-4 p-3 bg-light rounded-3">
+                <h6 class="fw-semibold text-muted mb-3">Filtros Opcionais</h6>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Campo de Data</label>
+                        <select id="campoDataFiltro" class="form-select">
+                            <option value="">-- Nenhum filtro --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">De</label>
+                        <input type="date" id="dataInicio" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Até</label>
+                        <input type="date" id="dataFim" class="form-control" />
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ========================= -->
+    <!-- BOTÕES -->
+    <!-- ========================= -->
     <div class="modal-footer border-0">
         <button type="button" class="btn btn-outline-secondary" id="btnPrev" disabled>Voltar</button>
         <button type="button" class="btn btn-primary" id="btnNext" style="background-color:#8A2BE2;border-color:#8A2BE2;">Próximo</button>
@@ -87,106 +109,3 @@
         </button>
     </div>
 </form>
-
-@section Scripts {
-    <script>
-        function initWidgetWizardModal() {
-            console.log("🧭 Wizard modal inicializado");
-
-            const steps = document.querySelectorAll(".wizard-step");
-            const btnPrev = document.getElementById("btnPrev");
-            const btnNext = document.getElementById("btnNext");
-            const btnFinish = document.getElementById("btnFinish");
-            let currentStep = 0;
-
-            function showStep(i) {
-                steps.forEach((s, idx) => s.classList.toggle("d-none", idx !== i));
-                btnPrev.disabled = i === 0;
-                btnNext.classList.toggle("d-none", i === steps.length - 1);
-                btnFinish.classList.toggle("d-none", i !== steps.length - 1);
-            }
-
-            if (btnNext) {
-                btnNext.onclick = () => {
-                    if (currentStep < steps.length - 1) currentStep++;
-                    showStep(currentStep);
-                };
-            }
-
-            if (btnPrev) {
-                btnPrev.onclick = () => {
-                    if (currentStep > 0) currentStep--;
-                    showStep(currentStep);
-                };
-            }
-
-            showStep(0);
-
-            // Envio AJAX do formulário
-            const form = document.getElementById("widgetWizardForm");
-            if (form) {
-                form.addEventListener("submit", async (e) => {
-                    e.preventDefault();
-                    const data = new FormData(form);
-
-                    try {
-                        const resp = await fetch(form.action, {
-                            method: "POST",
-                            body: data,
-                            headers: { "X-Requested-With": "XMLHttpRequest" }
-                        });
-
-                        const contentType = resp.headers.get("content-type");
-                        if (contentType.includes("application/json")) {
-                            const json = await resp.json();
-                            if (json.success) {
-                                showFeedbackModal("success", json.message);
-                                const modal = bootstrap.Modal.getInstance(document.getElementById("widgetWizardModal"));
-                                modal.hide();
-                                setTimeout(() => location.reload(), 1000);
-                            } else {
-                                showFeedbackModal("error", "Falha ao salvar widget.");
-                            }
-                        } else {
-                            const html = await resp.text();
-                            document.getElementById("wizardContainer").innerHTML = html;
-                            initWidgetWizardModal(); // reinicializa após reload parcial
-                        }
-                    } catch (err) {
-                        showFeedbackModal("error", "Erro no envio do formulário.");
-                        console.error(err);
-                    }
-                });
-            }
-
-            // Lógica da pré-visualização
-            const btnPreview = document.getElementById("btnPreview");
-            const previewContainer = document.getElementById("previewContainer");
-            if (btnPreview && previewContainer) {
-                btnPreview.addEventListener("click", async () => {
-                    const formData = new FormData(form);
-                    previewContainer.classList.remove("d-none");
-                    previewContainer.innerHTML = `
-                        <div class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status"></div>
-                            <div class="small mt-2">Gerando pré-visualização...</div>
-                        </div>`;
-                    try {
-                        const resp = await fetch("/DashboardDinamica/PreviewWidget", {
-                            method: "POST",
-                            body: formData,
-                            headers: { "X-Requested-With": "XMLHttpRequest" }
-                        });
-                        previewContainer.innerHTML = await resp.text();
-                    } catch (err) {
-                        previewContainer.innerHTML = `<div class="alert alert-danger small text-center">Erro ao gerar pré-visualização.</div>`;
-                        console.error("Erro preview:", err);
-                    }
-                });
-            }
-
-            console.log("Wizard pronto ✅");
-        }
-    </script>
-
-}
