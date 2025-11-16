@@ -252,25 +252,36 @@
             if (alert) new bootstrap.Alert(alert).close();
         }, 4000);
 
+        // ===============================
         // (1) ABRIR MODAL → CRIAR TIPO
-        function abrirModalCriarTipo() {
-            // Fecha a modal principal de Equipamento (se estiver aberta)
+        // ===============================
+               function abrirModalCriarTipo() {
+
+            // Fecha a modal principal de Equipamento
             const modalEquipEl = document.getElementById("equipamentosModal");
             if (modalEquipEl) {
                 const modalEquip = bootstrap.Modal.getInstance(modalEquipEl);
                 if (modalEquip) modalEquip.hide();
             }
 
+            // Remove backdrop e classe modal-open
+            setTimeout(() => {
+                document.body.classList.remove("modal-open");
+                document.querySelectorAll(".modal-backdrop").forEach(b => b.remove());
+            }, 150);
+
+            // Carrega a modal Criar Tipo
             $.ajax({
                 url: "/TipoEquipamento/CriarModal",
                 type: "GET",
                 success: function (html) {
+
                     $("#areaModalTipos").html(html);
 
                     const modalEl = document.getElementById("modalCriarTipo");
 
                     const modal = new bootstrap.Modal(modalEl, {
-                        backdrop: false,   // 👉 sem escurecer o fundo
+                        backdrop: false,
                         focus: true
                     });
 
@@ -283,30 +294,43 @@
             });
         }
 
+
+
+
+        // ===============================
         // (2) ABRIR MODAL → LISTA DE TIPOS
+        // ===============================
         function abrirModalListaTipos() {
-            // Fecha a modal Criar Tipo, se estiver aberta
+
+            // Fecha a modal Criar Tipo (se estiver aberta)
             const modalCriarEl = document.getElementById("modalCriarTipo");
             if (modalCriarEl) {
                 const modalCriar = bootstrap.Modal.getInstance(modalCriarEl);
                 if (modalCriar) modalCriar.hide();
             }
 
+            // Carrega e abre a modal de Lista
             $.ajax({
                 url: "/TipoEquipamento/ListaModal",
                 type: "GET",
                 success: function (html) {
+
                     $("#areaModalTipos").html(html);
 
                     const modalEl = document.getElementById("modalListaTipos");
 
                     const modal = new bootstrap.Modal(modalEl, {
-                        backdrop: false,   // 👉 também sem escurecer
+                        backdrop: false,
                         focus: true
                     });
 
                     modalEl.style.zIndex = "2050";
                     modal.show();
+
+                    // Ao fechar a modal Lista, limpa o container
+                    modalEl.addEventListener("hidden.bs.modal", () => {
+                        $("#areaModalTipos").html("");
+                    });
                 },
                 error: function () {
                     alert("Erro ao carregar lista de tipos.");

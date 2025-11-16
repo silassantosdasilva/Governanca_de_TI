@@ -21,5 +21,7 @@ namespace Governança_de_TI.Views.Services.Gamificacao
         // Poderíamos adicionar outros métodos aqui no futuro, como:
         // Task<GamificacaoModel> GetProgressoUsuarioAsync(int usuarioId);
         // Task<List<PremioModel>> GetPremiosUsuarioAsync(int usuarioId);
+
+
     }
 }

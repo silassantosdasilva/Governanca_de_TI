@@ -275,16 +275,19 @@
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
     </div>
 
-    <!-- ===== TOAST GAMIFICAÇÃO ===== -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100">
-        <div id="gamificationToast" class="toast gamification-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
-            <div class="toast-header">
-                <i class="bi bi-star-fill text-warning me-2"></i>
-                <strong class="me-auto">Parabéns!</strong>
-                <small>agora</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    <!-- ======= TOAST GLOBAL DE GAMIFICAÇÃO ======= -->
+    <div id="toastGamificacao"
+         class="toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-4"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         style="z-index: 99999; display:none;">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold">
+                <span id="toastGamificacaoMessage">Notificação</span>
             </div>
-            <div class="toast-body" id="gamificationToastBody">Mensagem de gamificação aqui.</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    onclick="$('#toastGamificacao').hide();"></button>
         </div>
     </div>
 
@@ -631,6 +634,9 @@
         {
                 <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('warning','@TempData["WarningMessage"]');});</text>
         }
+
+
+
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

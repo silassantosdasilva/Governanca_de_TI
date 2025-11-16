@@ -75,6 +75,7 @@ namespace Governança_de_TI.Controllers
                 .AnyAsync(c => c.DataReferencia.Year == consumo.DataReferencia.Year &&
                                c.DataReferencia.Month == consumo.DataReferencia.Month);
 
+
             if (jaExiste) {
 
                 TempData["ErrorMessage"] = $"Ja existe registro para o mes {consumo.DataReferencia.Month}/{consumo.DataReferencia.Year} Por favor, alterar o mes existente! ";
@@ -91,14 +92,13 @@ namespace Governança_de_TI.Controllers
             if (userId.HasValue)
                 await _gamificacaoService.AdicionarPontosAsync(userId.Value, "RegistrouConsumoEnergia", 10);
 
-            // --- AUDITORIA ---
-            if (userId.HasValue)
-            {
-                _ = Task.Run(async () => {
-                    await _auditService.RegistrarAcao(userId.Value, "Criou Consumo de Energia",
+    
+
+
+            var IdConsumo = await GetCurrentUserId();
+            if (IdConsumo.HasValue)
+                await _auditService.RegistrarAcao(IdConsumo.Value, "Criou Consumo de Energia",
                         $"Mês/Ano: {consumo.DataReferencia:MM/yyyy}, Valor: {consumo.ValorKwh} kWh");
-                });
-            }
 
             // === Resposta AJAX ===
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -153,6 +153,11 @@ namespace Governança_de_TI.Controllers
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 return Json(new { success = true, message = "Registo de consumo atualizado com sucesso!" });
 
+            var IdConsumo = await GetCurrentUserId();
+            if (IdConsumo.HasValue)
+                await _auditService.RegistrarAcao(IdConsumo.Value, "Editou Consumo de Energia",
+                        $"Mês/Ano: {consumo.DataReferencia:MM/yyyy}, Valor: {consumo.ValorKwh} kWh");
+
             TempData["SuccessMessage"] = "Registo de consumo atualizado com sucesso!";
             return RedirectToAction(nameof(Index));
         }
@@ -198,11 +203,12 @@ namespace Governança_de_TI.Controllers
             var userId = await GetCurrentUserId();
             if (userId.HasValue)
             {
-                _ = Task.Run(async () => {
-                    await _auditService.RegistrarAcao(userId.Value, "Excluiu Consumo",
-                        $"ID={consumo.Id}, Mês/Ano: {consumo.DataReferencia:MM/yyyy}");
-                });
+                
+                var IdConsumo = await GetCurrentUserId();
+                if (IdConsumo.HasValue)
+                    await _auditService.RegistrarAcao(IdConsumo.Value, "Excluiu Consumo", $"ID={consumo.Id}, Mês/Ano: {consumo.DataReferencia:MM/yyyy}");
             }
+
 
             // === Gamificação (opcional: subtrai pontos) ===
             if (userId.HasValue)
@@ -212,10 +218,13 @@ namespace Governança_de_TI.Controllers
             var user = await GetCurrentUserId();
             if (user.HasValue)
             {
-                _ = Task.Run(async () => {
-                    await _auditService.RegistrarAcao(user.Value, "Excluiu Consumo", $"ID={consumo.Id}, Mês/Ano: {consumo.DataReferencia:MM/yyyy}");
-                });
-            }
+               
+
+                    var IdConsumo = await GetCurrentUserId();
+                    if (IdConsumo.HasValue)
+                        await _auditService.RegistrarAcao(IdConsumo.Value, "Excluiu Consumo", $"ID={consumo.Id}, Mês/Ano: {consumo.DataReferencia:MM/yyyy}");
+
+                }
             // === AJAX (resposta JSON) ===
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
@@ -234,7 +243,7 @@ namespace Governança_de_TI.Controllers
 
         // --- [AUDITORIA] (Executa em background) ---
 
-private bool ConsumoEnergiaExists(int id)
+       private bool ConsumoEnergiaExists(int id)
         {
             return _context.ConsumosEnergia.Any(e => e.Id == id);
         }

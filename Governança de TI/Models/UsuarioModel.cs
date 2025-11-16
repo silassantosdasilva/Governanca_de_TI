@@ -93,7 +93,8 @@ namespace Governança_de_TI.Models
         // Propriedades de Navegação para Gamificação
         // ============================================================
         public virtual ICollection<UsuarioPremioModel> UsuarioPremios { get; set; } = new List<UsuarioPremioModel>();
-        public virtual GamificacaoModel Gamificacao { get; set; }
+        public virtual GamificacaoModel? Gamificacao { get; set; }
+
 
         // Usado para exibir logs recentes na tela de detalhes
         [NotMapped]

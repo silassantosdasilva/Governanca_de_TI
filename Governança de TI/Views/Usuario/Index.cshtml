@@ -14,151 +14,137 @@
     if (localSuccessMessage != null) { TempData.Remove("SuccessMessage"); }
     if (localErrorMessage != null) { TempData.Remove("ErrorMessage"); }
 }
+<link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+<div class="tg-container">
 
-<div class="container-fluid px-3">
+    <!-- ALERTAS AJAX -->
     <div id="ajax-success-alert-placeholder"></div>
 
-    @* Use as VARIÁVEIS LOCAIS que acabamos de criar. *@
     @if (!string.IsNullOrEmpty(localSuccessMessage))
     {
-        <div id="success-alert" class="alert alert-success alert-dismissible fade show shadow-sm mt-3" role="alert">
+        <div class="tg-alert tg-alert-success">
             <i class="bi bi-check-circle-fill me-2"></i>@localSuccessMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
     }
     @if (!string.IsNullOrEmpty(localErrorMessage))
     {
-        <div id="error-alert" class="alert alert-danger alert-dismissible fade show shadow-sm mt-3" role="alert">
+        <div class="tg-alert tg-alert-danger">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>@localErrorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
         </div>
     }
 
-    <div class="card shadow-sm mt-4 border-0 rounded-3">
-        <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <h4 class="fw-semibold text-muted m-0">
-                    <i class="bi bi-people-fill me-2 text-primary"></i>Lista de Usuários
-                </h4>
-                <button id="btnNovoUsuario" type="button" class="btn btn-primary d-flex align-items-center"
-                        style="background-color:#8A2BE2;border-color:#8A2BE2;">
-                    <i class="bi bi-plus-lg me-2"></i> Novo Usuário
-                </button>
-            </div>
+    <!-- CARD PRINCIPAL -->
+    <div class="tg-card">
 
-            <div class="table-responsive rounded-3 border">
-                <table class="table align-middle table-hover mb-0 text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Foto</th>
-                            <th>Nome</th>
-                            <th>Email</th>
-                            <th>Departamento</th>
-                            <th>Perfil</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
+        <!-- CABEÇALHO -->
+        <div class="tg-header">
+            <h4 class="tg-title">
+                <i class="bi bi-people-fill me-2"></i> Lista de Usuários
+            </h4>
+
+            <button id="btnNovoUsuario" type="button" class="tg-btn-primary">
+                <i class="bi bi-plus-lg me-2"></i> Novo Usuário
+            </button>
+        </div>
+
+        <!-- TABELA -->
+        <div class="tg-table-wrapper">
+            <table class="tg-table">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Departamento</th>
+                        <th>Perfil</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
                         {
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        @{
-                                            // Define imagem padrão
-                                            var fotoSrc = Url.Content("~/img/default-user.png");
+                            var fotoSrc = !string.IsNullOrEmpty(item.CaminhoFotoPerfil)
+                            ? Url.Content(item.CaminhoFotoPerfil)
+                            : Url.Content("~/img/default-user.png");
 
-                                            // Se o usuário tiver uma imagem, exibe ela
-                                            if (!string.IsNullOrEmpty(item.CaminhoFotoPerfil))
-                                            {
-                                                fotoSrc = Url.Content(item.CaminhoFotoPerfil);
-                                            }
-                                        }
-
-                                        <img src="@fotoSrc"
-                                             class="rounded-circle border shadow-sm"
-                                             style="width:45px;height:45px;object-fit:cover;" />
-                                    </td>
-
-                                    <td class="fw-semibold">@item.Nome</td>
-                                    <td class="text-muted">@item.Email</td>
-                                    <td>@(item.Departamento?.Nome ?? "-")</td>
-
-                                    <td>
-                                        <span class="badge bg-secondary-subtle text-secondary px-3 py-1 rounded-pill">
-                                            @item.Perfil
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        @if (item.Status == "Ativo")
-                                        {
-                                            <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">Ativo</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger-subtle text-danger px-3 py-1 rounded-pill">Inativo</span>
-                                        }
-                                    </td>
-
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-primary btn-editar-usuario"
-                                                    data-usuario-id="@item.Id"
-                                                    title="Editar">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-secondary btn-detalhes-usuario"
-                                                    data-usuario-id="@item.Id"
-                                                    title="Detalhes">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger btn-excluir-usuario"
-                                                    data-usuario-id="@item.Id"
-                                                    title="Excluir">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-
-                                            <form asp-action="RedefinirSenha"
-                                                  asp-route-id="@item.Id"
-                                                  method="post"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Deseja redefinir a senha deste usuário?');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit"
-                                                        class="btn btn-sm btn-outline-warning"
-                                                        title="Redefinir Senha">
-                                                    <i class="bi bi-key"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
-                                    <i class="bi bi-info-circle me-2"></i> Nenhum usuário encontrado.
+                                <td>
+                                    <img src="@fotoSrc" class="tg-avatar">
+                                </td>
+
+                                <td class="fw-semibold">@item.Nome</td>
+
+                                <td class="tg-muted">@item.Email</td>
+
+                                <td>@(item.Departamento?.Nome ?? "-")</td>
+
+                                <td>
+                                    <span class="tg-chip tg-chip-gray">@item.Perfil</span>
+                                </td>
+
+                                <td>
+                                    @if (item.Status == "Ativo")
+                                    {
+                                        <span class="tg-chip tg-chip-green">Ativo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="tg-chip tg-chip-red">Inativo</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="tg-actions">
+                                        <button type="button" class="tg-action-btn blue btn-editar-usuario" title="Editar"
+                                                data-usuario-id="@item.Id">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <button type="button" class="tg-action-btn gray btn-detalhes-usuario"
+                                                data-usuario-id="@item.Id" title="Detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+
+                                        <button type="button" class="tg-action-btn red btn-excluir-usuario"
+                                                data-usuario-id="@item.Id" title="Excluir">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+
+                                        <form asp-action="RedefinirSenha" asp-route-id="@item.Id"
+                                              method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="tg-action-btn yellow btn-redefinir-senha"
+                                                    title="Redefinir Senha">
+                                                <i class="bi bi-key"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="tg-empty">
+                                <i class="bi bi-info-circle me-2"></i> Nenhum usuário encontrado.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
         </div>
+
     </div>
+
 </div>
 
-<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+ <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0">
@@ -181,154 +167,457 @@
             </div>
         </div>
     </div>
+</div> 
+
+<div class="modal fade" id="departamentoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title fw-semibold">Novo Departamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="departamentoModalBody">
+                Carregando...
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnSalvarDepartamento"
+                        style="background:#8A2BE2;border-color:#8A2BE2;">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
+
 <style>
-    .modal.fade .modal-dialog {
-        transition: transform 0.25s ease-out, opacity 0.25s ease-out;
-        transform: translateY(-10%);
-        opacity: 0;
+
+    /* ==========================================================
+       TECHGREEN - INDEX USUÁRIOS (COMPATÍVEL COM DARK MODE)
+       ========================================================== */
+
+    /* CONTAINER */
+    .tg-container {
+        padding: 20px;
     }
 
-    .modal.show .modal-dialog {
-        transform: translateY(0);
-        opacity: 1;
+    /* CARD PRINCIPAL */
+    .tg-card {
+        background: var(--tg-card-bg) !important;
+        border-radius: 18px;
+        padding: 25px;
+        border: 1px solid var(--tg-border) !important;
+        color: var(--tg-text) !important;
     }
+
+    /* CABEÇALHO */
+    .tg-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .tg-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--tg-text) !important;
+    }
+
+    /* BOTÃO NOVO */
+    .tg-btn-primary {
+        background: var(--tg-primary) !important;
+        color: #fff !important;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: .2s;
+    }
+
+        .tg-btn-primary:hover {
+            background: var(--tg-primary-hover) !important;
+            transform: scale(1.03);
+        }
+
+    /* TABELA WRAPPER */
+    .tg-table-wrapper {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--tg-border) !important;
+        background: var(--tg-card-bg) !important;
+    }
+
+    /* TABELA */
+    .tg-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--tg-text) !important;
+    }
+
+        /* HEAD */
+        .tg-table thead {
+            background: var(--tg-sidebar-hover) !important;
+        }
+
+            .tg-table thead th {
+                padding: 14px;
+                font-weight: 600;
+                color: var(--tg-text) !important;
+                text-transform: uppercase;
+                font-size: 12px;
+                border-bottom: 1px solid var(--tg-border) !important;
+            }
+
+        /* LINHAS */
+        .tg-table tbody tr {
+            background: var(--tg-card-bg) !important;
+            transition: 0.15s ease;
+        }
+
+            .tg-table tbody tr:hover {
+                background: var(--tg-sidebar-hover) !important;
+            }
+
+    /* FOTO */
+    .tg-avatar {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid var(--tg-border) !important;
+        transition: .2s;
+    }
+
+        .tg-avatar:hover {
+            transform: scale(1.08);
+        }
+
+    /* TEXTO SECUNDÁRIO */
+    .tg-muted {
+        color: #9c9ca5 !important;
+    }
+
+    /* CHIPS */
+    .tg-chip {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .tg-chip-gray {
+        background: rgba(150,150,180,0.15) !important;
+        color: var(--tg-text) !important;
+    }
+
+    .tg-chip-green {
+        background: rgba(63,185,80,0.18) !important;
+        color: #3fb950 !important;
+    }
+
+    .tg-chip-red {
+        background: rgba(255,80,80,0.20) !important;
+        color: #ff6e6e !important;
+    }
+
+    /* AÇÕES */
+    .tg-actions {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .tg-action-btn {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: .15s;
+        border: none !important;
+    }
+
+        .tg-action-btn:hover {
+            transform: scale(1.12);
+            opacity: .9;
+        }
+
+        .tg-action-btn.blue {
+            background: rgba(0,123,255,0.18) !important;
+            color: #6db7ff !important;
+        }
+
+        /* BOTÃO CINZA – VISUALIZAR */
+        .tg-action-btn.gray {
+            color: var(--tg-text) !important;
+            background: var(--tg-sidebar-hover) !important;
+        }
+    /* DARK MODE – BOTÃO CINZA */
+    :root[data-bs-theme="dark"] .tg-action-btn.gray {
+        background: rgba(255,255,255,0.10) !important;
+        color: #e2e2e9 !important;
+    }
+
+        .tg-action-btn.red {
+            background: rgba(255,0,0,0.20) !important;
+            color: #ff6e6e !important;
+        }
+
+        .tg-action-btn.yellow {
+            background: rgba(255,193,7,0.25) !important;
+            color: #ffd369 !important;
+        }
+
+    /* LINHA VAZIA */
+    .tg-empty {
+        padding: 30px;
+        color: var(--tg-text) !important;
+        text-align: center;
+        opacity: .6;
+    }
+
 </style>
 
 @section Scripts {
     <script>
         $(function () {
+
+            // ============================================================
+            // REFERÊNCIAS DO MODAL PRINCIPAL DE USUÁRIO
+            // ============================================================
             const userModalEl = document.getElementById('userModal');
             const userModal = bootstrap.Modal.getOrCreateInstance(userModalEl);
             const $modalBody = $('#userModal .modal-body');
             const $submitButton = $('#btnConfirmarModalPrincipal');
             const $userModalLabel = $('#userModalLabel');
 
-            // ================================
-            // BOTÃO: NOVO USUÁRIO
-            // ================================
-            $('#btnNovoUsuario').on('click', function () {
-                $userModalLabel.text('Novo Responsável');
-                $modalBody.html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-3 text-muted">Carregando formulário...</p></div>');
-                userModal.show();
-
-                $submitButton.attr('form', 'formCriarUsuario')
-                    .text('Salvar')
-                    .show()
-                    .prop('disabled', true);
-
-                $.get('@Url.Action("_CriarUsuarioPartial", "Usuario")')
-                    .done(data => {
-                        $modalBody.hide().html(data).fadeIn(200);
-                        $submitButton.prop('disabled', false);
-                        reinicializarValidacao('#formCriarUsuario');
+            // ============================================================
+            // FUNÇÃO DE PERMISSÃO
+            // ============================================================
+            function validarPermissao(tipo, callback) {
+                $.get('@Url.Action("ValidarPermissao", "Usuario")?tipo=' + tipo)
+                    .done(res => {
+                        if (!res.autorizado) {
+                            showDanger(res.message);
+                            return;
+                        }
+                        callback();
                     })
-                    .fail(() => {
-                        $modalBody.html('<div class="alert alert-danger m-3">Erro ao carregar formulário.</div>');
-                        $submitButton.hide();
-                    });
+                    .fail(() => showDanger("Erro ao validar permissão."));
+            }
+
+            // ============================================================
+            // ALERTA DE ERRO
+            // ============================================================
+            function showDanger(msg) {
+                const alertHtml = `
+                    <div class="alert alert-danger alert-dismissible fade show mt-3 shadow-sm" role="alert">
+                        <i class="bi bi-x-circle-fill me-2"></i>${msg}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+
+                $('#ajax-success-alert-placeholder').html(alertHtml);
+                setTimeout(() => $('.alert').alert('close'), 4000);
+            }
+
+            // ============================================================
+            // ALERTA DE SUCESSO
+            // ============================================================
+            function showSuccess(msg) {
+                const html = `
+                    <div class="alert alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>${msg}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+
+                $('#ajax-success-alert-placeholder').html(html);
+                setTimeout(() => $('.alert').alert('close'), 3500);
+            }
+
+            // ============================================================
+            // REINICIALIZAR VALIDAÇÃO
+            // ============================================================
+            function reinicializarValidacao(selector) {
+                const $form = $(selector);
+                $form.removeData('validator').removeData('unobtrusiveValidation');
+
+                if ($.validator && $.validator.unobtrusive)
+                    $.validator.unobtrusive.parse($form);
+            }
+
+            // ============================================================
+            // ABRIR MODAL COM LOADER
+            // ============================================================
+            function abrirModalCarregando(titulo) {
+                $userModalLabel.text(titulo);
+                $modalBody.html(loaderHtml());
+                userModal.show();
+            }
+
+            function abrirModalCarregandoDanger(titulo) {
+                $userModalLabel.text(titulo);
+                $modalBody.html(loaderHtmlDanger());
+                userModal.show();
+            }
+
+            function loaderHtml() {
+                return `
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-3 text-muted">Carregando...</p>
+                </div>`;
+            }
+
+            function loaderHtmlDanger() {
+                return `
+                <div class="text-center p-5">
+                    <div class="spinner-border text-danger"></div>
+                    <p class="mt-3 text-muted">Carregando...</p>
+                </div>`;
+            }
+
+            function errorHtml(msg) {
+                return `<div class="alert alert-danger m-3"><strong>Erro:</strong> ${msg}</div>`;
+            }
+
+            // ============================================================
+            // 🔥 NOVO USUÁRIO
+            // ============================================================
+            $('#btnNovoUsuario').on('click', function () {
+
+                validarPermissao("CriarUsuario", function () {
+
+                    abrirModalCarregando("Novo Usuário");
+
+                    $submitButton.attr('form', 'formCriarUsuario')
+                        .text('Salvar')
+                        .show()
+                        .prop('disabled', true);
+
+                    $.get('@Url.Action("_CriarUsuarioPartial", "Usuario")')
+                        .done(data => {
+                            $modalBody.hide().html(data).fadeIn(200);
+                            $submitButton.prop('disabled', false);
+                            reinicializarValidacao('#formCriarUsuario');
+                        })
+                        .fail(() => {
+                            $modalBody.html(errorHtml("Erro ao carregar formulário."));
+                            $submitButton.hide();
+                        });
+                });
             });
 
-            // ================================
-            // BOTÃO: EDITAR USUÁRIO
-            // ================================
+            // ============================================================
+            // 🔥 EDITAR, DETALHES, EXCLUIR, REDEFINIR SENHA
+            // ============================================================
             $(document).on('click', '.btn-editar-usuario', function () {
                 const id = $(this).data('usuario-id');
-                $userModalLabel.text('Editar Responsável');
-                $modalBody.html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-3 text-muted">Carregando dados...</p></div>');
-                userModal.show();
 
-                $submitButton.attr('form', 'formEditarUsuario')
-                    .text('Salvar Alterações')
-                    .show()
-                    .prop('disabled', true);
+                validarPermissao("EditarUsuario", function () {
+                    abrirModalCarregando("Editar Usuário");
 
-                $.get('@Url.Action("_EditarUsuarioPartial", "Usuario")/' + id)
-                    .done(data => {
-                        $modalBody.hide().html(data).fadeIn(200);
-                        $submitButton.prop('disabled', false);
-                        reinicializarValidacao('#formEditarUsuario');
+                    $submitButton.attr('form', 'formEditarUsuario')
+                        .text('Salvar Alterações')
+                        .show()
+                        .prop('disabled', true);
 
-                        // Remove obrigatoriedade da imagem
-                        const $img = $('#formEditarUsuario input[name="Imagem"]');
-                        $img.removeAttr('required data-val data-val-required');
-                    })
-                    .fail(() => {
-                        $modalBody.html('<div class="alert alert-danger m-3">Erro ao carregar dados.</div>');
-                        $submitButton.hide();
-                    });
+                    $.get('@Url.Action("_EditarUsuarioPartial", "Usuario")/' + id)
+                        .done(data => {
+                            $modalBody.hide().html(data).fadeIn(200);
+                            $submitButton.prop('disabled', false);
+                            reinicializarValidacao('#formEditarUsuario');
+                        })
+                        .fail(() => {
+                            $modalBody.html(errorHtml("Erro ao carregar dados."));
+                            $submitButton.hide();
+                        });
+                });
             });
 
-            // ================================
-            // BOTÃO: DETALHES USUÁRIO
-            // ================================
             $(document).on('click', '.btn-detalhes-usuario', function () {
                 const id = $(this).data('usuario-id');
-                $userModalLabel.text('Detalhes do Responsável');
-                $modalBody.html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-3 text-muted">Carregando informações...</p></div>');
-                $submitButton.hide();
-                userModal.show();
 
-                $.get('@Url.Action("_DetalhesUsuarioPartial", "Usuario")/' + id)
-                    .done(data => {
-                        $modalBody.hide().html(data).fadeIn(200);
-                    })
-                    .fail(() => {
-                        $modalBody.html('<div class="alert alert-danger m-3">Erro ao carregar detalhes.</div>');
-                    });
+                validarPermissao("DetalhesUsuario", function () {
+
+                    abrirModalCarregando("Detalhes do Usuário");
+                    $submitButton.hide();
+
+                    $.get('@Url.Action("_DetalhesUsuarioPartial", "Usuario")/' + id)
+                        .done(data => {
+                            $modalBody.hide().html(data).fadeIn(200);
+                        })
+                        .fail(() => {
+                            $modalBody.html(errorHtml("Erro ao carregar detalhes."));
+                        });
+                });
             });
 
-            // ================================
-            // BOTÃO: EXCLUIR USUÁRIO
-            // ================================
             $(document).on('click', '.btn-excluir-usuario', function () {
                 const id = $(this).data('usuario-id');
-                $userModalLabel.text('Confirmar Exclusão');
-                $modalBody.html('<div class="text-center p-5"><div class="spinner-border text-danger"></div><p class="mt-3 text-muted">Preparando exclusão...</p></div>');
-                userModal.show();
 
-                $submitButton.attr('form', 'formExcluirUsuario')
-                    .text('Confirmar Exclusão')
-                    .removeClass('btn-primary').addClass('btn-danger')
-                    .show()
-                    .prop('disabled', true);
+                validarPermissao("ExcluirUsuario", function () {
 
-                $.get('@Url.Action("_ExcluirUsuarioPartial", "Usuario")/' + id)
-                    .done(data => {
-                        $modalBody.hide().html(data).fadeIn(200);
-                        $submitButton.prop('disabled', false);
-                    })
-                    .fail(() => {
-                        $modalBody.html('<div class="alert alert-danger m-3">Erro ao carregar confirmação.</div>');
-                        $submitButton.hide();
-                    });
+                    abrirModalCarregandoDanger("Excluir Usuário");
+
+                    $submitButton.attr('form', 'formExcluirUsuario')
+                        .text('Confirmar Exclusão')
+                        .removeClass('btn-primary')
+                        .addClass('btn-danger')
+                        .show()
+                        .prop('disabled', true);
+
+                    $.get('@Url.Action("_ExcluirUsuarioPartial", "Usuario")/' + id)
+                        .done(data => {
+                            $modalBody.hide().html(data).fadeIn(200);
+                            $submitButton.prop('disabled', false);
+                        })
+                        .fail(() => {
+                            $modalBody.html(errorHtml("Erro ao carregar confirmação."));
+                            $submitButton.hide();
+                        });
+                });
             });
 
-            // ================================
-            // SUBMISSÃO AJAX (CRIAR, EDITAR, EXCLUIR)
-            // ================================
+            $(document).on('click', '.btn-redefinir-senha', function (e) {
+                e.preventDefault();
+
+                const form = $(this).closest("form");
+
+                validarPermissao("RedefinirSenha", function () {
+                    form.submit();
+                });
+            });
+
+            // ============================================================
+            // SUBMISSÃO AJAX
+            // ============================================================
             $(document).on('submit', '#formCriarUsuario, #formEditarUsuario, #formExcluirUsuario', function (e) {
+
                 e.preventDefault();
                 const form = $(this);
                 const isDelete = form.attr('id') === 'formExcluirUsuario';
-                const url = form.attr('action');
                 const formData = new FormData(this);
 
                 $submitButton.prop('disabled', true)
                     .html('<span class="spinner-border spinner-border-sm"></span> Processando...');
 
                 $.ajax({
-                    url, type: 'POST', data: formData,
-                    processData: false, contentType: false,
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: result => {
+
                         if (result.redirectTo) {
-                            if (isDelete) {
-                                const successBox = $modalBody.find('#excluir-success-msg');
-                                if (successBox.length) successBox.removeClass('d-none').hide().fadeIn(300);
-                            }
                             showSuccess(result.message || 'Operação concluída!');
-                            setTimeout(() => window.location.href = result.redirectTo, 2000);
+                            setTimeout(() => window.location.href = result.redirectTo, 1800);
                         } else {
                             $modalBody.html(result);
                             $submitButton.prop('disabled', false)
@@ -337,57 +626,103 @@
                     },
                     error: jqXHR => {
                         const msg = jqXHR.responseJSON?.message || 'Erro inesperado.';
-                        $modalBody.html('<div class="alert alert-danger m-3"><strong>Falha:</strong> ' + msg + '</div>');
-                        $submitButton.prop('disabled', false).text('Tentar Novamente');
+                        $modalBody.html(errorHtml(msg));
+                        $submitButton.prop('disabled', false).text('Tentar novamente');
                     }
                 });
             });
 
-            // ================================
-            // FUNÇÕES AUXILIARES
-            // ================================
-            function showSuccess(msg) {
-                const alert = `<div class="alert alert-success alert-dismissible fade show mt-3 shadow-sm" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>${msg}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>`;
-                $('#ajax-success-alert-placeholder').html(alert);
-                setTimeout(() => $('.alert').alert('close'), 3500);
-            }
-
-            function reinicializarValidacao(formSelector) {
-                const $form = $(formSelector);
-                $form.removeData('validator').removeData('unobtrusiveValidation');
-                if ($.validator && $.validator.unobtrusive) {
-                    $.validator.unobtrusive.parse($form);
-                }
-            }
-
-            // ================================
-            // PRÉ-VISUALIZAÇÃO DE IMAGEM (DINÂMICO)
-            // ================================
+            // ============================================================
+            // PREVIEW IMAGEM
+            // ============================================================
             $(document).on('change', '#inputImagemModal, #inputImagemModalEditar', function (e) {
                 const file = e.target.files[0];
                 if (!file) return;
 
-                const reader = new FileReader();
-                reader.onload = function (ev) {
-                    const previewId = e.target.id === 'inputImagemModalEditar'
-                        ? '#previewImagemModalEditar'
-                        : '#previewImagemModal';
-                    $(previewId)
-                        .attr('src', ev.target.result)
-                        .addClass('border border-2 border-primary shadow-sm')
-                        .css('transform', 'scale(1.05)')
-                        .css('transition', 'all 0.2s ease-in-out');
+                const preview = (e.target.id === 'inputImagemModalEditar')
+                    ? '#previewImagemModalEditar'
+                    : '#previewImagemModal';
 
-                    // Volta ao normal após 300ms (efeito visual leve)
-                    setTimeout(() => {
-                        $(previewId).css('transform', 'scale(1)');
-                    }, 300);
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    $(preview)
+                        .attr('src', ev.target.result)
+                        .css('transform', 'scale(1.05)')
+                        .addClass('border border-2 border-primary shadow-sm');
+
+                    setTimeout(() => $(preview).css('transform', 'scale(1)'), 200);
                 };
                 reader.readAsDataURL(file);
             });
+
+            // ============================================================
+            // 🔥 MODAL DE DEPARTAMENTO (CORRIGIDO)
+            // ============================================================
+            $(document).on("click", "#btnAddDepartamento", function () {
+
+                const modalEl = document.getElementById("departamentoModal");
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+                const body = $("#departamentoModalBody");
+                const btnSalvar = $("#btnSalvarDepartamento");
+
+                body.html(`
+                    <div class='text-center p-4'>
+                        <div class='spinner-border text-primary'></div>
+                        <p class='mt-3 text-muted'>Carregando...</p>
+                    </div>`);
+
+                modal.show();
+
+                $.get("/Departamento/_CriarDepartamentoModal")
+                    .done(data => {
+                        body.hide().html(data).fadeIn(150);
+                    })
+                    .fail(() => {
+                        body.html("<div class='alert alert-danger'>Erro ao carregar formulário.</div>");
+                    });
+
+                btnSalvar.off("click").on("click", function () {
+
+                    const form = $("#formCriarDepartamento");
+
+                    $.ajax({
+                        url: form.attr("action"),
+                        method: "POST",
+                        data: form.serialize(),
+                        success: function (res) {
+
+                            if (res.sucesso) {
+
+                                const select = $("#DepartamentoId");
+
+                                if (select.find("option[value='" + res.departamento.id + "']").length === 0) {
+                                    select.append(`<option value='${res.departamento.id}'>${res.departamento.nome}</option>`);
+                                }
+
+                                select.val(res.departamento.id).trigger("change");
+
+                                modal.hide();
+                            }
+                            else {
+                                body.html(res);
+                            }
+                        }
+                    });
+                });
+            });
+
+        }); // fim document ready
+
+
+
+        // ============================================================
+        // 🔥 CORREÇÃO FINAL: REMOVE BACKDROP FANTASMA
+        // ============================================================
+        $(document).on("hidden.bs.modal", "#departamentoModal", function () {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
         });
+
     </script>
 }

@@ -1,0 +1,35 @@
+﻿@model Governança_de_TI.Models.DepartamentoModel
+
+<div class="p-3">
+    <form id="formCriarDepartamento" asp-action="Criar" method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Nome do Departamento</label>
+            <input asp-for="Nome" class="form-control shadow-sm" autocomplete="off" />
+            <span asp-validation-for="Nome" class="text-danger small"></span>
+        </div>
+
+    </form>
+</div>
+
+<script>
+        // ============================================================
+    // CORREÇÃO FINAL: CONTROLE DO BOTÃO SALVAR
+    // ============================================================
+
+    // Quando abrir o modal de criação (+)
+    $(document).on("click", "#btnAddDepartamento", function () {
+        $("#btnSalvarDepartamento").show();    // Mostrar Salvamento
+    });
+
+    // Quando abrir o modal da engrenagem ⚙
+    $(document).on("click", "#btnGerenciarDepartamento", function () {
+        $("#btnSalvarDepartamento").hide();    // Some o botão Salvar
+    });
+
+    // Antes de registrar qualquer evento de salvar, limpa tudo
+    $("#btnSalvarDepartamento").off("click");
+
+</script>

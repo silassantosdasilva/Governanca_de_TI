@@ -36,6 +36,30 @@ namespace Governança_de_TI.Controllers
                 Directory.CreateDirectory(_pastaPerfil);
         }
 
+        [HttpGet]
+        [HttpGet]
+        public async Task<IActionResult> ValidarPermissao(string tipo)
+        {
+            var id = await GetCurrentUserId();
+            if (id == null)
+                return Json(new { autorizado = false, message = "Usuário não autenticado." });
+
+            var usuario = await _context.Usuarios
+                .Where(u => u.Id == id.Value)
+                .Select(u => new { u.Perfil })
+                .FirstOrDefaultAsync();
+
+            if (usuario == null)
+                return Json(new { autorizado = false, message = "Usuário não encontrado." });
+
+            // Se não é admin → bloqueia TUDO
+            if (usuario.Perfil != "Admin")
+                return Json(new { autorizado = false, message = "Acesso permitido apenas para administradores." });
+
+            // ADMIN pode tudo
+            return Json(new { autorizado = true });
+        }
+
         // ============================================================
         // VIEWBAG DEPARTAMENTOS
         // ============================================================
@@ -77,6 +101,7 @@ namespace Governança_de_TI.Controllers
         [HttpGet]
         public async Task<IActionResult> _CriarUsuarioPartial()
         {
+       
             await CarregarDepartamentosViewBag();
             return PartialView("_CriarUsuarioPartial", new UsuarioModel());
         }
@@ -85,6 +110,7 @@ namespace Governança_de_TI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Criar(UsuarioModel usuario)
         {
+
             ModelState.Remove("Senha");
 
             if (!ModelState.IsValid)
@@ -198,6 +224,10 @@ namespace Governança_de_TI.Controllers
                 usuario.CaminhoFotoPerfil = $"/perfil/{nomeArquivo}";
             }
 
+            var id = await GetCurrentUserId();
+            if (id.HasValue)
+                await _auditService.RegistrarAcao(id.Value, "Editou Usuário", $"Usuário: {usuario.Nome}");
+
             await _context.SaveChangesAsync();
 
             // === [ATUALIZA CLAIMS SE O USUÁRIO LOGADO FOR O MESMO] ===
@@ -228,15 +258,48 @@ namespace Governança_de_TI.Controllers
                     authProperties);
             }
 
-            // === [REGISTRA AUDITORIA] ===
-            _ = Task.Run(async () =>
-            {
-                var id = await GetCurrentUserId();
-                if (id.HasValue)
-                    await _auditService.RegistrarAcao(id.Value, "Editou Usuário", $"Usuário: {usuario.Nome}");
-            });
+       
 
             return Ok(new { redirectTo = Url.Action(nameof(Index)), message = "Usuário atualizado com sucesso!" });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RedefinirSenha(int id)
+        {
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
+            if (usuario == null)
+                return NotFound("Usuário não encontrado.");
+
+            // Gera nova senha
+            string novaSenha = GerarSenhaAleatoria();
+            usuario.Senha = BCrypt.Net.BCrypt.HashPassword(novaSenha);
+
+            await _context.SaveChangesAsync();
+
+            // Envia e-mail (opcional)
+            try
+            {
+                await _emailService.EnviarEmailAsync(
+                    usuario.Email,
+                    "Redefinição de Senha",
+                    $"<p>A sua nova senha é:</p><h3>{novaSenha}</h3>");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao enviar email: {ex.Message}");
+            }
+
+           
+       
+
+                var idUser = await GetCurrentUserId();
+                if (idUser.HasValue)
+                    await _auditService.RegistrarAcao(idUser.Value, "Redefiniu Senha do Usuário", $"Usuário: {usuario.Nome}");
+          
+
+            TempData["SuccessMessage"] = $"A senha de {usuario.Nome} foi redefinida com sucesso!";
+            return RedirectToAction(nameof(Index));
         }
 
         // ============================================================
@@ -267,34 +330,62 @@ namespace Governança_de_TI.Controllers
         // ============================================================
         // EXCLUIR
         // ============================================================
+        [HttpGet]
+        public IActionResult _ExcluirUsuarioPartial(int id)
+        {
+            var usuario = _context.Usuarios.Find(id);
+            return PartialView("_ExcluirUsuarioPartial", usuario);
+        }
+
         [HttpPost("Usuario/Excluir/{id}")]
         [ActionName("ExcluirConfirmado")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExcluirConfirmado(int id)
         {
+            // Busca usuário
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null)
-                return BadRequest(new { message = "Utilizador não encontrado." });
+                return BadRequest(new { message = "Usuário não encontrado." });
 
-            if (usuario.Perfil == "Admin" && await _context.Usuarios.CountAsync(u => u.Perfil == "Admin" && u.Id != id) == 0)
+            // Impede excluir o último admin
+            if (usuario.Perfil == "Admin" &&
+                await _context.Usuarios.CountAsync(u => u.Perfil == "Admin" && u.Id != id) == 0)
+            {
                 return BadRequest(new { message = "Não é possível excluir o único administrador." });
+            }
 
+            // 🔥 Remove gamificação antes de excluir o usuário
+            var gamificacao = await _context.Gamificacoes
+                .FirstOrDefaultAsync(g => g.UsuarioId == id);
+
+            if (gamificacao != null)
+            {
+                _context.Gamificacoes.Remove(gamificacao);
+                await _context.SaveChangesAsync();
+            }
+
+            // 🔥 Remove foto do usuário se existir
             if (!string.IsNullOrEmpty(usuario.CaminhoFotoPerfil))
             {
-                var caminho = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", usuario.CaminhoFotoPerfil.TrimStart('/'));
+                var caminho = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    usuario.CaminhoFotoPerfil.TrimStart('/')
+                );
+
                 if (System.IO.File.Exists(caminho))
                     System.IO.File.Delete(caminho);
             }
 
+            // 🔥 Remove o usuário
             _context.Usuarios.Remove(usuario);
             await _context.SaveChangesAsync();
 
-            _ = Task.Run(async () =>
-            {
-                var executorId = await GetCurrentUserId();
-                if (executorId.HasValue)
-                    await _auditService.RegistrarAcao(executorId.Value, "Excluiu Usuário", $"ID={usuario.Id}, Email={usuario.Email}");
-            });
+            // 🔥 Auditoria
+            var idUser = await GetCurrentUserId();
+            if (idUser.HasValue)
+                await _auditService.RegistrarAcao(idUser.Value, "Excluiu Usuário",
+                    $"ID={usuario.Id}, Email={usuario.Email}");
 
             return Ok(new
             {

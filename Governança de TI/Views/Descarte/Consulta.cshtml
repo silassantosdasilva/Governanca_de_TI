@@ -10,7 +10,9 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold text-dark mb-0">Gestão de Descarte Sustentável</h4>
+                <h4 class="mb-0 text-muted fw-semibold">
+                    <i class="bi bi-hdd-stack me-2"></i>Gestão de Descarte
+                </h4>
 
                 <!-- BOTÃO DE NOVO REGISTRO (AGORA CARREGA VIA MODAL DINÂMICA) -->
                 <a href="@Url.Action("Criar", "Descarte")"
@@ -151,10 +153,11 @@
             const bsModal = new bootstrap.Modal(modalEl);
             const hasLoader = typeof showLoader === 'function' && typeof hideLoader === 'function';
 
-            // === Clique em qualquer botão de modal (criar, editar, detalhes, excluir) ===
+            // === Clique nos botões de modal ===
             document.addEventListener('click', async (ev) => {
                 const a = ev.target.closest('.js-open-descarte-modal, .js-open-detalhes-descarte');
                 if (!a) return;
+
                 ev.preventDefault();
 
                 const url = a.getAttribute('href');
@@ -164,7 +167,6 @@
                 try {
                     hasLoader && showLoader();
 
-                    // Define título e loader temporário
                     modalTitle.textContent = title;
                     modalBody.innerHTML = `
                         <div class="p-5 text-center text-muted">
@@ -172,60 +174,108 @@
                             Carregando conteúdo…
                         </div>`;
 
-                    // === Chamada AJAX com header completo ===
+                    // === CHAMADA AJAX COM HEADER ===
                     const resp = await fetch(url, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'text/html'
                         }
                     });
+
                     const html = await resp.text();
 
-                    // === Injeta conteúdo ===
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = html.trim();
+                    // === INJETA O HTML NO MODAL ===
+                           modalBody.innerHTML = html;
 
-                    let mainContent =
-                        tempDiv.querySelector('form') ||
-                        tempDiv.querySelector('.card') ||
-                        tempDiv.querySelector('main') ||
-                        tempDiv.querySelector('body > div');
+        // === Após carregar a partial, iniciar scripts específicos ===
+                     if (typeof inicializarEventosCriarDescarte === 'function') 
+                     {
+                        console.log("🔄 Inicializando JS da tela de CRIAR...");
+                         inicializarEventosCriarDescarte();
+                     }
 
-                    // === Injeta conteúdo sem filtragem (garante que partials simples apareçam) ===
-                    modalBody.innerHTML = html;
+                    // ================================
+                    // 🔥 EXECUTA OS SCRIPTS DA PARTIAL
+                    // ================================
+                    const scripts = modalBody.querySelectorAll("script");
+                    scripts.forEach((oldScript) => {
+                        const newScript = document.createElement("script");
 
-                    // Reativa validação jQuery Unobtrusive (caso necessário)
+                        if (oldScript.src) {
+                            newScript.src = oldScript.src;
+                        } else {
+                            newScript.textContent = oldScript.textContent;
+                        }
+
+                        document.body.appendChild(newScript);
+                        oldScript.remove();
+                    });
+                    // ================================
+
+                    // Reativa validação jQuery
                     if (window.jQuery && $.validator && $.validator.unobtrusive) {
                         $.validator.unobtrusive.parse(modalBody);
                     }
 
+                    // Pequeno delay para animação
                     await new Promise(resolve => setTimeout(resolve, 150));
+
+                    // Abre a modal
                     bsModal.show();
 
-                    // Ajusta modal grande
+                    // Ajuste de tamanho
                     setTimeout(() => {
                         const modalDialog = modalEl.querySelector('.modal-dialog');
                         if (modalDialog) modalDialog.classList.add('modal-xxl');
                     }, 300);
 
                 } catch (e) {
+                    console.error("Erro ao carregar modal:", e);
                     modalBody.innerHTML = `
                         <div class="alert alert-danger m-3">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             Erro ao carregar o conteúdo do modal.
                         </div>`;
-                    console.error("Erro ao carregar modal:", e);
                 } finally {
                     hasLoader && hideLoader();
                 }
             });
 
-            // === Fecha alertas de sucesso automaticamente ===
+            // === Fecha alertas de sucesso ===
             setTimeout(() => {
                 const alert = document.getElementById('success-alert');
                 if (alert) new bootstrap.Alert(alert).close();
             }, 4000);
         })();
+
+        document.addEventListener('change', async function (e) {
+
+            if (e.target.id !== "EquipamentoId") return;
+
+            const id = e.target.value;
+            const descricaoInput = document.getElementById('Descricao');
+            const imagePreview = document.getElementById('imagePreview');
+            const placeholder = "/img/default-equip.png";
+
+            if (!id) {
+                descricaoInput.value = "";
+                imagePreview.src = placeholder;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Equipamentos/GetEquipamentoDados?id=${id}`);
+                const data = await response.json();
+
+                descricaoInput.value = data.descricao || "";
+                imagePreview.src = data.imageUrl || placeholder;
+
+            } catch (err) {
+                console.error("Erro ao carregar dados:", err);
+                descricaoInput.value = "";
+                imagePreview.src = placeholder;
+            }
+        });
     </script>
 }
 

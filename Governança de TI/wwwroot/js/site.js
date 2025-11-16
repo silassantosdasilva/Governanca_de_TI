@@ -377,3 +377,14 @@ function criarGraficoConsumoAno(chartData) {
         }
     });
 }
+
+
+// =================== MOSTRAR TOAST GAMIFICAÇÃO ===================
+function mostrarToastGamificacao(msg) {
+    $("#toastGamificacaoMessage").text(msg);
+    $("#toastGamificacao").fadeIn(200);
+
+    setTimeout(() => {
+        $("#toastGamificacao").fadeOut(300);
+    }, 3500);
+}

@@ -2,50 +2,38 @@
 
 <div class="p-4">
 
-    <!-- Título -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-semibold text-muted mb-0">
-            <i class="bi bi-pencil-square me-2"></i>Editar Equipamento
-        </h5>
-
-        <span class="badge bg-light text-dark px-3 py-2 shadow-sm">
-            <i class="bi bi-gear-fill me-1"></i>Edição
-        </span>
-    </div>
-
     <form id="formEditarEquipamento"
           asp-action="Editar"
           method="post"
           enctype="multipart/form-data">
 
         @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-        <!-- Hidden -->
+        <!-- Campos Hidden -->
         <input type="hidden" asp-for="CodigoItem" />
         <input type="hidden" asp-for="DataDeCadastro" />
         <input type="hidden" asp-for="ImagemUrl" />
         <input type="hidden" asp-for="AnexoUrl" />
 
-        <div class="row g-3">
+        <div class="row g-4">
 
-            <!-- ================= COLUNA ESQUERDA ================= -->
+            <!-- ========================= COLUNA ESQUERDA ========================= -->
             <div class="col-md-7">
 
-                <div class="mb-3">
+                <!-- Descrição -->
+                <div>
                     <label asp-for="Descricao" class="form-label text-muted small">
-                        <i class="bi bi-cpu me-1"></i>Descrição do Equipamento
+                        <i class="bi bi-cpu me-1"></i> Descrição do Equipamento
                     </label>
-                    <input asp-for="Descricao"
-                           class="form-control shadow-sm"
-                           placeholder="Ex: Notebook Dell Inspiron 15" />
+                    <input asp-for="Descricao" class="form-control shadow-sm"
+                           placeholder="Ex: Notebook Dell Inspiron 15"  />
                     <span asp-validation-for="Descricao" class="text-danger small"></span>
                 </div>
 
                 <!-- Tipo -->
-                <div class="mb-3">
+                <div class="mt-3">
                     <label asp-for="TipoEquipamentoId" class="form-label text-muted small">
-                        <i class="bi bi-tags me-1"></i>Tipo de Equipamento
+                        <i class="bi bi-tags me-1"></i> Tipo de Equipamento
                     </label>
 
                     <div class="input-group">
@@ -62,44 +50,36 @@
                             <i class="bi bi-plus-lg"></i>
                         </button>
                     </div>
-
-                    <span asp-validation-for="TipoEquipamentoId" class="text-danger small"></span>
                 </div>
 
-                <!-- Linha Série / Modelo -->
-                <div class="row">
-                    <div class="col-sm-6 mb-3">
+                <!-- Série / Modelo -->
+                <div class="row mt-3">
+                    <div class="col-sm-6">
                         <label asp-for="Serie" class="form-label text-muted small">Série</label>
-                        <input asp-for="Serie" class="form-control shadow-sm"
-                               placeholder="Número de série" />
+                        <input asp-for="Serie" class="form-control shadow-sm" placeholder="Número de série" />
                     </div>
 
-                    <div class="col-sm-6 mb-3">
+                    <div class="col-sm-6">
                         <label asp-for="Modelo" class="form-label text-muted small">Modelo</label>
-                        <input asp-for="Modelo" class="form-control shadow-sm"
-                               placeholder="Modelo exato" />
+                        <input asp-for="Modelo" class="form-control shadow-sm" placeholder="Modelo exato" />
                     </div>
                 </div>
 
-                <!-- Linha Datas -->
-                <div class="row">
-                    <div class="col-sm-6 mb-3">
-                        <label asp-for="DataCompra" class="form-label text-muted small">
-                            Data de Compra
-                        </label>
+                <!-- Datas -->
+                <div class="row mt-3">
+                    <div class="col-sm-6">
+                        <label asp-for="DataCompra" class="form-label text-muted small">Data de Compra</label>
                         <input asp-for="DataCompra" type="date" class="form-control shadow-sm" />
                     </div>
 
-                    <div class="col-sm-6 mb-3">
-                        <label asp-for="VidaUtilFim" class="form-label text-muted small">
-                            Fim da Vida Útil
-                        </label>
+                    <div class="col-sm-6">
+                        <label asp-for="VidaUtilFim" class="form-label text-muted small">Fim da Vida Útil</label>
                         <input asp-for="VidaUtilFim" type="date" class="form-control shadow-sm" />
                     </div>
                 </div>
 
                 <!-- Status -->
-                <div class="mb-3">
+                <div class="mt-3">
                     <label asp-for="Status" class="form-label text-muted small">Status</label>
                     <select asp-for="Status" class="form-select shadow-sm">
                         <option value="">Selecione...</option>
@@ -110,55 +90,42 @@
                 </div>
 
                 <!-- Frequência -->
-                <div class="mb-3">
-                    <label asp-for="FrequenciaManutencao" class="form-label text-muted small">
-                        Frequência de Manutenção
-                    </label>
+                <div class="mt-3">
+                    <label asp-for="FrequenciaManutencao" class="form-label text-muted small">Frequência</label>
                     <select asp-for="FrequenciaManutencao" class="form-select shadow-sm">
-                        <option value="">Nenhuma</option>
+                        <option>Nenhuma</option>
                         <option>Mensal</option>
                         <option>Trimestral</option>
                         <option>Anual</option>
                     </select>
                 </div>
 
-                <!-- Última Manutenção -->
-                <div class="mb-3">
-                    <label asp-for="DataUltimaManutencao" class="form-label text-muted small">
-                        Última Manutenção
-                    </label>
-                    <input asp-for="DataUltimaManutencao"
-                           type="date"
-                           class="form-control shadow-sm" />
+                <!-- Última manutenção -->
+                <div class="mt-3">
+                    <label asp-for="DataUltimaManutencao" class="form-label text-muted small">Última Manutenção</label>
+                    <input asp-for="DataUltimaManutencao" type="date" class="form-control shadow-sm" />
                 </div>
 
                 <!-- Anexo -->
-                <div class="mb-3">
-                    <label asp-for="AnexoUpload" class="form-label text-muted small">
-                        Anexo
-                    </label>
-                    <input asp-for="AnexoUpload"
-                           type="file"
-                           class="form-control form-control-sm shadow-sm" />
+                <div class="mt-3">
+                    <label asp-for="AnexoUpload" class="form-label text-muted small">Anexo</label>
+                    <input asp-for="AnexoUpload" type="file" class="form-control form-control-sm shadow-sm" />
                 </div>
 
-                <!-- Linha Dias de alerta / Checkbox -->
-                <div class="row">
-                    <div class="col-sm-6 mb-3">
+                <!-- Dias alerta / Checkbox -->
+                <div class="row mt-3">
+                    <div class="col-sm-6">
                         <label asp-for="DiasAlertaManutencao" class="form-label text-muted small">
                             Dias de Alerta
                         </label>
-                        <input asp-for="DiasAlertaManutencao"
-                               class="form-control shadow-sm"
-                               type="number"
-                               placeholder="Ex: 30" />
+                        <input asp-for="DiasAlertaManutencao" class="form-control shadow-sm" type="number" />
                     </div>
 
-                    <div class="col-sm-6 mb-3 d-flex align-items-center">
+                    <div class="col-sm-6 d-flex align-items-center">
                         <div class="form-check mt-3">
-                            <input asp-for="EnviarEmailAlerta" class="form-check-input" type="checkbox" />
+                            <input asp-for="EnviarEmailAlerta" type="checkbox" class="form-check-input" />
                             <label asp-for="EnviarEmailAlerta" class="form-check-label text-muted small">
-                                Enviar Email de Alerta
+                                Enviar alerta por e-mail
                             </label>
                         </div>
                     </div>
@@ -166,68 +133,67 @@
 
             </div>
 
-            <!-- ================= COLUNA DIREITA (IMAGEM) ================= -->
+            <!-- ========================= COLUNA DIREITA (IMAGEM) ========================= -->
             <div class="col-md-5 text-center">
 
                 <label class="form-label text-muted small d-block mb-2">
-                    <i class="bi bi-image me-1"></i>Imagem do Equipamento
+                    <i class="bi bi-image me-1"></i> Imagem do Equipamento
                 </label>
 
-                <div class="border rounded-4 bg-light p-1 shadow-sm d-flex align-items-center justify-content-center mx-auto"
-                     style="width: 160px; height: 160px; overflow: hidden;">
+                <div class="border rounded-4 bg-light p-2 shadow-sm mx-auto"
+                     style="width: 180px; height: 180px; overflow: hidden;">
 
                     <img id="imagePreviewEditar"
                          src="@(string.IsNullOrEmpty(Model.ImagemUrl)
-                                                             ? Url.Content("~/img/default-equip.png")
-                                                             : Url.Content("~" + Model.ImagemUrl))"
+                                                         ? Url.Content("~/img/default-equip.png")
+                                                         : Url.Content("~" + Model.ImagemUrl))"
                          class="img-fluid rounded"
-                         style="object-fit: cover; max-width: 100%; max-height: 100%;" />
+                         style="object-fit: cover; width: 100%; height: 100%;" />
                 </div>
 
-                <!-- Botão alterar imagem -->
-                <label for="ImagemUpload" class="btn btn-sm btn-outline-secondary mt-3">
-                    <i class="bi bi-upload me-1"></i>Alterar Imagem
+                <!-- Botão alterar -->
+                <label for="ImagemUpload" class="btn btn-outline-secondary w-100 mt-3">
+                    <i class="bi bi-upload me-1"></i> Alterar Imagem
                 </label>
 
                 <input asp-for="ImagemUpload"
-                       type="file"
                        id="ImagemUpload"
+                       type="file"
                        class="d-none"
                        accept="image/*" />
 
                 <!-- Anexo atual -->
-                <div class="mt-3">
-                    @if (!string.IsNullOrEmpty(Model.AnexoUrl))
-                    {
-                        <a href="@Url.Content("~" + Model.AnexoUrl)"
-                           target="_blank"
-                           class="btn btn-outline-primary btn-sm w-100">
-                            <i class="bi bi-download me-1"></i>Baixar Anexo Atual
-                        </a>
-                    }
-                </div>
+                @if (!string.IsNullOrEmpty(Model.AnexoUrl))
+                {
+                    <a href="@Url.Content("~" + Model.AnexoUrl)"
+                       target="_blank"
+                       class="btn btn-outline-primary mt-3 w-100">
+                        <i class="bi bi-download me-1"></i> Baixar Anexo Atual
+                    </a>
+                }
+
             </div>
+
         </div>
 
-        <hr class="my-3" />
+        <hr class="my-4" />
 
+        <!-- Botões -->
         <div class="d-flex justify-content-end">
-            <button type="button"
-                    class="btn btn-outline-secondary me-2"
-                    data-bs-dismiss="modal">
-                <i class="bi bi-x-circle me-1"></i>Cancelar
+            <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i> Cancelar
             </button>
 
             <button type="submit"
                     class="btn btn-primary px-4"
-                    style="background-color: #8A2BE2; border-color: #8A2BE2;">
-                <i class="bi bi-save me-1"></i>Salvar Alterações
+                    style="background-color:#8A2BE2;border-color:#8A2BE2;">
+                <i class="bi bi-save me-1"></i> Salvar Alterações
             </button>
         </div>
+
     </form>
 </div>
 
-<!-- Preview da imagem -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const input = document.getElementById("ImagemUpload");
@@ -236,15 +202,14 @@
         if (input && preview) {
             input.addEventListener("change", e => {
                 const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = ev => preview.src = ev.target.result;
-                    reader.readAsDataURL(file);
-                }
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = ev => preview.src = ev.target.result;
+                reader.readAsDataURL(file);
             });
         }
 
-        // Reativa a validação da modal
         if (window.jQuery && $.validator && $.validator.unobtrusive) {
             $.validator.unobtrusive.parse("#formEditarEquipamento");
         }

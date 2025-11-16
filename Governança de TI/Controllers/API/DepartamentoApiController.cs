@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Governança_de_TI.Controllers
+namespace Governança_de_TI.Controllers.API
 {
     /// <summary>
     /// API para gerenciar Departamentos via modal (AJAX).

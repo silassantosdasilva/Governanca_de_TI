@@ -59,7 +59,8 @@ namespace Governança_de_TI.Data
             modelBuilder.Entity<GamificacaoModel>()
                .HasOne(g => g.Usuario)
                .WithOne(u => u.Gamificacao) // Assumindo que UsuarioModel terá uma propriedade 'Gamificacao'
-               .HasForeignKey<GamificacaoModel>(g => g.UsuarioId);
+               .HasForeignKey<GamificacaoModel>(g => g.UsuarioId)
+               .IsRequired(false);   // ⬅ TORNA OPCIONAL
 
             // Adicione outras configurações Fluent API conforme necessário
             // Ex: Precisão de decimais, nomes de tabelas/colunas específicos, etc.

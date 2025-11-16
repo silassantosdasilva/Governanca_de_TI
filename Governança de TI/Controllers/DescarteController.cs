@@ -38,7 +38,7 @@ namespace Governança_de_TI.Controllers
         }
 
         // GET: Descarte/Consulta
-        public async Task<IActionResult> Consulta(int? id, string equipamento, string empresaColetora, string cnpj, string responsavel, DateTime? dataColeta, DateTime? dataCadastro, string status, string observacao)
+        public async Task<IActionResult> Consulta(int? id, string equipamento, string empresaColetora, string cnpj, string responsavel, DateTime? dataColeta, DateTime? dataCadastro, string status, string observacao, string descricao)
         {
             var query = _context.Descartes.Include(d => d.Equipamento).AsQueryable();
 
@@ -46,10 +46,9 @@ namespace Governança_de_TI.Controllers
             {
                 query = query.Where(d => d.Id == id.Value);
             }
-            if (!string.IsNullOrEmpty(equipamento))
+            if (!string.IsNullOrEmpty(descricao))
             {
-                // Busca no ID ou na Descrição do equipamento relacionado
-                query = query.Where(d => d.Equipamento.Descricao.Contains(equipamento) || d.Equipamento.CodigoItem.ToString().Contains(equipamento));
+                query = query.Where(d => d.Descricao.Contains(descricao));
             }
             if (!string.IsNullOrEmpty(empresaColetora))
             {
@@ -167,7 +166,7 @@ namespace Governança_de_TI.Controllers
                 descarte.Descricao = equipamentoSelecionado.Descricao; // Guarda a descrição
                 descarte.ImagemEquipamentoUrl = equipamentoSelecionado.ImagemUrl; // Guarda a imagem
 
-                // Atualiza o status do equipamento original para "Descartado"
+                //Atualiza o status do equipamento original para "Descartado"
                 equipamentoSelecionado.Status = "Descartado";
                 _context.Update(equipamentoSelecionado); // Marca o equipamento como modificado
             }
@@ -193,13 +192,12 @@ namespace Governança_de_TI.Controllers
             }
             // --- Fim Gamificação ---
 
-            // Auditoria (em background)
-            if (userId.HasValue)
-            {
-                _ = Task.Run(async () => {
-                    await _auditService.RegistrarAcao(userId.Value, "Criou Descarte", $"ID={descarte.Id}, Equipamento ID={descarte.EquipamentoId}");
-                });
-            }
+
+            var idEquip = await GetCurrentUserId();
+            if (idEquip.HasValue)
+                await _auditService.RegistrarAcao(idEquip.Value, "Criou Descarte", $"ID={descarte.Id}, Equipamento ID={descarte.EquipamentoId}");
+
+         
 
             TempData["SuccessMessage"] = $"Registo de descarte ({descarte.Id}) criado com sucesso!";
             return RedirectToAction(nameof(Consulta));
@@ -221,6 +219,8 @@ namespace Governança_de_TI.Controllers
 
             // Popula o dropdown de equipamentos (mesmo padrão usado em criar, caso queira reuso futuro)
             await PopulaEquipamentosViewData(descarte.EquipamentoId, true);
+
+
 
             // --- 🔹 Retorna a partial se for requisição AJAX (abrindo em modal)
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -291,15 +291,10 @@ namespace Governança_de_TI.Controllers
                 _context.Update(descarteModel);
                 await _context.SaveChangesAsync();
 
-                // --- 🔹 Auditoria e Gamificação (opcional)
-                var userId = await GetCurrentUserId();
-                if (userId.HasValue)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await _auditService.RegistrarAcao(userId.Value, "Editou Descarte", $"Descarte ID={descarteModel.Id} atualizado.");
-                    });
-                }
+               
+                var idEquip = await GetCurrentUserId();
+                if (idEquip.HasValue)
+                    await _auditService.RegistrarAcao(idEquip.Value, "Editou Descarte", $"Descarte ID={descarteModel.Id} atualizado.");
 
                 TempData["SuccessMessage"] = $"Registo de descarte ({descarteModel.Id}) atualizado com sucesso!";
                 return RedirectToAction(nameof(Consulta));
@@ -364,20 +359,17 @@ namespace Governança_de_TI.Controllers
                 _context.Descartes.Remove(descarte);
                 await _context.SaveChangesAsync();
 
-                // Auditoria (em background)
-                var userId = await GetCurrentUserId();
-                if (userId.HasValue)
-                {
-                    _ = Task.Run(async () => {
-                        await _auditService.RegistrarAcao(userId.Value, "Excluiu Descarte",
+     
+
+                var idEquip = await GetCurrentUserId();
+                if (idEquip.HasValue)
+                    await _auditService.RegistrarAcao(idEquip.Value, "Excluiu Descarte",
                             $"Registro ID={descarte.Id}, Equipamento={descarte.Equipamento?.Descricao}");
-                    });
-                }
 
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    return Json(new { success = true, message = $"Registro de descarte ({descarte.Id}) excluído com sucesso!" });
+                    return Json(new { success = true, message = $"Registro de descarte excluido com sucesso!" });
 
-                TempData["SuccessMessage"] = "Registo excluído com sucesso!";
+                TempData["SuccessMessage"] = "Registo excluido com sucesso!";
                 return RedirectToAction(nameof(Consulta));
             }
             catch (Exception ex)
@@ -452,6 +444,39 @@ namespace Governança_de_TI.Controllers
 
             return $"/uploads/{subpasta}/{nomeUnico}"; // Retorna caminho relativo
         }
+        [HttpGet]
+        public async Task<IActionResult> GetEquipamentoDados(int id)
+        {
+            var equipamento = await _context.Equipamentos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.CodigoItem == id);
+
+            if (equipamento == null)
+            {
+                return Json(null);
+            }
+
+            string imageUrl;
+
+            if (string.IsNullOrEmpty(equipamento.ImagemUrl))
+            {
+                // Caminho padrão correto
+                imageUrl = Url.Content("~/img/default-equip.png");
+            }
+            else
+            {
+                // SEMPRE gera URL válida (transforma ~/uploads/... em /uploads/...)
+                imageUrl = Url.Content($"~{equipamento.ImagemUrl}");
+            }
+
+            return Json(new
+            {
+                descricao = equipamento.Descricao,
+                imageUrl = imageUrl
+            });
+        }
+
     }
+
 }
 

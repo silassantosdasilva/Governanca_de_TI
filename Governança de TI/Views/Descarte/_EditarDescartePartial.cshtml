@@ -1,145 +1,192 @@
 ﻿@model Governança_de_TI.Models.DescarteModel
 
-<form id="formEditarDescarte" asp-controller="Descarte" asp-action="Editar" method="post" enctype="multipart/form-data" class="p-3">
+<div class="p-4">
 
-    @Html.AntiForgeryToken()
-    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+    <form id="formEditarDescarte"
+          asp-controller="Descarte"
+          asp-action="Editar"
+          method="post"
+          enctype="multipart/form-data">
 
-    <!-- Campos ocultos -->
-    <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="DataDeCadastro" />
-    <input type="hidden" asp-for="CertificadoUrl" />
-    <input type="hidden" asp-for="EquipamentoId" />
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-    <div class="row">
-        <!-- ===== Coluna Esquerda ===== -->
-        <div class="col-md-6">
-            <!-- Equipamento (somente leitura) -->
-            <div class="mb-3">
-                <label class="form-label text-muted small">
-                    <i class="bi bi-cpu me-1"></i>Equipamento
-                </label>
-                <input value="@Model.Equipamento?.Descricao" class="form-control shadow-sm" readonly />
-            </div>
+        <!-- HIDDEN -->
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="DataDeCadastro" />
+        <input type="hidden" asp-for="CertificadoUrl" />
+        <input type="hidden" asp-for="EquipamentoId" />
 
-            <!-- Observação -->
-            <div class="mb-3">
-                <label asp-for="Observacao" class="form-label text-muted small">
-                    <i class="bi bi-journal-text me-1"></i>Observação
-                </label>
-                <textarea asp-for="Observacao" class="form-control shadow-sm" rows="2"></textarea>
-            </div>
+        <div class="row g-4">
 
-            <!-- Quantidade e Data -->
-            <div class="row">
-                <div class="col-sm-6 mb-3">
-                    <label asp-for="Quantidade" class="form-label text-muted small">Quantidade</label>
-                    <input asp-for="Quantidade" class="form-control shadow-sm" type="number" min="1" />
-                    <span asp-validation-for="Quantidade" class="text-danger small"></span>
+            <!-- =================== COLUNA ESQUERDA =================== -->
+            <div class="col-md-7">
+
+                <!-- Equipamento (readonly) -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small">
+                        <i class="bi bi-cpu me-1"></i>Equipamento
+                    </label>
+                    <input value="@Model.Equipamento?.Descricao"
+                           class="form-control shadow-sm"
+                           readonly />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Descricao" class="form-label text-muted small">
+                        <i class="bi bi-info-circle me-1"></i>Descrição
+                    </label>
+                    <input asp-for="Descricao" id="Descricao" class="form-control shadow-sm" readonly />
+                </div>
+                <!-- Observação -->
+                <div class="mb-3">
+                    <label asp-for="Observacao" class="form-label text-muted small">
+                        <i class="bi bi-journal-text me-1"></i>Observação
+                    </label>
+                    <textarea asp-for="Observacao"
+                              class="form-control shadow-sm"
+                              rows="2"></textarea>
                 </div>
 
-                <div class="col-sm-6 mb-3">
-                    <label asp-for="DataColeta" class="form-label text-muted small">Data de Coleta</label>
-                    <input asp-for="DataColeta" class="form-control shadow-sm" type="date" />
-                    <span asp-validation-for="DataColeta" class="text-danger small"></span>
+                <!-- Quantidade / Data -->
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label asp-for="Quantidade" class="form-label text-muted small">Quantidade</label>
+                        <input asp-for="Quantidade" class="form-control shadow-sm" type="number" min="1" />
+                        <span asp-validation-for="Quantidade" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-sm-6 mb-3">
+                        <label asp-for="DataColeta" class="form-label text-muted small">Data de Coleta</label>
+                        <input asp-for="DataColeta" class="form-control shadow-sm" type="date" />
+                        <span asp-validation-for="DataColeta" class="text-danger small"></span>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Empresa Coletora -->
-            <div class="mb-3">
-                <label asp-for="EmpresaColetora" class="form-label text-muted small">
-                    <i class="bi bi-building me-1"></i>Empresa Coletora
-                </label>
-                <input asp-for="EmpresaColetora" class="form-control shadow-sm" />
-                <span asp-validation-for="EmpresaColetora" class="text-danger small"></span>
-            </div>
-
-            <!-- CNPJ e E-mail -->
-            <div class="row">
-                <div class="col-sm-6 mb-3">
-                    <label asp-for="CnpjEmpresa" class="form-label text-muted small">CNPJ da Empresa</label>
-                    <input asp-for="CnpjEmpresa" class="form-control shadow-sm" />
+                <!-- Empresa -->
+                <div class="mb-3">
+                    <label asp-for="EmpresaColetora" class="form-label text-muted small">
+                        <i class="bi bi-building me-1"></i>Empresa Coletora
+                    </label>
+                    <input asp-for="EmpresaColetora" class="form-control shadow-sm" />
+                    <span asp-validation-for="EmpresaColetora" class="text-danger small"></span>
                 </div>
-                <div class="col-sm-6 mb-3">
-                    <label asp-for="EmailEmpresa" class="form-label text-muted small">E-mail da Empresa</label>
-                    <input asp-for="EmailEmpresa" class="form-control shadow-sm" />
+
+                <!-- CNPJ / Email -->
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label asp-for="CnpjEmpresa" class="form-label text-muted small">CNPJ</label>
+                        <input asp-for="CnpjEmpresa" class="form-control shadow-sm" />
+                    </div>
+
+                    <div class="col-sm-6 mb-3">
+                        <label asp-for="EmailEmpresa" class="form-label text-muted small">E-mail</label>
+                        <input asp-for="EmailEmpresa" class="form-control shadow-sm" />
+                    </div>
                 </div>
+
+                <!-- Responsável -->
+                <div class="mb-3">
+                    <label asp-for="PessoaResponsavelColeta" class="form-label text-muted small">
+                        <i class="bi bi-person-badge me-1"></i>Responsável pela Coleta
+                    </label>
+                    <input asp-for="PessoaResponsavelColeta" class="form-control shadow-sm" />
+                </div>
+
+                <!-- Status -->
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label text-muted small">Status</label>
+                    <select asp-for="Status" class="form-select shadow-sm">
+                        <option value="">Selecione...</option>
+                        <option>Pendente</option>
+                        <option>Coletado</option>
+                        <option>Reciclado</option>
+                        <option>Doado</option>
+                    </select>
+                </div>
+
+                <!-- Certificado -->
+                <div class="mb-3">
+                    <label asp-for="CertificadoUpload" class="form-label text-muted small">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Substituir Certificado (PDF)
+                    </label>
+                    <input asp-for="CertificadoUpload"
+                           type="file"
+                           class="form-control form-control-sm shadow-sm" />
+                </div>
+
+                <!-- Checkbox -->
+                <div class="form-check mb-3">
+                    <input asp-for="EnviarEmail" class="form-check-input" type="checkbox" />
+                    <label asp-for="EnviarEmail" class="form-check-label small text-muted">
+                        Enviar e-mail de confirmação à empresa
+                    </label>
+                </div>
+
             </div>
 
-            <!-- Responsável -->
-            <div class="mb-3">
-                <label asp-for="PessoaResponsavelColeta" class="form-label text-muted small">
-                    <i class="bi bi-person-badge me-1"></i>Responsável pela Coleta
+            <!-- =================== COLUNA DIREITA (IMAGEM) =================== -->
+            <div class="col-md-5 text-center">
+
+                <label class="form-label text-muted small d-block mb-2">
+                    <i class="bi bi-image me-1"></i>Imagem do Equipamento
                 </label>
-                <input asp-for="PessoaResponsavelColeta" class="form-control shadow-sm" />
-            </div>
 
-            <!-- Status -->
-            <div class="mb-3">
-                <label asp-for="Status" class="form-label text-muted small">Status</label>
-                <select asp-for="Status" class="form-select shadow-sm">
-                    <option value="">Selecione...</option>
-                    <option>Pendente</option>
-                    <option>Coletado</option>
-                    <option>Reciclado</option>
-                    <option>Doado</option>
-                </select>
-            </div>
+                <div class="border rounded-4 bg-light shadow-sm p-1
+                            d-flex align-items-center justify-content-center mx-auto mb-3"
+                     style="width: 230px; height: 230px; overflow: hidden;">
 
-            <!-- Certificado -->
-            <div class="mb-3">
-                <label asp-for="CertificadoUpload" class="form-label text-muted small">
-                    <i class="bi bi-file-earmark-pdf me-1"></i>Certificado (PDF opcional)
-                </label>
-                <input asp-for="CertificadoUpload" class="form-control form-control-sm shadow-sm" type="file" />
-            </div>
+                    <img id="imagePreview"
+                         src="@(string.IsNullOrEmpty(Model.Equipamento?.ImagemUrl)
+                                                         ? Url.Content("~/img/default-equip.png")
+                                                         : Url.Content("~" + Model.Equipamento.ImagemUrl))"
+                         class="img-fluid rounded"
+                         style="object-fit: cover; max-width: 100%; max-height: 100%;" />
+                </div>
 
-            <!-- Checkbox Enviar Email -->
-            <div class="form-check mb-3">
-                <input asp-for="EnviarEmail" class="form-check-input" type="checkbox" />
-                <label asp-for="EnviarEmail" class="form-check-label small text-muted">
-                    Enviar e-mail de confirmação à empresa
-                </label>
+                <small class="text-muted small">Imagem original do equipamento — não pode ser alterada.</small>
+
+                <!-- Certificado atual -->
+                <div class="mt-4 w-100">
+                    <label class="form-label text-muted small d-block">Certificado Atual</label>
+
+                    @if (!string.IsNullOrEmpty(Model.CertificadoUrl))
+                    {
+                        <a href="@Url.Content("~" + Model.CertificadoUrl)"
+                           target="_blank"
+                           class="btn btn-outline-success w-100 shadow-sm">
+                            <i class="bi bi-download me-2"></i>Baixar Certificado Atual
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted small py-2 border rounded bg-light">
+                            Nenhum certificado anexado.
+                        </div>
+                    }
+                </div>
+
             </div>
         </div>
 
-        <!-- ===== Coluna Direita: Imagem ===== -->
-        <div class="col-md-6 d-flex flex-column align-items-center justify-content-start">
-            <label class="form-label text-muted small mb-2">
-                <i class="bi bi-image me-1"></i>Imagem do Equipamento
-            </label>
+        <hr class="my-3" />
 
-            <div class="border rounded-4 p-1 bg-light d-flex align-items-center justify-content-center mb-3"
-                 style="width: 250px; height: 250px; overflow: hidden;">
-                <img id="imagePreview"
-                     src="@(string.IsNullOrEmpty(Model.Equipamento?.ImagemUrl)
-                                             ? "/img/default-equip.png"
-                                             : Url.Content("~" + Model.Equipamento.ImagemUrl))"
-                     alt="Pré-visualização da Imagem"
-                     class="img-fluid rounded"
-                     style="max-width: 100%; max-height: 100%; object-fit: cover;" />
-            </div>
+        <div class="d-flex justify-content-end">
+            <button type="button"
+                    class="btn btn-outline-secondary px-4 me-2"
+                    data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i>Cancelar
+            </button>
 
-            <small class="text-muted small">A imagem do equipamento é fixa e não pode ser alterada.</small>
+            <button type="submit"
+                    class="btn btn-primary px-4"
+                    style="background-color: #8A2BE2; border-color: #8A2BE2;">
+                <i class="bi bi-save me-1"></i>Salvar Alterações
+            </button>
         </div>
-    </div>
 
-    <hr class="my-3" />
+    </form>
 
-    <div class="d-flex justify-content-end">
-        <button type="button"
-                class="btn btn-outline-secondary px-4 me-2"
-                data-bs-dismiss="modal">
-            <i class="bi bi-x-circle me-2"></i>Cancelar
-        </button>
-
-        <button type="submit"
-                class="btn btn-primary px-4"
-                style="background-color: #8A2BE2; border-color: #8A2BE2;">
-            <i class="bi bi-save me-2"></i>Salvar Alterações
-        </button>
-    </div>
-</form>
+</div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")

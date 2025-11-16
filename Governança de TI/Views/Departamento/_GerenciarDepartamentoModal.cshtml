@@ -1,0 +1,44 @@
+﻿@model IEnumerable<Governança_de_TI.Models.DepartamentoModel>
+
+<div class="p-3">
+
+    <h5 class="fw-semibold mb-3">Departamentos Cadastrados</h5>
+
+    <ul class="list-group shadow-sm rounded-3">
+        @foreach (var dep in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                @dep.Nome
+
+                <button class="btn btn-sm btn-outline-danger btnExcluirDept"
+                        data-id="@dep.Id">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </li>
+        }
+    </ul>
+
+</div>
+
+<script>
+        // ============================================================
+    // EXCLUIR DEPARTAMENTO (SEM MULTIPLOS EVENTOS)
+    // ============================================================
+    $(document).off("click", ".btnExcluirDept").on("click", ".btnExcluirDept", function () {
+
+        if (!confirm("Deseja realmente excluir este departamento?"))
+            return;
+
+        const id = $(this).data("id");
+
+        $.post("/Departamento/Excluir", { id })
+            .done(function () {
+                // Recarrega o modal automaticamente
+                $("#btnGerenciarDepartamento").trigger("click");
+            })
+            .fail(function () {
+                alert("Erro ao excluir departamento.");
+            });
+    });
+
+</script>

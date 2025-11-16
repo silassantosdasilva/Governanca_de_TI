@@ -156,17 +156,31 @@ namespace Governança_de_TI.Controllers
                     message = $"Equipamento '{equipamento.Descricao}' cadastrado com sucesso!"
                 });
             }
-            // Auditoria (em background)
-            if (userId.HasValue)
+           
+                var id = await GetCurrentUserId();
+                if (id.HasValue)
+                  await _auditService.RegistrarAcao(id.Value, "Criou Equipamento", $"ID equipamento: {equipamento.CodigoItem}");
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                _ = Task.Run(async () => {
-                    await _auditService.RegistrarAcao(userId.Value, "Criou Equipamento", $"={equipamento.CodigoItem}, Descricao={equipamento.Descricao}");
+                return Json(new
+                {
+                    sucesso = true,
+                    message = "Equipamento criado com sucesso!",
+                    notificacao = new
+                    {
+                        titulo = "Gamificação",
+                        texto = "Você ganhou +5 pontos!",
+                        tipo = "success"
+                    }
                 });
             }
-
-            // 🔹 Caso normal (página inteira)
+         
+            // 🔹 Fluxo normal (sem AJAX)
             TempData["SuccessMessage"] = $"Item ({equipamento.CodigoItem}) criado com sucesso!";
             return RedirectToAction(nameof(Consulta));
+
+
         }
 
 
@@ -250,15 +264,13 @@ namespace Governança_de_TI.Controllers
                     await _context.SaveChangesAsync();
    
 
-                    // Auditoria (background)
-                    _ = Task.Run(async () => {
-                        var userId = await GetCurrentUserId();
-                        if (userId.HasValue)
-                        {
-                            await _auditService.RegistrarAcao(userId.Value, "Editou Equipamento", $"ID: {equipamentoOriginal.CodigoItem}, Desc: {equipamentoOriginal.Descricao}");
-                        }
-                    });
-                }
+       
+                   var idEquip = await GetCurrentUserId();
+                   if (idEquip.HasValue)
+                    await _auditService.RegistrarAcao(idEquip.Value, "Editou Equipamento", $"ID: {equipamentoOriginal.CodigoItem}, Desc: {equipamentoOriginal.Descricao}");
+
+
+            }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!EquipamentoExists(equipamento.CodigoItem)) return NotFound();
@@ -329,16 +341,14 @@ namespace Governança_de_TI.Controllers
                     message = $"Equipamento '{equipamento.Descricao}' foi excluido com sucesso!"
                 });
             }
-            // Auditoria (background)
-            _ = Task.Run(async () => {
-                var userId = await GetCurrentUserId();
-                if (userId.HasValue)
-                {
-                    await _auditService.RegistrarAcao(userId.Value, "Excluiu Equipamento", $"Equipamento Excluido: ID={equipamento.Descricao}");
-                }
-            });
+     
+
+            var idEquip = await GetCurrentUserId();
+            if (idEquip.HasValue)
+                await _auditService.RegistrarAcao(idEquip.Value, "Excluiu Equipamento", $"Equipamento Excluido: ID={equipamento.Descricao}");
+
             // Caso tradicional
-            TempData["SuccessMessage"] = $"Equipamento '{equipamento.Descricao}' excluído com sucesso!";
+            TempData["SuccessMessage"] = $"Equipamento excluido com sucesso!";
             return RedirectToAction(nameof(Consulta));
         }
         #endregion
@@ -352,23 +362,33 @@ namespace Governança_de_TI.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.CodigoItem == id);
 
-            if (equipamento == null) return Json(null);
+            if (equipamento == null)
+            {
+                return Json(null);
+            }
 
-            // ✅ Usa caminho público completo, sempre relativo a wwwroot
-            var caminhoImagem = !string.IsNullOrEmpty(equipamento.ImagemUrl)
-                ? equipamento.ImagemUrl
-                : "/img/default-equip.png";
+            string imageUrl;
 
-            // Se faltar a barra inicial, adiciona
-            if (!caminhoImagem.StartsWith("/"))
-                caminhoImagem = "/" + caminhoImagem;
+            if (string.IsNullOrEmpty(equipamento.ImagemUrl))
+            {
+                // Caminho padrão correto
+                imageUrl = Url.Content("~/img/default-equip.png");
+            }
+            else
+            {
+                // SEMPRE gera URL válida (transforma ~/uploads/... em /uploads/...)
+                imageUrl = Url.Content($"~{equipamento.ImagemUrl}");
+            }
 
             return Json(new
             {
-                imageUrl = caminhoImagem,
-                descricao = equipamento.Descricao
+                descricao = equipamento.Descricao,
+                imageUrl = imageUrl
             });
         }
+
+
+
 
         #endregion
 
@@ -417,6 +437,18 @@ namespace Governança_de_TI.Controllers
             return user?.Id;
         }
         #endregion
+
+        private int GetUserId()
+        {
+            var claim = User.FindFirst("UserId")?.Value
+                     ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(claim, out int id))
+                return id;
+
+            return 0; // Ou lance uma exceção
+        }
+
     }
 }
 

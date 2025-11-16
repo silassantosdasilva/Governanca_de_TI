@@ -11,7 +11,7 @@ namespace Governança_de_TI.Models
     {
         [Key]
         [ForeignKey("Usuario")] // Chave primária é também a chave estrangeira
-        public int UsuarioId { get; set; }
+        public int? UsuarioId { get; set; }
 
         [Required]
         [Display(Name = "Pontos ESG")]
