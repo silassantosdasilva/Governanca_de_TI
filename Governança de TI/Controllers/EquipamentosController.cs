@@ -309,7 +309,7 @@ namespace Governança_de_TI.Controllers
             bool hasDescartes = await _context.Descartes.AnyAsync(d => d.EquipamentoId == id);
             if (hasDescartes)
             {
-                var msg = "Não é possível excluir este equipamento, pois existem descartes associados a ele.";
+                var msg = "Nao e possivel excluir este equipamento, pois existem descartes associados a ele.";
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                     return Json(new { success = false, message = msg });
 
@@ -326,7 +326,7 @@ namespace Governança_de_TI.Controllers
                 return Json(new
                 {
                     success = true,
-                    message = $"Equipamento '{equipamento.Descricao}' foi excluído com sucesso!"
+                    message = $"Equipamento '{equipamento.Descricao}' foi excluido com sucesso!"
                 });
             }
             // Auditoria (background)

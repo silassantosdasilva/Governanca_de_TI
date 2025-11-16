@@ -12,7 +12,7 @@
                 <label asp-for="EquipamentoId" class="form-label text-muted small">
                     <i class="bi bi-cpu me-1"></i>Equipamento
                 </label>
-                <select asp-for="EquipamentoId" class="form-select shadow-sm" asp-items="ViewBag.EquipamentoId">
+                <select asp-for="EquipamentoId" class="form-select shadow-sm" asp-items="ViewBag.EquipamentoId" required>
                 </select>
                 <span asp-validation-for="EquipamentoId" class="text-danger small"></span>
             </div>
@@ -34,20 +34,20 @@
             <div class="row">
                 <div class="col-sm-6 mb-3">
                     <label asp-for="Quantidade" class="form-label text-muted small">Quantidade</label>
-                    <input asp-for="Quantidade" class="form-control shadow-sm" type="number" min="1" />
+                    <input asp-for="Quantidade" class="form-control shadow-sm" type="number" min="1" required />
                     <span asp-validation-for="Quantidade" class="text-danger small"></span>
                 </div>
 
                 <div class="col-sm-6 mb-3">
                     <label asp-for="DataColeta" class="form-label text-muted small">Data de Coleta</label>
-                    <input asp-for="DataColeta" class="form-control shadow-sm" type="date" />
+                    <input asp-for="DataColeta" class="form-control shadow-sm" type="date" required>
                     <span asp-validation-for="DataColeta" class="text-danger small"></span>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label asp-for="EmpresaColetora" class="form-label text-muted small">Empresa Coletora</label>
-                <input asp-for="EmpresaColetora" class="form-control shadow-sm" />
+                <input asp-for="EmpresaColetora" class="form-control shadow-sm" required />
                 <span asp-validation-for="EmpresaColetora" class="text-danger small"></span>
             </div>
 
@@ -64,12 +64,12 @@
 
             <div class="mb-3">
                 <label asp-for="PessoaResponsavelColeta" class="form-label text-muted small">Responsável pela Coleta</label>
-                <input asp-for="PessoaResponsavelColeta" class="form-control shadow-sm" />
+                <input asp-for="PessoaResponsavelColeta" class="form-control shadow-sm" required />
             </div>
 
             <div class="mb-3">
                 <label asp-for="Status" class="form-label text-muted small">Status</label>
-                <select asp-for="Status" class="form-select shadow-sm">
+                <select asp-for="Status" class="form-select shadow-sm" required>
                     <option value="">Selecione...</option>
                     <option>Pendente</option>
                     <option>Coletado</option>

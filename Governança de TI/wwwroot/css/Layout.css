@@ -154,14 +154,15 @@ body {
    ========================================= */
 
 /* Garante que o fundo escuro/translúcido fique sobre tudo */
-.modal-backdrop {
+/*.modal-backdrop {
     z-index: 2050 !important;
-}
+}*/
 
 /* Garante que o modal (conteúdo) fique acima do backdrop */
-.modal {
+/*.modal {
     z-index: 2060 !important;
 }
+*/
 
 /* Ajusta o container do conteúdo (modal-content) */
 .modal-content {

@@ -52,27 +52,47 @@
         <!-- ETAPA 3 -->
         <!-- ========================= -->
         <div class="wizard-step d-none" id="step3">
+
             <h6 class="fw-semibold mb-3 text-primary">PASSO 3: Como calcular?</h6>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Operação</label>
-                    <select id="operacaoWidget" class="form-select">
-                        <option value="Contagem">Contagem</option>
-                        <option value="Soma">Soma</option>
-                        <option value="Media">Média</option>
-                    </select>
+
+            <div id="bloco-agregacao">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Operação</label>
+                        <select id="operacaoWidget" class="form-select">
+                            <option value="Contagem">Contagem</option>
+                            <option value="Soma">Soma</option>
+                            <option value="Media">Média</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Campo Métrica</label>
+                        <select id="campoMetrica" class="form-select">
+                            <option value="">-- Selecione após escolher tabela --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Agrupar por (Dimensão)</label>
+                        <select id="campoDimensao" class="form-select">
+                            <option value="">-- Selecione após escolher tabela --</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Campo Métrica</label>
-                    <select id="campoMetrica" class="form-select">
-                        <option value="">-- Selecione após escolher tabela --</option>
-                    </select>
-                </div>
-                <div class="col-md-12">
-                    <label class="form-label fw-semibold">Agrupar por (Dimensão)</label>
-                    <select id="campoDimensao" class="form-select">
-                        <option value="">-- Selecione após escolher tabela --</option>
-                    </select>
+            </div>
+
+            <div id="bloco-filtro-lista" class="d-none">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Filtrar campo (WHERE)</label>
+                        <select id="campoFiltro" class="form-select">
+                            <option value="">-- Selecione o campo --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6" id="valor-filtro-container">
+                        <label class="form-label fw-semibold">Valor</label>
+                        <input type="text" id="valorFiltro" class="form-control" placeholder="Ex: Ativo" />
+                    </div>
                 </div>
             </div>
 
@@ -96,7 +116,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- ========================= -->
     <!-- BOTÕES -->

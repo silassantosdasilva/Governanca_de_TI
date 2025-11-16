@@ -7,12 +7,8 @@ using System.Threading.Tasks;
 
 namespace Governança_de_TI.Controllers
 {
-    /// <summary>
-    /// Controller de API para gerir os Tipos de Equipamento.
-    /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TipoEquipamentoController : ControllerBase
+    [Route("TipoEquipamento")]
+    public class TipoEquipamentoController : Controller
     {
         private readonly ApplicationDbContext _context;
 
@@ -21,64 +17,64 @@ namespace Governança_de_TI.Controllers
             _context = context;
         }
 
-        // GET: api/TipoEquipamento
-        // OBSERVAÇÃO: Busca e retorna a lista de todos os tipos de equipamento existentes,
-        // ordenados por nome. É usado para popular a lista no modal.
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        // ========== MODAL CRIAR ==========
+        [HttpGet("CriarModal")]
+        public IActionResult CriarModal()
         {
-            var tipos = await _context.TiposEquipamento.OrderBy(t => t.Nome).ToListAsync();
-            return Ok(tipos);
+            return PartialView("~/Views/TipoEquipamento/_ModalCriarTipo.cshtml");
         }
 
-        // POST: api/TipoEquipamento
-        // OBSERVAÇÃO: Cria um novo tipo de equipamento a partir do nome enviado pelo modal.
-        [HttpPost]
-        public async Task<IActionResult> Criar([FromBody] TipoEquipamentoModel tipoEquipamento)
+        // ========== MODAL LISTA ==========
+        [HttpGet("ListaModal")]
+        public async Task<IActionResult> ListaModal()
         {
-            if (tipoEquipamento == null || string.IsNullOrWhiteSpace(tipoEquipamento.Nome))
-            {
-                return BadRequest("O nome do tipo de equipamento é obrigatório.");
-            }
+            var lista = await _context.TiposEquipamento
+                                      .OrderBy(t => t.Nome)
+                                      .ToListAsync();
 
-            // Verifica se já existe um tipo com o mesmo nome para evitar duplicados
-            var tipoExistente = await _context.TiposEquipamento.FirstOrDefaultAsync(t => t.Nome.ToUpper() == tipoEquipamento.Nome.ToUpper());
-            if (tipoExistente != null)
-            {
-                return BadRequest("Já existe um tipo de equipamento com este nome.");
-            }
+            return PartialView("~/Views/TipoEquipamento/_ModalListarTipos.cshtml", lista);
+        }
 
-            _context.TiposEquipamento.Add(tipoEquipamento);
+        // ========== CRIAR (POST) ==========
+        [HttpPost("Criar")]
+        public async Task<IActionResult> Criar([FromBody] TipoEquipamentoModel model)
+        {
+            if (model == null || String.IsNullOrWhiteSpace(model.Nome))
+                return Json(new { success = false, message = "Nome inválido." });
+
+            // Verifica duplicidade
+            if (await _context.TiposEquipamento.AnyAsync(t => t.Nome == model.Nome))
+                return Json(new { success = false, message = "Esse tipo já existe." });
+
+            _context.Add(model);
             await _context.SaveChangesAsync();
 
-            // Retorna o objeto completo com o novo ID gerado pelo banco de dados
-            return Ok(tipoEquipamento);
+            return Json(new
+            {
+                success = true,
+                data = new { model.Id, model.Nome }
+            });
         }
 
-        // DELETE: api/TipoEquipamento/5
-        // OBSERVAÇÃO: Exclui um tipo de equipamento, mas apenas se ele não estiver em uso.
-        [HttpDelete("{id}")]
+        // ========== EXCLUIR ==========
+        [HttpDelete("Excluir/{id}")]
         public async Task<IActionResult> Excluir(int id)
         {
-            var tipoEquipamento = await _context.TiposEquipamento.FindAsync(id);
-            if (tipoEquipamento == null)
-            {
-                return NotFound();
-            }
+            var tipo = await _context.TiposEquipamento.FindAsync(id);
 
-            // Regra de negócio: Verifica se o tipo está a ser utilizado por algum equipamento.
-            // Se estiver, a exclusão é bloqueada e uma mensagem de erro é retornada.
-            var isUsed = await _context.Equipamentos.AnyAsync(e => e.TipoEquipamentoId == id);
-            if (isUsed)
-            {
-                return BadRequest("Este tipo de equipamento está em uso e não pode ser excluído.");
-            }
+            if (tipo == null)
+                return Json(new { success = false, message = "Tipo não encontrado." });
 
-            _context.TiposEquipamento.Remove(tipoEquipamento);
+            bool emUso = await _context.Equipamentos.AnyAsync(e => e.TipoEquipamentoId == id);
+
+            if (emUso)
+                return Json(new { success = false, message = "Não é possível excluir, existe equipamento usando este tipo." });
+
+            _context.Remove(tipo);
             await _context.SaveChangesAsync();
 
-            return NoContent(); // Retorna 204 No Content, indicando sucesso na exclusão.
+            return Json(new { success = true });
         }
     }
-}
 
+}

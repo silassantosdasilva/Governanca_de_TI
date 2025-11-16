@@ -1,0 +1,98 @@
+﻿@model IEnumerable<Governança_de_TI.Models.TipoEquipamentoModel>
+
+<div class="modal fade" id="modalListaTipos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-sm rounded-4">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold text-muted">
+                    <i class="bi bi-list-check me-2"></i>Tipos Cadastrados
+                </h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome</th>
+                            <th style="width:80px"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var tipo in Model)
+                        {
+                            <tr data-id="@tipo.Id">
+                                <td>@tipo.Nome</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            onclick="excluirTipo(@tipo.Id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <span id="msgListaErro" class="text-danger small d-none"></span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ========== MODAL "LISTA DE TIPOS" COM TEMA TECHGREEN ========== */
+
+    #modalListaTipos .modal-dialog {
+        max-width: 720px;
+    }
+
+    #modalListaTipos .modal-content {
+        background-color: var(--tg-card-bg, #ffffff);
+        color: var(--tg-text, #222);
+        border-radius: 16px;
+        border: 1px solid var(--tg-border, #e5e5e5);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    #modalListaTipos .modal-header {
+        background-color: var(--tg-header-bg, #f8f9fa);
+        border-color: var(--tg-border, #e5e5e5);
+    }
+
+    #modalListaTipos .modal-title {
+        color: var(--tg-primary, #8A2BE2);
+    }
+</style>
+
+<script>
+    function excluirTipo(id) {
+        if (!confirm("Deseja realmente excluir este tipo?")) return;
+
+        fetch(`/TipoEquipamento/Excluir/${id}`, { method: "DELETE" })
+            .then(r => r.json())
+            .then(resp => {
+                if (!resp.success) {
+                    const msg = document.getElementById("msgListaErro");
+                    msg.textContent = resp.message;
+                    msg.classList.remove("d-none");
+                    return;
+                }
+
+                // Remove linha da tabela
+                const linha = document.querySelector(`tr[data-id='${id}']`);
+                if (linha) linha.remove();
+
+                // Remove do select da tela de Equipamento, se existir
+                const select = document.getElementById("TipoEquipamentoId");
+                if (select) {
+                    const opt = select.querySelector(`option[value='${id}']`);
+                    if (opt) opt.remove();
+                }
+            });
+    }
+</script>

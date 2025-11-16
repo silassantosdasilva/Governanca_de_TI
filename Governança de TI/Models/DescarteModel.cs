@@ -58,7 +58,7 @@ namespace Governança_de_TI.Models
         [EmailAddress(ErrorMessage = "Formato de e-mail inválido.")]
         [StringLength(100)]
         [Display(Name = "E-mail")]
-        public string EmailEmpresa { get; set; }
+        public string? EmailEmpresa { get; set; }
 
         [StringLength(100)]
         [Display(Name = "Pessoa que vai Coletar")]
@@ -67,7 +67,7 @@ namespace Governança_de_TI.Models
         /// <summary>
         /// Caminho relativo para o ficheiro do certificado guardado no servidor.
         /// </summary>
-        public string CertificadoUrl { get; set; }
+        public string? CertificadoUrl { get; set; }
 
         /// <summary>
         /// Propriedade temporária para receber o ficheiro de upload do certificado.
@@ -88,7 +88,7 @@ namespace Governança_de_TI.Models
 
         [StringLength(500)]
         [Display(Name = "Observação")]
-        public string Observacao { get; set; }
+        public string? Observacao { get; set; }
 
         [StringLength(50)]
         public string Status { get; set; }

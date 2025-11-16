@@ -1,128 +1,157 @@
 ﻿@model Governança_de_TI.Models.EquipamentoModel
 
-<!-- ===================== DETALHES DO EQUIPAMENTO (PARTIAL) ===================== -->
 <div class="p-4">
+
+    <!-- TÍTULO -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="fw-semibold text-muted mb-0">
-            <i class="bi bi-hdd-stack me-2"></i>Controle de Vida de Equipamentos
+            <i class="bi bi-cpu me-2"></i>Detalhes do Equipamento #@Model.CodigoItem
         </h5>
+
         <span class="badge bg-light text-dark px-3 py-2 shadow-sm">
             <i class="bi bi-info-circle me-2"></i>Detalhes
         </span>
     </div>
 
-    <div class="row g-4">
-        <!-- ===================== COLUNA ESQUERDA ===================== -->
+    <div class="row g-3">
+
+        <!-- ================= COLUNA ESQUERDA ================= -->
         <div class="col-md-7">
+
             <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Código</label>
-                <input type="text" value="@Model.CodigoItem" class="form-control" readonly />
+                <label class="form-label text-muted small">
+                    <i class="bi bi-hash me-1"></i>Código
+                </label>
+                <input value="@Model.CodigoItem" class="form-control shadow-sm" readonly />
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Descrição</label>
-                <input type="text" value="@Model.Descricao" class="form-control" readonly />
+                <label class="form-label text-muted small">
+                    <i class="bi bi-cpu me-1"></i>Descrição
+                </label>
+                <input value="@Model.Descricao" class="form-control shadow-sm" readonly />
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Tipo de Equipamento</label>
-                <input type="text" value="@Model.TipoEquipamento?.Nome" class="form-control" readonly />
+                <label class="form-label text-muted small">
+                    <i class="bi bi-tags me-1"></i>Tipo de Equipamento
+                </label>
+                <input value="@Model.TipoEquipamento?.Nome" class="form-control shadow-sm" readonly />
             </div>
 
             <div class="row">
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label fw-bold text-secondary">Série</label>
-                    <input type="text" value="@Model.Serie" class="form-control" readonly />
+                    <label class="form-label text-muted small">Série</label>
+                    <input value="@Model.Serie" class="form-control shadow-sm" readonly />
                 </div>
+
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label fw-bold text-secondary">Modelo</label>
-                    <input type="text" value="@Model.Modelo" class="form-control" readonly />
+                    <label class="form-label text-muted small">Modelo</label>
+                    <input value="@Model.Modelo" class="form-control shadow-sm" readonly />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label fw-bold text-secondary">Data de Compra</label>
-                    <input type="text" value="@Model.DataCompra?.ToString("dd/MM/yyyy")" class="form-control" readonly />
+                    <label class="form-label text-muted small">Data de Compra</label>
+                    <input value="@Model.DataCompra?.ToString("dd/MM/yyyy")"
+                           class="form-control shadow-sm" readonly />
                 </div>
+
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label fw-bold text-secondary">Vida Útil (anos)</label>
-                    <input type="text" value="@Model.VidaUtilAnos" class="form-control" readonly />
+                    <label class="form-label text-muted small">Vida Útil (anos)</label>
+                    <input value="@Model.VidaUtilAnos"
+                           class="form-control shadow-sm" readonly />
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Status</label>
-                <input type="text" value="@Model.Status" class="form-control" readonly />
+                <label class="form-label text-muted small">Status</label>
+                <input value="@Model.Status" class="form-control shadow-sm" readonly />
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Frequência de Manutenção</label>
-                <input type="text" value="@Model.FrequenciaManutencao" class="form-control" readonly />
+                <label class="form-label text-muted small">Frequência de Manutenção</label>
+                <input value="@Model.FrequenciaManutencao" class="form-control shadow-sm" readonly />
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Última Manutenção</label>
-                <input type="text" value="@(Model.DataUltimaManutencao?.ToString("dd/MM/yyyy") ?? "N/A")" class="form-control" readonly />
+                <label class="form-label text-muted small">Última Manutenção</label>
+                <input value="@(Model.DataUltimaManutencao?.ToString("dd/MM/yyyy") ?? "N/A")"
+                       class="form-control shadow-sm"
+                       readonly />
             </div>
 
             <div class="row">
                 <div class="col-sm-6 mb-3">
-                    <label class="form-label fw-bold text-secondary">Dias de Alerta</label>
-                    <input type="text" value="@Model.DiasAlertaManutencao" class="form-control" readonly />
+                    <label class="form-label text-muted small">Dias de Alerta</label>
+                    <input value="@Model.DiasAlertaManutencao"
+                           class="form-control shadow-sm" readonly />
                 </div>
+
                 <div class="col-sm-6 mb-3 d-flex align-items-center">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" disabled @(Model.EnviarEmailAlerta ? "checked" : "") />
-                        <label class="form-check-label fw-bold text-secondary">
+                        <input class="form-check-input" type="checkbox"
+                               @(Model.EnviarEmailAlerta ? "checked" : "")
+                               disabled />
+
+                        <label class="form-check-label text-muted small">
                             Enviar Email de Alerta
                         </label>
                     </div>
                 </div>
             </div>
+
         </div>
 
-        <!-- ===================== COLUNA DIREITA ===================== -->
+        <!-- ================= COLUNA DIREITA (IMAGEM) ================= -->
         <div class="col-md-5 text-center">
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Imagem do Equipamento</label>
-                <div class="border rounded-4 p-2 bg-light d-flex justify-content-center align-items-center mx-auto"
-                     style="width: 200px; height: 200px;">
-                    <img src="@(string.IsNullOrEmpty(Model.ImagemUrl)
-                                                 ? Url.Content("~/img/default-equip.png")
-                                                 : Url.Content("~" + Model.ImagemUrl))"
-                         alt="Imagem do Equipamento"
-                         class="img-fluid rounded"
-                         style="max-height: 180px; object-fit: cover;" />
-                </div>
+
+            <label class="form-label text-muted small d-block mb-2">
+                <i class="bi bi-image me-1"></i>Imagem do Equipamento
+            </label>
+
+            <div class="border rounded-4 p-1 d-flex align-items-center justify-content-center mx-auto bg-light shadow-sm"
+                 style="width: 160px; height: 160px; overflow: hidden;">
+
+                <img src="@(string.IsNullOrEmpty(Model.ImagemUrl)
+                                                     ? Url.Content("~/img/default-equip.png")
+                                                     : Url.Content("~" + Model.ImagemUrl))"
+                     class="img-fluid rounded"
+                     style="object-fit: cover; max-width: 100%; max-height: 100%;" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold text-secondary">Anexo</label>
+            <div class="mt-3">
+                <label class="form-label text-muted small d-block">Anexo</label>
+
                 @if (!string.IsNullOrEmpty(Model.AnexoUrl))
                 {
                     <a href="@Url.Content("~" + Model.AnexoUrl)"
-                       class="btn btn-outline-primary w-100 mt-2"
+                       class="btn btn-outline-primary w-100"
                        target="_blank">
-                        <i class="bi bi-download me-2"></i>Baixar Anexo
+                        <i class="bi bi-download me-1"></i>Baixar Anexo
                     </a>
                 }
                 else
                 {
-                    <p class="text-muted mt-2">Nenhum anexo disponível.</p>
+                    <p class="text-muted small mt-1">Nenhum anexo disponível.</p>
                 }
             </div>
         </div>
     </div>
 
-    <!-- ===================== BOTÕES FINAIS ===================== -->
-    <hr class="my-4" />
+    <hr class="my-3" />
+
     <div class="d-flex justify-content-end">
         <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
             <i class="bi bi-x-circle me-1"></i>Fechar
         </button>
-        <a asp-action="Editar" asp-route-id="@Model.CodigoItem"
-           class="btn btn-primary" style="background-color: #8A2BE2; border-color: #8A2BE2;">
+
+        <a asp-controller="Equipamentos"
+           asp-action="Editar"
+           asp-route-id="@Model.CodigoItem"
+           class="btn btn-primary px-4"
+           style="background-color: #8A2BE2; border-color: #8A2BE2;">
             <i class="bi bi-pencil-square me-1"></i>Editar
         </a>
     </div>

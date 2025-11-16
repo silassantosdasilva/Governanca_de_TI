@@ -1,0 +1,98 @@
+﻿@model Governança_de_TI.Models.TipoEquipamentoModel
+
+<div class="modal fade" id="modalCriarTipo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm rounded-4">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold text-muted">
+                    <i class="bi bi-tag me-2"></i>Novo Tipo de Equipamento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <label class="form-label text-muted small fw-semibold">Nome do Tipo</label>
+                <input id="inputNovoTipo"
+                       type="text"
+                       class="form-control shadow-sm"
+                       placeholder="Ex: Notebook, Servidor..." />
+
+                <span id="msgErroCriarTipo"
+                      class="text-danger small mt-2 d-none"></span>
+            </div>
+
+            <div class="modal-footer border-0 d-flex justify-content-between">
+                <button class="btn btn-outline-primary" onclick="abrirModalListaTipos()">
+                    <i class="bi bi-list-ul me-1"></i>Ver Lista
+                </button>
+
+                <button class="btn btn-purple text-white px-3" onclick="salvarNovoTipo()">
+                    <i class="bi bi-check-circle me-1"></i>Salvar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    #modalCriarTipo .modal-content {
+        background-color: #ffffff;
+        border-radius: 16px;
+    }
+
+    .btn-purple {
+        background-color: #8A2BE2 !important;
+        border: none !important;
+    }
+
+        .btn-purple:hover {
+            background-color: #7621c4 !important;
+        }
+
+    /* só garante que fique acima, sem mexer no backdrop global */
+    #modalCriarTipo {
+        z-index: 2050;
+    }
+</style>
+
+<script>
+    function salvarNovoTipo() {
+        const nome = document.getElementById("inputNovoTipo").value.trim();
+        const msgErro = document.getElementById("msgErroCriarTipo");
+
+        if (!nome) {
+            msgErro.textContent = "Informe um nome válido.";
+            msgErro.classList.remove("d-none");
+            return;
+        }
+
+        fetch("/TipoEquipamento/Criar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome })
+        })
+        .then(r => r.json())
+        .then(resp => {
+            if (!resp.success) {
+                msgErro.textContent = resp.message;
+                msgErro.classList.remove("d-none");
+                return;
+            }
+
+            // Atualiza dropdown
+            const select = document.getElementById("TipoEquipamentoId");
+            if (select) {
+                select.insertAdjacentHTML(
+                    "beforeend",
+                    `<option value="${resp.data.id}" selected>${resp.data.nome}</option>`
+                );
+            }
+
+            // Fecha modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalCriarTipo"));
+            if (modal) modal.hide();
+        });
+    }
+</script>

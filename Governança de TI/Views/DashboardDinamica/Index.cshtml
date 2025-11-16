@@ -87,103 +87,107 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // ============================================================
+        // === 1. INICIALIZAÇÃO DA PÁGINA (DOMContentLoaded) ===
+        // ============================================================
         document.addEventListener("DOMContentLoaded", () => {
-            console.log("🟢 Dashboard visual inicializado.");
+            console.log("🟢 Dashboard v4 - Corrigido Chart.js Lifecycle e Escopo");
 
+            // --- 1.1 Elementos DOM ---
             const btnNovoWidget = document.getElementById("btnNovoWidget");
-            const btnConfig = document.getElementById("btnConfig");
             const modalEl = document.getElementById("widgetWizardModal");
             const wizardContainer = document.getElementById("wizardContainer");
             const modal = new bootstrap.Modal(modalEl);
+            const dashboardContainer = document.getElementById("dashboardContainer");
 
             // ============================================================
-            // 🔹 Renderização dos Widgets
+            // 🔹 FUNÇÃO 2. FUNÇÃO DE BUSCA DE DADOS (API)
             // ============================================================
-            function renderizarWidgetsSalvos() {
-                const container = document.getElementById("dashboardContainer");
-                container.innerHTML = "";
+            async function fetchWidgetData(widgetConfig) {
+                try {
+                    const response = await fetch("/api/dashboard/query", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(widgetConfig)
+                    });
 
-                const widgets = JSON.parse(localStorage.getItem("widgetsDashboard") || "[]");
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Erro HTTP ${response.status}`);
+                    }
 
-                if (widgets.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center text-muted p-5">
-                            Nenhum widget criado ainda. Clique em <b>Novo Widget</b> para começar.
-                        </div>`;
-                    return;
+                    const data = await response.json();
+
+                    if (data.success === false) {
+                        throw new Error(data.message || "A API retornou um erro interno.");
+                    }
+
+                    return data;
+
+                } catch (err) {
+                    console.error("❌ Erro ao buscar dados para o widget:", widgetConfig.titulo, err.message);
+                    return null;
                 }
-
-                // =====================================================
-                // 🔸 KPIs (primeira linha)
-                // =====================================================
-                const kpiContainer = document.createElement("div");
-                kpiContainer.className = "row g-3 mb-4";
-
-                const kpiColors = ["#0d6efd", "#dc3545", "#198754", "#ffc107", "#6f42c1", "#20c997"];
-
-                widgets.slice(0, 4).forEach((widget, idx) => {
-                    const kpi = document.createElement("div");
-                    kpi.className = "col-lg-3 col-md-6 col-sm-12";
-
-                    kpi.innerHTML = `
-                        <div class="card kpi text-center shadow-sm border-0">
-                            <div class="card-body">
-                                <h6 class="fw-semibold text-secondary mb-1">${widget.titulo}</h6>
-                                <h3 class="fw-bold mb-0" style="color:${kpiColors[idx % kpiColors.length]}">
-                                    ${Math.floor(Math.random() * 900000).toLocaleString('pt-BR')}
-                                </h3>
-                                <small class="text-muted">${widget.operacao} de ${widget.metrica}</small>
-                            </div>
-                        </div>
-                    `;
-                    kpiContainer.appendChild(kpi);
-                });
-
-                container.appendChild(kpiContainer);
-
-                // =====================================================
-                // 🔸 Gráficos (linhas abaixo)
-                // =====================================================
-                const chartRow = document.createElement("div");
-                chartRow.className = "row g-4";
-
-                widgets.forEach(widget => {
-                    const col = document.createElement("div");
-                    col.className = "col-lg-6 col-md-12";
-
-                    const card = document.createElement("div");
-                    card.className = "card chart-card shadow-sm border-0";
-
-                    card.innerHTML = `
-                        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pb-0">
-                            <h6 class="mb-0">${widget.titulo}</h6>
-                            <span class="badge bg-light text-dark">${widget.tabela} | ${widget.tipo}</span>
-                        </div>
-                        <div class="card-body pb-2 pt-2">
-                            <canvas id="chart-${widget.posicao}"></canvas>
-                        </div>
-                    `;
-
-                    col.appendChild(card);
-                    chartRow.appendChild(col);
-
-                    // Renderiza o gráfico com atraso leve para garantir carregamento
-                    setTimeout(() => renderChart(`chart-${widget.posicao}`, widget.tipo), 100);
-                });
-
-                container.appendChild(chartRow);
             }
 
             // ============================================================
-            // 🔹 Função para gerar os gráficos
+            // 🔹 FUNÇÃO 3. RENDERIZAÇÃO DE LISTAS (Tabelas)
             // ============================================================
-            function renderChart(chartId, tipo) {
+            function renderizarLista(container, dadosApi) {
+                if (!Array.isArray(dadosApi) || dadosApi.length === 0) {
+                    container.innerHTML = `<p class="text-muted text-center p-3">Nenhum dado encontrado para este filtro.</p>`;
+                    return;
+                }
+
+                const headers = Object.keys(dadosApi[0]);
+                let tableHtml = `<table class="table table-sm table-striped table-hover">`;
+
+                tableHtml += `<thead><tr>`;
+                headers.forEach(h => {
+                    const headerLimpo = h.charAt(0).toUpperCase() + h.slice(1);
+                    tableHtml += `<th>${headerLimpo}</th>`;
+                });
+                tableHtml += `</tr></thead>`;
+
+                tableHtml += `<tbody>`;
+                dadosApi.forEach(row => {
+                    tableHtml += `<tr>`;
+                    headers.forEach(h => {
+                        let valor = row[h];
+                        if (typeof valor === 'string' && valor.match(/^\d{4}-\d{2}-\d{2}T/)) {
+                            valor = new Date(valor).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        }
+                        tableHtml += `<td>${valor}</td>`;
+                    });
+                    tableHtml += `</tr>`;
+                });
+                tableHtml += `</tbody></table>`;
+
+                container.innerHTML = tableHtml;
+            }
+
+            // ============================================================
+            // 🔹 FUNÇÃO 4. RENDERIZAÇÃO DE GRÁFICOS (Chart.js)
+            // ============================================================
+            function renderChart(chartId, tipo, dadosApi) {
                 const ctx = document.getElementById(chartId);
-                if (!ctx) return;
+
+                if (!ctx || !Array.isArray(dadosApi) || dadosApi.length === 0) {
+                    if (ctx) ctx.parentElement.innerHTML = `<p class="text-muted text-center p-3">Nenhum dado encontrado.</p>`;
+                    return;
+                }
+
+                // === CORREÇÃO CRÍTICA DO CHART.JS ===
+                // Destrói qualquer instância de gráfico que ainda esteja viva neste canvas.
+                const chartExistente = Chart.getChart(ctx);
+                if (chartExistente) {
+                    chartExistente.destroy();
+                }
+                // ======================================
 
                 const dados = {
-                    labels: ["Jan", "Fev", "Mar", "Abr", "Mai"],
-                    valores: [100, 250, 180, 320, 270]
+                    labels: dadosApi.map(d => d.categoria),
+                    valores: dadosApi.map(d => d.valor)
                 };
 
                 let chartType = "bar";
@@ -217,46 +221,196 @@
             }
 
             // ============================================================
-            // 🔹 Abertura do WizardModal
+            // 🔹 FUNÇÃO 5. REMOVER WIDGET (Exclusão)
             // ============================================================
+            function removerWidget(posicao) {
+                if (!confirm("Tem certeza que deseja excluir este widget?")) {
+                    return;
+                }
+
+                let widgets = JSON.parse(localStorage.getItem("widgetsDashboard") || "[]");
+                widgets = widgets.filter(w => w.posicao != posicao); // Remove o widget
+                localStorage.setItem("widgetsDashboard", JSON.stringify(widgets));
+
+                // Recarrega a dashboard
+                renderizarWidgetsSalvos();
+            }
+
+            // ============================================================
+            // 🔹 FUNÇÃO 6. RENDERIZAÇÃO PRINCIPAL (Coração do Dashboard)
+            // ============================================================
+            async function renderizarWidgetsSalvos() {
+                dashboardContainer.innerHTML = ""; // Limpa o container
+
+                // === CORREÇÃO DE ID (POSICAO) ===
+                // Garante que todo widget tenha um ID único
+                let widgets = JSON.parse(localStorage.getItem("widgetsDashboard") || "[]");
+                let atualizouID = false;
+                widgets = widgets.map(w => {
+                    if (!w.posicao) {
+                        // Adiciona um ID aleatório para widgets antigos
+                        w.posicao = Date.now() + Math.random();
+                        atualizouID = true;
+                    }
+                    return w;
+                });
+
+                if (atualizouID) {
+                    // Salva a lista corrigida de volta (apenas se necessário)
+                    localStorage.setItem("widgetsDashboard", JSON.stringify(widgets));
+                }
+                // =================================
+
+                if (widgets.length === 0) {
+                    dashboardContainer.innerHTML = `<div class="text-center text-muted p-5">Nenhum widget criado ainda. Clique em <b>Novo Widget</b> para começar.</div>`;
+                    return;
+                }
+
+                // --- 6.1 KPIs (primeira linha) ---
+                const kpiContainer = document.createElement("div");
+                kpiContainer.className = "row g-3 mb-4";
+
+                const kpiWidgets = widgets.filter(w => w.tipo === "Total");
+                const kpiColors = ["#0d6efd", "#dc3545", "#198754", "#ffc107", "#6f42c1", "#20c997"];
+
+                let colorIndex = 0;
+                for (const widget of kpiWidgets) {
+                    const dados = await fetchWidgetData(widget);
+
+                    if (!dados || typeof dados.valor === 'undefined') {
+                        console.warn("Pulando renderização de KPI (dados inválidos):", widget.titulo);
+                        continue;
+                    }
+
+                    const kpi = document.createElement("div");
+                    kpi.className = "col-lg-3 col-md-6 col-sm-12";
+
+                    kpi.innerHTML = `
+                        <div class="card kpi text-center shadow-sm border-0 position-relative">
+                            <div class="card-body">
+                                <h6 class="fw-semibold text-secondary mb-1">${widget.titulo}</h6>
+                                <h3 class="fw-bold mb-0" style="color:${kpiColors[colorIndex % kpiColors.length]}">
+                                    ${dados.valor.toLocaleString('pt-BR')}
+                                </h3>
+                                <small class="text-muted">${dados.descricao}</small>
+                            </div>
+                            <button class="btn btn-sm btn-link position-absolute top-0 end-0 p-2 delete-widget"
+                                    data-posicao="${widget.posicao}"
+                                    title="Excluir Widget">
+                                <i class="bi bi-trash-fill text-danger"></i>
+                            </button>
+                        </div>
+                    `;
+                    kpiContainer.appendChild(kpi);
+                    colorIndex++;
+                }
+                dashboardContainer.appendChild(kpiContainer);
+
+                // --- 6.2 Gráficos e Listas (linhas abaixo) ---
+                const chartRow = document.createElement("div");
+                chartRow.className = "row g-4";
+                const chartWidgets = widgets.filter(w => w.tipo !== "Total");
+
+                for (const widget of chartWidgets) {
+
+                    const col = document.createElement("div");
+                    col.className = "col-lg-6 col-md-12";
+                    const card = document.createElement("div");
+                    card.className = "card chart-card shadow-sm border-0";
+
+                    const dados = await fetchWidgetData(widget);
+
+                    if (widget.tipo === "Lista") {
+                        // 1. É uma LISTA
+                        card.innerHTML = `
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pb-0">
+                                <h6 class="mb-0">${widget.titulo}</h6>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-light text-dark me-2">${widget.tabela} | ${widget.tipo}</span>
+                                    <button class="btn btn-sm btn-link p-0 delete-widget"
+                                            data-posicao="${widget.posicao}"
+                                            title="Excluir Widget">
+                                        <i class="bi bi-trash-fill text-danger"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body pb-2 pt-2" style="max-height: 250px; overflow-y: auto;">
+                                </div>
+                        `;
+                        col.appendChild(card);
+                        chartRow.appendChild(col);
+
+                        const cardBody = card.querySelector(".card-body");
+                        renderizarLista(cardBody, dados);
+
+                    } else {
+                        // 2. É UM GRÁFICO
+                        card.innerHTML = `
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pb-0">
+                                <h6 class="mb-0">${widget.titulo}</h6>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-light text-dark me-2">${widget.tabela} | ${widget.tipo}</span>
+                                    <button class="btn btn-sm btn-link p-0 delete-widget"
+                                            data-posicao="${widget.posicao}"
+                                            title="Excluir Widget">
+                                        <i class="bi bi-trash-fill text-danger"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body pb-2 pt-2">
+                                <canvas id="chart-${widget.posicao}"></canvas>
+                            </div>
+                        `;
+                        col.appendChild(card);
+                        chartRow.appendChild(col);
+
+                        setTimeout(() => renderChart(`chart-${widget.posicao}`, widget.tipo, dados), 100);
+                    }
+                }
+                dashboardContainer.appendChild(chartRow);
+            }
+
+            // ============================================================
+            // === 7. EVENT LISTENERS (Inicialização) ===
+            // ============================================================
+
+            // Abertura do WizardModal
             btnNovoWidget.addEventListener("click", async () => {
                 try {
-                    wizardContainer.innerHTML = `
-                        <div class="text-center text-muted p-5">
-                            <div class="spinner-border text-primary mb-3"></div><br>
-                            Carregando configurador do widget...
-                        </div>`;
-
+                    wizardContainer.innerHTML = `<div class="text-center text-muted p-5"><div class="spinner-border text-primary mb-3"></div><br>Carregando configurador...</div>`;
                     const response = await fetch("/DashboardDinamica/WizardModal", {
                         headers: { "X-Requested-With": "XMLHttpRequest" }
                     });
-
-                    if (!response.ok)
-                        throw new Error(`Falha ao carregar WizardModal (HTTP ${response.status})`);
-
+                    if (!response.ok) throw new Error(`Falha ao carregar WizardModal (HTTP ${response.status})`);
                     const html = await response.text();
                     wizardContainer.innerHTML = html;
-
                     setTimeout(() => {
                         if (typeof window.inicializarWizardModal === "function")
                             window.inicializarWizardModal();
                     }, 150);
-
                     modal.show();
                 } catch (err) {
-                    wizardContainer.innerHTML = `
-                        <div class="alert alert-danger m-4 text-center">
-                            Erro ao carregar configurador:<br><strong>${err.message}</strong>
-                        </div>`;
+                    wizardContainer.innerHTML = `<div class="alert alert-danger m-4 text-center">Erro ao carregar configurador:<br><strong>${err.message}</strong></div>`;
                     modal.show();
                 }
             });
 
-            // ============================================================
-            // 🔹 Inicialização
-            // ============================================================
-            renderizarWidgetsSalvos();
+            // Delegação de Evento para Exclusão
+            // (Colocado no container principal para capturar cliques)
+            dashboardContainer.addEventListener("click", (e) => {
+                const deleteButton = e.target.closest(".delete-widget");
+                if (deleteButton) {
+                    const posicao = deleteButton.getAttribute("data-posicao");
+                    removerWidget(posicao);
+                }
+            });
+
+            // Listener para recarregar quando o wizard salvar
             window.addEventListener("widgetsAtualizados", renderizarWidgetsSalvos);
-        });
+
+            // Chamada inicial para renderizar a dashboard
+            renderizarWidgetsSalvos();
+
+        }); // Fim do DOMContentLoaded
     </script>
 }

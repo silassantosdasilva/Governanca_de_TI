@@ -53,7 +53,11 @@ namespace Governança_de_TI.Services
                 OperacoesSuportadas = new() { "Contagem" },
 
                 // Tipos de visualizações disponíveis para esta tabela
-                Visualizacoes = new() { "Total", "Pizza", "Barra", "Rolo" }
+                Visualizacoes = new() { "Total", "Pizza", "Barra", "Rolo", "Lista" }, // Adicionei "Lista" aqui
+
+                // === ADICIONAR ESTA LINHA ===
+              // Campos do EquipamentoModel [cite: 91] que permitiremos filtrar
+               CamposFiltro = new() { "Status", "Descricao", "Modelo", "Serie" }
             },
 
             // ============================================================
@@ -155,5 +159,9 @@ namespace Governança_de_TI.Services
 
         // Tipos de visualizações que essa tabela pode usar (Pizza, Barra, Linha, etc.)
         public List<string> Visualizacoes { get; set; } = new();
+        // === ADICIONAR ESTA LINHA ===
+        // Campos de texto que podem ser usados para filtro (WHERE)
+        public List<string> CamposFiltro { get; set; } = new();
     }
+
 }

@@ -1,5 +1,6 @@
 ﻿@model Governança_de_TI.Models.EquipamentoModel
 
+<!-- ===================== FORMULÁRIO DE CRIAÇÃO ===================== -->
 <form id="formCriarEquipamento"
       asp-action="Criar"
       method="post"
@@ -10,18 +11,19 @@
     @Html.AntiForgeryToken()
     <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
-    <!-- ===================== INFORMAÇÕES PRINCIPAIS ===================== -->
     <div class="row g-3">
+
+        <!-- COLUNA ESQUERDA -->
         <div class="col-md-7">
+
             <div class="mb-3">
                 <label asp-for="Descricao" class="form-label text-muted small">
                     <i class="bi bi-cpu me-1"></i>Descrição do Equipamento
                 </label>
-                <input asp-for="Descricao" class="form-control shadow-sm" placeholder="Ex: Notebook Dell Inspiron 15" />
-                <span asp-validation-for="Descricao" class="text-danger small"></span>
+                <input asp-for="Descricao" class="form-control shadow-sm" placeholder="Notebook Dell Inspiron 15" required />
             </div>
 
-            <!-- ===== Tipo de Equipamento com botão para abrir modal ===== -->
+            <!-- TIPO DE EQUIPAMENTO -->
             <div class="mb-3">
                 <label asp-for="TipoEquipamentoId" class="form-label text-muted small">
                     <i class="bi bi-tags me-1"></i>Tipo de Equipamento
@@ -30,27 +32,27 @@
                     <select asp-for="TipoEquipamentoId"
                             asp-items="ViewBag.TipoEquipamentoId"
                             class="form-select shadow-sm"
-                            id="TipoEquipamentoId">
-                        <option value="">Selecione...</option>
+                            id="TipoEquipamentoId"
+                            required>
                     </select>
+
+                    <!-- BOTÃO ABRIR MODAL (AGORA CORRIGIDO) -->
                     <button type="button"
                             class="btn btn-outline-secondary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalGerenciarTipos">
+                            onclick="abrirModalCriarTipo(this)">
                         <i class="bi bi-plus-lg"></i>
                     </button>
                 </div>
-                <span asp-validation-for="TipoEquipamentoId" class="text-danger small"></span>
             </div>
 
             <div class="row">
                 <div class="col-sm-6 mb-3">
                     <label asp-for="Serie" class="form-label text-muted small">Série</label>
-                    <input asp-for="Serie" class="form-control shadow-sm" placeholder="Número de série" />
+                    <input asp-for="Serie" class="form-control shadow-sm" />
                 </div>
                 <div class="col-sm-6 mb-3">
                     <label asp-for="Modelo" class="form-label text-muted small">Modelo</label>
-                    <input asp-for="Modelo" class="form-control shadow-sm" placeholder="Modelo exato" />
+                    <input asp-for="Modelo" class="form-control shadow-sm" />
                 </div>
             </div>
 
@@ -61,7 +63,7 @@
                 </div>
                 <div class="col-sm-6 mb-3">
                     <label asp-for="VidaUtilAnos" class="form-label text-muted small">Vida Útil (Anos)</label>
-                    <input asp-for="VidaUtilAnos" class="form-control shadow-sm" type="number" min="1" placeholder="Ex: 5" />
+                    <input asp-for="VidaUtilAnos" class="form-control shadow-sm" type="number" min="1" />
                 </div>
             </div>
 
@@ -77,7 +79,7 @@
 
             <div class="row">
                 <div class="col-sm-6 mb-3">
-                    <label asp-for="FrequenciaManutencao" class="form-label text-muted small">Frequência de Manutenção</label>
+                    <label asp-for="FrequenciaManutencao" class="form-label text-muted small">Frequência Manutenção</label>
                     <select asp-for="FrequenciaManutencao" class="form-select shadow-sm">
                         <option value="">Nenhuma</option>
                         <option>Mensal</option>
@@ -85,9 +87,10 @@
                         <option>Anual</option>
                     </select>
                 </div>
+
                 <div class="col-sm-6 mb-3">
                     <label asp-for="DiasAlertaManutencao" class="form-label text-muted small">Dias de Alerta</label>
-                    <input asp-for="DiasAlertaManutencao" class="form-control shadow-sm" type="number" min="1" placeholder="Ex: 30" />
+                    <input asp-for="DiasAlertaManutencao" class="form-control shadow-sm" type="number" min="1" />
                 </div>
             </div>
 
@@ -99,118 +102,102 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="AnexoUpload" class="form-label text-muted small">Anexo (opcional)</label>
+                <label asp-for="AnexoUpload" class="form-label text-muted small">Anexo</label>
                 <input asp-for="AnexoUpload" class="form-control form-control-sm shadow-sm" type="file" />
             </div>
         </div>
 
-        <!-- ===================== IMAGEM DO EQUIPAMENTO ===================== -->
+        <!-- IMAGEM -->
         <div class="col-md-4 text-center">
-            <label class="form-label text-muted small d-block mb-2">
-                <i class="bi bi-image me-1"></i>Imagem do Equipamento
-            </label>
+            <label class="form-label text-muted small d-block mb-2">Imagem</label>
 
-            <div class="border rounded-4 p-1 d-flex align-items-center justify-content-center mx-auto bg-light"
-                 style="width: 160px; height: 160px; overflow: hidden;">
+            <div class="border rounded-4 p-1 d-flex align-items-center justify-content-center bg-light"
+                 style="width:160px;height:160px;overflow:hidden;">
                 <img id="previewImagemEquipamento"
                      src="@Url.Content("~/img/default-equip.png")"
-                     alt="Pré-visualização"
                      class="img-fluid rounded"
-                     style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+                     style="max-width:100%;max-height:100%;object-fit:cover;" />
             </div>
 
-            <div class="mt-2">
-                <input asp-for="ImagemUpload"
-                       type="file"
-                       class="form-control form-control-sm"
-                       accept="image/*"
-                       id="inputImagemEquipamento" />
-            </div>
-
-            <small class="text-muted d-block mt-1">Formatos aceitos: JPG, PNG até 2MB</small>
+            <input asp-for="ImagemUpload"
+                   type="file"
+                   class="form-control form-control-sm mt-2"
+                   id="inputImagemEquipamento"
+                   accept="image/*" />
         </div>
     </div>
 
     <hr class="my-3" />
 
     <div class="d-flex justify-content-end">
-        <button type="submit"
-                class="btn btn-primary px-4"
-                style="background-color: #8A2BE2; border-color: #8A2BE2;">
+        <button type="submit" class="btn btn-primary px-4" style="background:#8A2BE2;border-color:#8A2BE2;">
             <i class="bi bi-save me-2"></i>Salvar
         </button>
     </div>
 </form>
+<style>
+    /* ========== MODAL "NOVO TIPO" COM TEMA TECHGREEN ========== */
 
-<!-- ===== Importa o modal de gerenciamento de tipos ===== -->
-@await Html.PartialAsync("_ModalGerenciarTiposPartial")
+    #modalCriarTipo .modal-dialog {
+        max-width: 520px;
+    }
 
-<!-- ===================== SCRIPT: Preview da Imagem ===================== -->
+    #modalCriarTipo .modal-content {
+        background-color: var(--tg-card-bg, #ffffff);
+        color: var(--tg-text, #222);
+        border-radius: 16px;
+        border: 1px solid var(--tg-border, #e5e5e5);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    #modalCriarTipo .modal-header,
+    #modalCriarTipo .modal-footer {
+        background-color: var(--tg-header-bg, #f8f9fa);
+        border-color: var(--tg-border, #e5e5e5);
+    }
+
+    #modalCriarTipo .modal-title {
+        color: var(--tg-primary, #8A2BE2);
+    }
+
+    .btn-purple {
+        background-color: #8A2BE2 !important;
+        border: none !important;
+    }
+
+        .btn-purple:hover {
+            background-color: #7621c4 !important;
+        }
+
+    /* só garante que fique acima da principal */
+    #modalCriarTipo {
+        z-index: 2050;
+    }
+</style>
+<!-- ===================== CONTAINER DAS MODAIS DE TIPOS ===================== -->
+<div id="areaModalTipos"></div>
+
+
 <script>
-    (function () {
-        // === Corrige modais internas carregadas via AJAX (ex: modal de Tipo de Equipamento) ===
-        document.addEventListener("click", function (ev) {
-            const btn = ev.target.closest("[data-bs-toggle='modal']");
-            if (!btn) return;
+    // ===================== PREVIEW IMAGEM =====================
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('inputImagemEquipamento');
+        const preview = document.getElementById('previewImagemEquipamento');
 
-            const targetSelector = btn.getAttribute("data-bs-target");
-            if (!targetSelector) return;
-
-            const modalEl = document.querySelector(targetSelector);
-            if (!modalEl) return;
-
-            // Se já existe uma modal aberta, ajusta o empilhamento (z-index)
-            const activeModal = document.querySelector(".modal.show");
-            if (activeModal && modalEl !== activeModal) {
-                modalEl.classList.add("nested-modal");
-                modalEl.style.zIndex = "2000";
-                const backdrop = document.querySelector(".modal-backdrop");
-                if (backdrop) backdrop.style.zIndex = "1900";
-            }
-
-            // Reinstancia e exibe a modal alvo
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.show();
-        });
-
-        // === Restaura o z-index quando a modal interna é fechada ===
-        document.addEventListener("hidden.bs.modal", function (ev) {
-            const modalEl = ev.target;
-            if (modalEl.classList.contains("nested-modal")) {
-                modalEl.classList.remove("nested-modal");
-                modalEl.style.zIndex = "";
-                const backdrop = document.querySelector(".modal-backdrop");
-                if (backdrop) backdrop.style.zIndex = "";
-            }
-        });
-    })();
-
-    (function () {
-        // === Inicializa pré-visualização da imagem ===
-        function inicializarPreviewImagem() {
-            const inputImagem = document.getElementById('inputImagemEquipamento');
-            const previewImagem = document.getElementById('previewImagemEquipamento');
-            if (!inputImagem || !previewImagem) return;
-
-            inputImagem.addEventListener('change', (e) => {
+        if (input && preview) {
+            input.addEventListener('change', e => {
                 const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = ev => previewImagem.src = ev.target.result;
-                    reader.readAsDataURL(file);
-                } else {
-                    previewImagem.src = '@Url.Content("~/img/default-equip.png")';
+                if (!file) {
+                    preview.src = '/img/default-equip.png';
+                    return;
                 }
+                const reader = new FileReader();
+                reader.onload = ev => preview.src = ev.target.result;
+                reader.readAsDataURL(file);
             });
         }
+    });
 
-        // Executa quando o DOM e modais AJAX forem carregados
-        document.addEventListener('DOMContentLoaded', inicializarPreviewImagem);
-        document.addEventListener('shown.bs.modal', inicializarPreviewImagem);
 
-        // Reativa a validação unobtrusive do formulário
-        if (window.jQuery && $.validator && $.validator.unobtrusive) {
-            $.validator.unobtrusive.parse("#formCriarEquipamento");
-        }
-    })();
 </script>
+
