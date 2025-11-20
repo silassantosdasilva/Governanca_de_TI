@@ -19,22 +19,32 @@
 </head>
 
 <body>
-    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
+
             <a class="navbar-brand" href="#">TechGreen</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="bi bi-list text-white fs-3"></i>
+
+            <!-- Botão hambúrguer custom -->
+            <button class="navbar-toggler shadow-none border-0"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav"
+                    aria-expanded="false">
+                <i class="bi bi-list text-white fs-1"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+
+            <div class="collapse navbar-collapse mobile-menu" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li><a href="#contato">Contato</a></li>
-                    <li><a asp-controller="Account" asp-action="Login">Login</a></li>
-                    <li><a asp-controller="Account" asp-action="Register" class="btn-register">Registrar</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contato">Contato</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Login</a></li>
+                    <li class="nav-item"><a class="btn-register" asp-controller="Account" asp-action="Register">Registrar</a></li>
                 </ul>
             </div>
+
         </div>
     </nav>
+
+
 
     <!-- HERO SECTION COM VÍDEO DE FUNDO -->
     <section class="hero">

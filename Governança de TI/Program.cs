@@ -103,7 +103,4 @@ app.MapControllerRoute(
 // =========================================
 // HTTPS LIMPO – força somente 5005
 // =========================================
-app.Urls.Clear();
-app.Urls.Add("https://localhost:5005");
-
 app.Run();

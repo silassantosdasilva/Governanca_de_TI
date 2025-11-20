@@ -3,3 +3,27 @@
     overflow-y: auto; /* barra de rolagem vertical */
     padding-right: 5px; /* opcional: espaço para não encostar na borda */
 }
+/* ============================================================
+   🔥 AJUSTE PARA MOBILE — PERMITIR ROLAGEM HORIZONTAL NA TABELA
+   ============================================================ */
+@media (max-width: 991px) {
+
+    .tg-table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tg-table {
+        min-width: 900px !important; /* largura mínima para manter colunas alinhadas */
+    }
+
+    /* Evita colar na borda */
+    .tg-table-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .tg-table-wrapper::-webkit-scrollbar-thumb {
+        background: #c5b7e6;
+        border-radius: 10px;
+    }
+}
