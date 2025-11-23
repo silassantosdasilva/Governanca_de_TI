@@ -1,0 +1,80 @@
+﻿@using Governança_de_TI.DTOs
+@* Views/Tipos/_CriarPartial.cshtml - PartialView para o Modal de Criação de Categoria *@
+@model TipoLancamentoDTO
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="modalTitle">Nova Categoria</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+
+<form id="tipoForm" method="post" action="/api/financeiro/Tipos">
+
+    <div class="modal-body">
+        <p class="text-muted small">Crie categorias para classificar Despesas (Contas a Pagar) e Receitas (Contas a Receber).</p>
+
+        <div class="row g-3">
+            <div class="col-md-7">
+                <label for="Nome" class="form-label">Nome da Categoria <span class="text-danger">*</span></label>
+                <input type="text" id="Nome" name="Nome" class="form-control" required maxlength="100" />
+            </div>
+            <div class="col-md-5">
+                <label for="Tipo" class="form-label">Tipo <span class="text-danger">*</span></label>
+                <select id="Tipo" name="Tipo" class="form-select" required>
+                    <option value="1">Despesa</option>
+                    <option value="2">Receita</option>
+                </select>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="submit" id="btnSalvarTipo" class="btn btn-success d-flex align-items-center">
+            <i class="bi bi-save me-2"></i> Salvar Categoria
+        </button>
+    </div>
+</form>
+
+@* Script de Lógica do Modal (Submissão AJAX) *@
+<script>
+    $(document).ready(function () {
+        const $form = $('#tipoForm');
+        const API_URL = '/api/financeiro/Tipos';
+        const $modal = $('#TipoModal');
+
+        // --- Lógica de Submissão AJAX ---
+        $form.on('submit', function (e) {
+            e.preventDefault();
+
+            const formData = {
+                Nome: $('#Nome').val(),
+                Tipo: parseInt($('#Tipo').val())
+            };
+
+            // Envio AJAX (POST)
+            $.ajax({
+                url: API_URL,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    if (response.success) {
+                        window.showFeedbackModal('success', response.message);
+                        if (response.notificacao) {
+                            // Exibe notificação de gamificação
+                        }
+                        $modal.modal('hide'); // Fecha o modal
+                        window.loadTiposTable(); // Força o recarregamento do grid pai
+                    } else {
+                        window.showFeedbackModal('error', response.message);
+                    }
+                },
+                error: function (xhr) {
+                    const errorMsg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro ao salvar a categoria.';
+                    window.showFeedbackModal('error', errorMsg);
+                }
+            });
+        });
+    });
+</script>

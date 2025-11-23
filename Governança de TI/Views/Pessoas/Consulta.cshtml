@@ -1,0 +1,343 @@
+﻿@using Governança_de_TI.DTOs
+@model List<PessoaDTO>
+@{
+    ViewData["Title"] = "Pessoas";
+    var currentDescricao = Context.Request.Query["descricao"];
+    var currentTipoPessoa = Context.Request.Query["tipoPessoa"];
+}
+
+@section Styles {
+    <style>
+        /* === Estilo Padrão TechGreen (Baseado em Contas) === */
+        :root {
+            --tg-primary: #8A2BE2;
+            --tg-bg-light: #f8f9fa;
+            --tg-border-radius: 16px;
+        }
+
+        body {
+            background-color: #f9f9f9;
+        }
+
+        .filter-card {
+            background: #fff;
+            border: 1px solid #eef0f2;
+            border-radius: var(--tg-border-radius);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            padding: 10px;
+        }
+
+        .form-control-modern, .form-select-modern {
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            color: #444;
+            transition: all 0.2s;
+        }
+
+        .btn-search-purple {
+            background-color: var(--tg-primary);
+            color: white;
+            border-radius: 8px;
+            border: none;
+            width: 100%;
+            height: 100%;
+            font-weight: 600;
+        }
+
+        /* Cards de Pessoa */
+        .person-card {
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+            .person-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            }
+
+        .avatar-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-right: 12px;
+        }
+
+        .avatar-fisica {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .avatar-juridica {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .finance-block {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 10px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .finance-label {
+            font-size: 0.7rem;
+            color: #888;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .finance-value {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .btn-fab-green {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #00C851;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 200, 81, 0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            color: #e0e0e0;
+        }
+    </style>
+}
+
+<div class="container-fluid px-4 py-4">
+
+    @* --- CABEÇALHO --- *@
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Pessoas</h4>
+            <small class="text-muted">Gerencie seus contatos</small>
+        </div>
+        <div class="bg-white px-3 py-1 rounded-pill border shadow-sm">
+            <span class="fw-bold text-primary">@Model?.Count</span> <span class="small text-muted">registros</span>
+        </div>
+    </div>
+
+    @* --- FILTROS --- *@
+    <div class="filter-card mb-4">
+        <form asp-action="Consulta" method="get" id="formFiltro">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-1 text-center text-muted"><i class="bi bi-search fs-5"></i></div>
+                <div class="col-12 col-md-5">
+                    <input type="text" name="descricao" class="form-control-modern w-100" placeholder="Buscar por nome..." value="@currentDescricao" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <select name="tipoPessoa" class="form-select-modern w-100">
+                        <option value="">Todos os Tipos</option>
+                        <option value="1" selected="@(currentTipoPessoa == "1")">Pessoa Física</option>
+                        <option value="2" selected="@(currentTipoPessoa == "2")">Pessoa Jurídica</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <button type="submit" class="btn-search-purple"><i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @* --- LISTA DE CARDS --- *@
+    <div id="listaPessoasContainer" class="row g-3">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var p in Model)
+            {
+                var isFisica = p.TipoPessoa == 1;
+                var tipoLabel = isFisica ? "Física" : "Jurídica";
+                var tipoBadge = isFisica ? "bg-success bg-opacity-10 text-success" : "bg-primary bg-opacity-10 text-primary";
+                var avatarClass = isFisica ? "avatar-fisica" : "avatar-juridica";
+                var inicial = !string.IsNullOrEmpty(p.Nome) ? p.Nome.Substring(0, 1).ToUpper() : "?";
+                var doc = string.IsNullOrEmpty(p.Documento) ? "-" : p.Documento;
+
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="person-card p-3 h-100">
+
+                        @* Avatar + Nome *@
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-circle @avatarClass">@inicial</div>
+                            <div class="flex-grow-1" style="min-width:0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="fw-bold text-dark mb-0 text-truncate">@p.Nome</h6>
+                                    <span class="badge @tipoBadge" style="font-size:0.7rem">@tipoLabel</span>
+                                </div>
+                                <small class="text-muted d-block text-truncate"><i class="bi bi-card-heading me-1"></i>@doc</small>
+                            </div>
+                        </div>
+
+                        @* Resumo Financeiro (Estático por enquanto, se não houver no DTO use 0) *@
+                        <div class="finance-block">
+                            <div>
+                                <span class="finance-label text-success"><i class="bi bi-arrow-down-left"></i> A Receber</span><br>
+                                <span class="finance-value text-success">@((p.SaldoAReceber ?? 0).ToString("C"))</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="finance-label text-danger">A Pagar <i class="bi bi-arrow-up-right"></i></span><br>
+                                <span class="finance-value text-danger">@((p.SaldoAPagar ?? 0).ToString("C"))</span>
+                            </div>
+                        </div>
+
+                        @* Ações *@
+                        <div class="d-flex justify-content-end gap-2 mt-3 pt-2 border-top">
+                            <button class="btn btn-sm btn-light text-primary rounded-circle js-open-pessoa-modal"
+                                    data-id="@p.Id" data-action="editar" data-title="Editar @p.Nome">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button class="btn btn-sm btn-light text-danger rounded-circle btn-excluir"
+                                    data-id="@p.Id" data-nome="@p.Nome">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5 col-12">
+                <i class="bi bi-people empty-state-icon"></i>
+                <p class="text-muted mt-3">Nenhuma pessoa encontrada.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@* --- FAB e Modal --- *@
+<button class="btn-fab-green js-open-pessoa-modal" data-id="" data-action="criar" data-title="Nova Pessoa">
+    <i class="bi bi-plus-lg"></i>
+</button>
+
+<div class="modal fade" id="PessoaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 650px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+            <div id="PessoaModalContent" class="p-0"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        if (typeof window.showFeedbackModal !== 'function') {
+            window.showFeedbackModal = (type, message) => { alert(message); };
+        }
+
+        const $modal = $('#PessoaModal');
+        const $modalContent = $('#PessoaModalContent');
+        const API_URL = '/api/financeiro/Pessoas'; // Mantido para exclusão se for API
+
+        // Carregar Modal (MVC)
+        function loadModalForm(action, id = null) {
+            $modalContent.html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
+
+            // Rota MVC (Editar ou Criar)
+            let url = (action === 'editar' && id) ? `/Pessoas/Editar/${id}` : '/Pessoas/_CriarEditarPartial';
+            url += (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+
+            $modal.modal('show');
+
+            $.get(url, function(html) {
+                $modalContent.html(html);
+                attachFormSubmit();
+            }).fail(function() {
+                window.showFeedbackModal('error', 'Erro ao carregar formulário.');
+                $modal.modal('hide');
+            });
+        }
+
+        // Submit (MVC via AJAX com FormData)
+        function attachFormSubmit() {
+            const $form = $('#formPessoa');
+
+            $form.off('submit').on('submit', function(e) {
+                e.preventDefault();
+
+                // Validação Client-Side
+                if ($.fn.valid && !$form.valid()) return;
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/Pessoas/Salvar', // Rota MVC Salvar (Certifique-se que existe na Controller)
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            $modal.modal('hide');
+                            // Feedback visual e reload
+                            window.showFeedbackModal('success', response.message);
+                            setTimeout(() => location.reload(), 1500);
+                        }
+                        else if (typeof response === 'string' && response.includes('<form')) {
+                            $modalContent.html(response); // Erro de validação (HTML)
+                            attachFormSubmit();
+                        }
+                        else {
+                            window.showFeedbackModal('error', response.message || 'Erro desconhecido');
+                        }
+                    },
+                    error: function() {
+                        window.showFeedbackModal('error', 'Erro de comunicação com o servidor.');
+                    }
+                });
+            });
+        }
+
+        // Eventos
+        $(document).on('click', '.js-open-pessoa-modal', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            loadModalForm($btn.data('action'), $btn.data('id'));
+        });
+
+        $('.btn-excluir').on('click', function() {
+            const id = $(this).data('id');
+            const nome = $(this).data('nome');
+
+            if(confirm(`Deseja excluir "${nome}"?`)) {
+                $.ajax({
+                    url: `${API_URL}/${id}`, // DELETE via API (ou ajuste para MVC se preferir)
+                    method: 'DELETE',
+                    success: function(res) {
+                        window.showFeedbackModal('success', res.message || 'Excluído com sucesso.');
+                        setTimeout(() => location.reload(), 1500);
+                    },
+                    error: function(xhr) {
+                         const msg = xhr.responseJSON?.message || 'Erro ao excluir.';
+                         window.showFeedbackModal('error', msg);
+                    }
+                });
+            }
+        });
+    </script>
+}

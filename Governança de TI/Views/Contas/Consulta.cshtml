@@ -1,0 +1,372 @@
+﻿@using Governança_de_TI.DTOs
+@model IEnumerable<ContaBancariaDTO>
+@{
+    ViewData["Title"] = "Contas Bancárias";
+}
+
+@section Styles {
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* === ESTILO MODERN FINTECH === */
+        :root {
+            --bg-app: #F8F9FA;
+            --card-bg: #FFFFFF;
+            --primary-color: #8B5CF6; /* Roxo moderno */
+            --primary-dark: #7C3AED;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            background-color: var(--bg-app);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-primary);
+        }
+
+        /* Barra de Filtros */
+        .filter-container {
+            background-color: transparent;
+        }
+
+        .search-input, .status-select {
+            background-color: #fff;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .search-input:focus, .status-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .btn-action-purple {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-action-purple:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Cards de Conta */
+        .account-card {
+            background: var(--card-bg);
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            padding: 24px;
+            transition: transform 0.2s;
+        }
+
+        .account-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stripe-indicator {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+        }
+        
+        /* Cores das Faixas */
+        .stripe-nubank { background-color: #820AD1; }
+        .stripe-itau { background-color: #ec7000; }
+        .stripe-xp { background-color: #000000; }
+        .stripe-mp { background-color: #009EE3; } /* Mercado Pago Azul */
+        .stripe-default { background-color: #9CA3AF; }
+
+        .bank-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .account-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+
+        .badge-status {
+            background-color: #DCFCE7; /* Verde claro */
+            color: #166534; /* Verde escuro */
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+        .badge-status.inactive {
+            background-color: #F3F4F6;
+            color: #6B7280;
+        }
+
+        .label-muted {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .value-main {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .value-secondary {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Ações (Editar/Excluir) */
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: #F3F4F6;
+            color: var(--primary-color);
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .action-btn:hover { background: #E5E7EB; }
+        .action-btn.delete { color: #EF4444; background: #FEF2F2; }
+        .action-btn.delete:hover { background: #FEE2E2; }
+
+        /* Botão Flutuante */
+        .btn-fab-green {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 60px; height: 60px; border-radius: 50%;
+            background-color: #10B981; color: white;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+            z-index: 1000; border: none;
+            display: flex; align-items: center; justify-content: center; font-size: 24px;
+            transition: 0.2s;
+        }
+        .btn-fab-green:hover { transform: scale(1.1); background-color: #059669; }
+    </style>
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">Contas Bancárias</h4>
+            <small class="text-muted">Gerencie seus saldos e contas</small>
+        </div>
+        <div class="bg-white px-3 py-2 rounded-pill shadow-sm border">
+            <span class="fw-bold text-primary">@Model?.Count()</span> <span class="small text-muted">registros</span>
+        </div>
+    </div>
+
+    <div class="filter-container mb-4">
+        <form id="formFiltro">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="position-relative">
+                        <i class="bi bi-search position-absolute text-muted" style="left: 15px; top: 14px;"></i>
+                        <input type="text" id="buscaNome" class="search-input w-100 ps-5" placeholder="Buscar por banco ou nome da conta...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <select id="buscaStatus" class="status-select w-100">
+                        <option value="">Todos os Status</option>
+                        <option value="1">Ativa</option>
+                        <option value="2">Inativa</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <button type="submit" class="btn-action-purple">
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="listaContasContainer" class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var conta in Model)
+            {
+                // Lógica de Cores e Texto
+                var bancoLower = conta.Banco.ToLower();
+                var stripeClass = "stripe-default";
+                if (bancoLower.Contains("nubank")) { stripeClass = "stripe-nubank"; }
+                else if (bancoLower.Contains("ita")) { stripeClass = "stripe-itau"; }
+                else if (bancoLower.Contains("xp")) { stripeClass = "stripe-xp"; }
+                else if (bancoLower.Contains("mercado")) { stripeClass = "stripe-mp"; }
+
+                var statusText = conta.StatusConta == 1 ? "Ativa" : "Inativa";
+                var statusClass = conta.StatusConta == 1 ? "" : "inactive";
+                var tipoContaLabel = conta.TipoConta == 1 ? "Corrente" : (conta.TipoConta == 2 ? "Poupança" : "Investimento");
+
+                <div class="col-12 col-lg-6 col-xl-4">
+                    <div class="account-card">
+                        <div class="stripe-indicator @stripeClass"></div>
+
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <span class="bank-label">@conta.Banco</span>
+                                <h5 class="account-name">@conta.NomeConta</h5>
+                            </div>
+                            <span class="badge-status @statusClass">@statusText</span>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <span class="label-muted">Saldo Atual</span>
+                                <div class="value-main">@conta.SaldoAtual.ToString("C")</div>
+                            </div>
+                            <div class="col-6 border-start ps-4">
+                                <span class="label-muted">Saldo Inicial</span>
+                                <div class="value-secondary">@conta.SaldoInicial.ToString("C")</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top border-light">
+                            <div class="d-flex align-items-center text-muted small">
+                                <i class="bi bi-credit-card me-2"></i>
+                                <span class="fw-semibold">@tipoContaLabel</span>
+                                @if(!string.IsNullOrEmpty(conta.Agencia)) {
+                                     <span class="mx-2">/</span> <span>@conta.Agencia</span>
+                                }
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button class="action-btn" onclick="loadModalForm('editar', '@conta.Id')" title="Editar">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="action-btn delete btn-excluir" data-id="@conta.Id" data-nome="@conta.NomeConta" title="Excluir">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <div class="bg-white rounded-circle d-inline-flex p-4 mb-3 shadow-sm">
+                    <i class="bi bi-wallet2 fs-1 text-muted opacity-50"></i>
+                </div>
+                <h6 class="text-muted fw-bold">Nenhuma conta encontrada</h6>
+            </div>
+        }
+    </div>
+</div>
+
+<button class="btn-fab-green" onclick="loadModalForm('criar')">
+    <i class="bi bi-plus-lg"></i>
+</button>
+
+<div class="modal fade" id="ContaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div id="ContaModalContent" class="p-0"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ... (Mantive seu Javascript exatamente igual pois ele já funciona bem) ...
+        
+        // Apenas garanta que o seu JS está aqui
+        if (typeof window.showFeedbackModal !== 'function') {
+            window.showFeedbackModal = (type, message) => { alert(message); };
+        }
+
+        const $modal = $('#ContaModal');
+        const $modalContent = $('#ContaModalContent');
+
+        function showLoader() { const loader = document.getElementById("global-loader"); if (loader) loader.classList.add("active"); }
+        function hideLoader() { const loader = document.getElementById("global-loader"); if (loader) loader.classList.remove("active"); }
+
+        window.loadModalForm = function(action, id = null) {
+            $modalContent.html('<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>');
+            $modal.modal('show');
+            let url = (action === 'editar' && id) ? `/Contas/Editar/${id}` : '/Contas/_CriarEditarPartial';
+            url += (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+            $.get(url, function(html) { $modalContent.html(html); attachFormSubmit(); })
+             .fail(function() { window.showFeedbackModal('error', 'Erro ao carregar.'); $modal.modal('hide'); });
+        }
+
+        function attachFormSubmit() {
+            const $form = $('#formConta');
+            $form.off('submit').on('submit', function(e) {
+                e.preventDefault();
+                if ($.fn.valid && !$form.valid()) return;
+                var formData = new FormData(this);
+                showLoader();
+                $.ajax({
+                    url: '/Contas/Salvar', method: 'POST', data: formData, processData: false, contentType: false,
+                    success: function(response) {
+                        hideLoader();
+                        if (response.success) {
+                            $modal.modal('hide');
+                            window.showFeedbackModal('success', response.message);
+                            setTimeout(() => location.reload(), 1500);
+                        } else if (typeof response === 'string' && response.includes('<form')) {
+                            $modalContent.html(response); attachFormSubmit();
+                        } else { window.showFeedbackModal('error', response.message || 'Erro'); }
+                    },
+                    error: function() { hideLoader(); window.showFeedbackModal('error', 'Erro de servidor.'); }
+                });
+            });
+        }
+
+        $('.btn-excluir').on('click', function(e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const nome = $(this).data('nome');
+            if (confirm(`Deseja excluir "${nome}"?`)) {
+                // Cria form dinâmico para POST
+                const form = document.createElement('form'); form.method = 'POST'; form.action = `/Contas/ExcluirPost/${id}`;
+                const token = $('[name="__RequestVerificationToken"]').val();
+                if (token) {
+                    const tokenInput = document.createElement('input'); tokenInput.type = 'hidden'; tokenInput.name = '__RequestVerificationToken'; tokenInput.value = token;
+                    form.appendChild(tokenInput);
+                }
+                document.body.appendChild(form); form.submit();
+            }
+        });
+    </script>
+}

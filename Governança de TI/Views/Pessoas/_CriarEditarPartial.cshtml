@@ -1,0 +1,169 @@
+﻿@using Governança_de_TI.Models
+@model PessoaModel
+
+@{
+    Layout = null;
+    bool isEditing = Model != null && Model.IdPessoa != Guid.Empty;
+    string title = isEditing ? "Editar Pessoa" : "Nova Pessoa";
+    string action = isEditing ? "editar" : "criar";
+
+    // ... (variáveis de valor mantidas) ...
+    string nomeValue = isEditing ? Model.Nome : "";
+    int tipoPessoaValue = isEditing ? Model.TipoPessoa : 1;
+    string documentoValue = isEditing ? (Model.Documento ?? "") : "";
+    string emailValue = isEditing ? (Model.Email ?? "") : "";
+    string observacaoValue = isEditing ? (Model.Observacao ?? "") : "";
+    string cepValue = isEditing ? (Model.EnderecoCEP ?? "") : "";
+    string logradouroValue = isEditing ? (Model.EnderecoLogradouro ?? "") : "";
+    string numeroValue = isEditing ? (Model.EnderecoNumero ?? "") : "";
+    string complementoValue = isEditing ? (Model.EnderecoComplemento ?? "") : "";
+    string bairroValue = isEditing ? (Model.EnderecoBairro ?? "") : "";
+    string cidadeValue = isEditing ? (Model.EnderecoCidade ?? "") : "";
+    string ufValue = isEditing ? (Model.EnderecoUF ?? "") : "";
+    string idValue = isEditing ? Model.IdPessoa.ToString() : "";
+}
+
+
+
+<style>
+    /* === CSS OTIMIZADO === */
+    .modal-header { border-bottom: none; padding: 24px 24px 10px 24px; }
+    .modal-title { font-weight: 800; color: #222; font-size: 1.4rem; }
+    
+    .app-label {
+        font-size: 0.75rem; font-weight: 700; color: #999; margin-top: 15px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .form-control-app, .form-select-app {
+        background-color: #f3f4f6; border: 1px solid transparent; border-radius: 12px;
+        padding: 10px 16px; font-weight: 500; width: 100%; color: #333;
+    }
+    .form-control-app:focus, .form-select-app:focus {
+        background-color: #fff; border-color: #8A2BE2; box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+    }
+    
+    .form-label-small { font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 4px; margin-left: 4px; }
+    
+    .btn-save-app {
+        background-color: #00C851; color: white; border-radius: 50px; padding: 12px;
+        font-weight: 600; width: 100%; border: none; margin-top: 20px; font-size: 1rem;
+    }
+    .text-danger { font-size: 0.75rem; margin-left: 5px; font-weight: 500; }
+
+    /* Corpo com rolagem otimizada */
+    #formPessoa {
+        padding: 15px 24px 24px 24px;
+        max-height: calc(100vh - 140px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    #formPessoa::-webkit-scrollbar { width: 5px; }
+    #formPessoa::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+</style>
+
+<div class="modal-header">
+    <div class="d-flex flex-column w-100">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h5 class="modal-title" id="PessoaModalLabel">@title</h5>
+                <p class="text-muted small mb-0">Preencha os dados abaixo</p>
+            </div>
+            <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+    </div>
+</div>
+
+<form asp-controller="Pessoas" asp-action="Salvar" id="formPessoa" method="post">
+
+    @Html.AntiForgeryToken()
+    @if (isEditing)
+    {
+        <input type="hidden" asp-for="IdPessoa" />
+        <input type="hidden" asp-for="DataCadastro" />
+    }
+
+    <div class="app-section-title mt-0">Informações Básicas</div>
+    
+    <div class="row g-2">
+        <div class="col-5">
+            <label asp-for="TipoPessoa" class="form-label-small">Tipo</label>
+            <select asp-for="TipoPessoa" class="form-select-app">
+                <option value="1">Pessoa Física</option>
+                <option value="2">Pessoa Jurídica</option>
+            </select>
+            <span asp-validation-for="TipoPessoa" class="text-danger"></span>
+        </div>
+
+        <div class="col-7">
+            <label asp-for="Documento" class="form-label-small">CPF / CNPJ</label>
+            <input asp-for="Documento" class="form-control-app" placeholder="Apenas números" />
+            <span asp-validation-for="Documento" class="text-danger"></span>
+        </div>
+
+        <div class="col-12 mb-2">
+            <label asp-for="Nome" class="form-label-small">Nome ou Razão Social</label>
+            <input asp-for="Nome" class="form-control-app" placeholder="Ex: Maria Silva" required maxlength="200" />
+            <span asp-validation-for="Nome" class="text-danger"></span>
+        </div>
+        
+        <div class="col-12">
+            <label asp-for="Email" class="form-label-small">E-mail</label>
+            <input asp-for="Email" class="form-control-app" placeholder="email@exemplo.com" type="email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="app-section-title">Endereço</div>
+
+    <div class="row g-2">
+        <div class="col-5">
+            <label asp-for="EnderecoCEP" class="form-label-small">CEP</label>
+            <input asp-for="EnderecoCEP" class="form-control-app" />
+        </div>
+        <div class="col-7">
+            <label asp-for="EnderecoCidade" class="form-label-small">Cidade</label>
+            <input asp-for="EnderecoCidade" class="form-control-app" />
+        </div>
+        
+        <div class="col-8">
+            <label asp-for="EnderecoLogradouro" class="form-label-small">Rua / Avenida</label>
+            <input asp-for="EnderecoLogradouro" class="form-control-app" />
+        </div>
+        <div class="col-4">
+            <label asp-for="EnderecoNumero" class="form-label-small">Nº</label>
+            <input asp-for="EnderecoNumero" class="form-control-app" />
+        </div>
+
+        <div class="col-12">
+             <label asp-for="EnderecoBairro" class="form-label-small">Bairro</label>
+             <input asp-for="EnderecoBairro" class="form-control-app" />
+        </div>
+
+        <div class="col-8">
+             <label asp-for="EnderecoComplemento" class="form-label-small">Complemento</label>
+             <input asp-for="EnderecoComplemento" class="form-control-app" placeholder="Apt, Bloco..." />
+        </div>
+        <div class="col-4">
+             <label asp-for="EnderecoUF" class="form-label-small">UF</label>
+             <input asp-for="EnderecoUF" class="form-control-app" maxlength="2" style="text-transform:uppercase" placeholder="SP" />
+        </div>
+    </div>
+
+    <div class="app-section-title">Notas</div>
+    <div class="mb-2">
+        <textarea asp-for="Observacao" class="form-control-app" rows="2" placeholder="Infos adicionais..."></textarea>
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" id="btnSalvar" class="btn-save-app shadow-sm">
+            <i class="bi bi-check2-circle me-2"></i> Salvar Pessoa
+        </button>
+    </div>
+
+</form>
+
+<script>
+    // Ativa a validação do cliente
+    if (window.jQuery && $.validator && $.validator.unobtrusive) {
+        $.validator.unobtrusive.parse('#formPessoa');
+    }
+</script>

@@ -4,6 +4,7 @@ using Governança_de_TI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Governança_de_TI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251120180417_ModuloFinanceiroInicial")]
+    partial class ModuloFinanceiroInicial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,10 +48,7 @@ namespace Governança_de_TI.Migrations
                     b.Property<string>("NumeroConta")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("SaldoAtual")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("SaldoInicial")
+                    b.Property<decimal>("SaldoAtual")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<int>("StatusConta")
@@ -422,30 +422,6 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("Premios");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.SaldoDiarioModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Data")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("IdConta")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("SaldoFinal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdConta");
-
-                    b.ToTable("SaldoDiario");
-                });
-
             modelBuilder.Entity("Governança_de_TI.Models.TipoEquipamentoModel", b =>
                 {
                     b.Property<int>("Id")
@@ -547,9 +523,6 @@ namespace Governança_de_TI.Migrations
                     b.Property<int>("Condicao")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ContaIdConta")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("DataEmissao")
                         .HasColumnType("datetime2");
 
@@ -561,7 +534,6 @@ namespace Governança_de_TI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FormaPagamento")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("IdConta")
@@ -580,20 +552,13 @@ namespace Governança_de_TI.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Observacao")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PessoaIdPessoa")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("SequenciaDocumento")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<Guid>("TipoIdTipo")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("TipoLancamento")
                         .HasColumnType("int");
@@ -605,12 +570,6 @@ namespace Governança_de_TI.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("IdLancamento");
-
-                    b.HasIndex("ContaIdConta");
-
-                    b.HasIndex("PessoaIdPessoa");
-
-                    b.HasIndex("TipoIdTipo");
 
                     b.ToTable("LancamentosFinanceiros");
                 });
@@ -657,9 +616,6 @@ namespace Governança_de_TI.Migrations
                     b.Property<Guid>("IdPessoa")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("DataAtualizacao")
-                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime2");
@@ -778,17 +734,6 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.SaldoDiarioModel", b =>
-                {
-                    b.HasOne("ContaBancariaModel", "ContaBancaria")
-                        .WithMany()
-                        .HasForeignKey("IdConta")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ContaBancaria");
-                });
-
             modelBuilder.Entity("Governança_de_TI.Models.UsuarioModel", b =>
                 {
                     b.HasOne("Governança_de_TI.Models.DepartamentoModel", "Departamento")
@@ -815,33 +760,6 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("Premio");
 
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("LancamentoFinanceiroModel", b =>
-                {
-                    b.HasOne("ContaBancariaModel", "Conta")
-                        .WithMany()
-                        .HasForeignKey("ContaIdConta")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PessoaModel", "Pessoa")
-                        .WithMany()
-                        .HasForeignKey("PessoaIdPessoa")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TipoLancamentoModel", "Tipo")
-                        .WithMany()
-                        .HasForeignKey("TipoIdTipo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conta");
-
-                    b.Navigation("Pessoa");
-
-                    b.Navigation("Tipo");
                 });
 
             modelBuilder.Entity("LancamentoParcelaModel", b =>

@@ -1,0 +1,585 @@
+﻿@using Governança_de_TI.DTOs
+@using System.Globalization
+@model ExtratoViewModel
+
+@{
+    ViewData["Title"] = "Fluxo de Caixa";
+    var culture = new CultureInfo("pt-BR");
+}
+
+@section Styles {
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* === TEMA PREMIUM MODERN === */
+        :root {
+            --bg-app: #EFF2F7; /* Cinza azulado suave */
+            --card-bg: #FFFFFF;
+            --text-primary: #1e293b;
+            --text-secondary: #64748B;
+            --radius-xl: 24px;
+            --radius-md: 12px;
+            /* Sombras Suaves */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            /* Cores */
+            --color-blue: #3B82F6;
+            --color-green: #10B981;
+            --color-red: #EF4444;
+        }
+
+        body {
+            background-color: var(--bg-app);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* === CARDS FLUTUANTES === */
+        .app-card {
+            background: var(--card-bg);
+            border: none;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            height: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .app-card:hover {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow-hover);
+            }
+
+        /* KPI Styles */
+        .kpi-card-content {
+            padding: 1.5rem;
+        }
+
+        .kpi-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-blue .kpi-icon-wrapper {
+            background: #DBEAFE;
+            color: var(--color-blue);
+        }
+
+        .kpi-green .kpi-icon-wrapper {
+            background: #D1FAE5;
+            color: var(--color-green);
+        }
+
+        .kpi-red .kpi-icon-wrapper {
+            background: #FEE2E2;
+            color: var(--color-red);
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin: 0.25rem 0;
+            color: var(--text-primary);
+        }
+
+        .kpi-sub {
+            background: #F8FAFC;
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* === BARRA DE FILTROS === */
+        .filter-bar {
+            background: var(--card-bg);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .btn-nav-custom {
+            background: #F1F5F9;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: 0.2s;
+        }
+
+            .btn-nav-custom:hover {
+                background: #E2E8F0;
+                color: var(--text-primary);
+            }
+
+            .btn-nav-custom.active {
+                background: var(--text-primary);
+                color: white;
+            }
+
+        /* NOVO: Input de Datas Customizado */
+        .date-picker-group {
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-radius: 50px;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.02);
+        }
+
+        .date-input-clean {
+            border: none;
+            background: transparent;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            outline: none;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            width: 130px;
+        }
+
+        /* === LISTA DE TRANSAÇÕES === */
+        .trans-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid #F1F5F9;
+            transition: background 0.2s;
+        }
+
+            .trans-item:last-child {
+                border-bottom: none;
+            }
+
+            .trans-item:hover {
+                background-color: #F8FAFC;
+            }
+
+        .icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin-right: 16px;
+        }
+
+            .icon-box.receita {
+                background: #DCFCE7;
+                color: #15803d;
+            }
+
+            .icon-box.despesa {
+                background: #FEE2E2;
+                color: #b91c1c;
+            }
+
+        .badge-pill-modern {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pago {
+            background: #DCFCE7;
+            color: #166534;
+        }
+
+        .status-pendente {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .tag-category {
+            background: #E0F2FE;
+            color: #0369A1;
+        }
+
+        /* === CONTAS E ABAS === */
+        .right-panel-tabs {
+            border-bottom: 2px solid #F1F5F9;
+            margin-bottom: 1.5rem;
+        }
+
+            .right-panel-tabs .nav-link {
+                border: none;
+                background: transparent;
+                color: var(--text-secondary);
+                font-weight: 600;
+                padding-bottom: 12px;
+                margin-bottom: -2px;
+                border-bottom: 3px solid transparent;
+            }
+
+                .right-panel-tabs .nav-link.active {
+                    color: var(--color-blue);
+                    border-bottom-color: var(--color-blue);
+                }
+
+        .bank-row {
+            padding: 16px;
+            border-radius: 16px;
+            background: #F8FAFC;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+            .bank-row:hover {
+                background: white;
+                border-color: #E2E8F0;
+                box-shadow: var(--shadow-sm);
+            }
+
+        .bank-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: white;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.1);
+        }
+    </style>
+}
+
+<div class="container-fluid px-4 pb-5 pt-3">
+
+    <div class="filter-bar d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+        <form method="get" class="d-flex flex-wrap align-items-center gap-3 flex-grow-1">
+
+            <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1 border">
+                <button type="submit" name="navegar" value="-1" class="btn btn-sm btn-light rounded-circle"><i class="bi bi-chevron-left"></i></button>
+                <div class="px-3 fw-bold fs-5 text-capitalize text-center" style="min-width: 140px;">
+                    @Model.DataInicio.ToString("MMMM", culture) <span class="text-muted fw-normal fs-6">@Model.DataInicio.Year</span>
+                </div>
+                <button type="submit" name="navegar" value="1" class="btn btn-sm btn-light rounded-circle"><i class="bi bi-chevron-right"></i></button>
+            </div>
+
+            <div class="d-none d-lg-flex gap-2">
+                <button type="submit" name="periodo" value="hoje" class="btn-nav-custom @(Model.FiltroPeriodo == "hoje" ? "active" : "")">Hoje</button>
+                <button type="submit" name="periodo" value="mes" class="btn-nav-custom @(Model.FiltroPeriodo == "mes" ? "active" : "")">Mês</button>
+                <button type="submit" name="periodo" value="ano" class="btn-nav-custom @(Model.FiltroPeriodo == "ano" ? "active" : "")">Ano</button>
+            </div>
+
+            <div class="date-picker-group ms-auto me-auto d-flex">
+                <i class="bi bi-calendar3 text-muted me-2 small"></i>
+                <input type="date" name="dataInicio" class="date-input-clean" value="@Model.DataInicio.ToString("yyyy-MM-dd")">
+                <span class="text-muted mx-1 small">até</span>
+                <input type="date" name="dataFim" class="date-input-clean" value="@Model.DataFim.ToString("yyyy-MM-dd")">
+                <button type="submit" class="btn btn-primary rounded-circle btn-sm ms-2 p-1 px-2 shadow-sm" title="Filtrar">
+                    <i class="bi bi-check2"></i>
+                </button>
+            </div>
+        </form>
+
+        <div class="d-flex gap-3">
+            <div class="input-group d-none d-xl-flex" style="width: 250px;">
+                <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" class="form-control border-start-0 rounded-end-pill" placeholder="Buscar...">
+            </div>
+            <button class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise me-2"></i> Atualizar
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="app-card kpi-blue">
+                <div class="kpi-card-content">
+                    <div class="d-flex justify-content-between">
+                        <div class="kpi-icon-wrapper"><i class="bi bi-wallet2"></i></div>
+                        <i class="bi bi-three-dots text-muted cursor-pointer"></i>
+                    </div>
+                    <div class="kpi-label">Saldo Anterior</div>
+                    <div class="kpi-value">@Model.SaldoPeriodoAnterior.ToString("C", culture)</div>
+                    <div class="kpi-sub mt-3">
+                        <span><i class="bi bi-calendar me-1"></i> Até ontem</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="app-card kpi-green">
+                <div class="kpi-card-content">
+                    <div class="d-flex justify-content-between"><div class="kpi-icon-wrapper"><i class="bi bi-arrow-up-right"></i></div></div>
+                    <div class="kpi-label">Entradas</div>
+                    <div class="kpi-value text-success">@Model.ReceitasPeriodo.ToString("C", culture)</div>
+                    <div class="kpi-sub mt-3">
+                        <span class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i> Confirmado</span>
+                        <span class="fw-bold text-dark">@Model.ReceitasPeriodo.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="app-card kpi-red">
+                <div class="kpi-card-content">
+                    <div class="d-flex justify-content-between"><div class="kpi-icon-wrapper"><i class="bi bi-arrow-down-left"></i></div></div>
+                    <div class="kpi-label">Saídas</div>
+                    <div class="kpi-value text-danger">@Model.DespesasPeriodo.ToString("C", culture)</div>
+                    <div class="kpi-sub mt-3">
+                        <span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i> A Pagar</span>
+                        <span class="fw-bold text-dark">@Model.DespesasPeriodo.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="app-card kpi-blue">
+                <div class="kpi-card-content">
+                    <div class="d-flex justify-content-between">
+                        <div class="kpi-icon-wrapper" style="background: #eff6ff; color: #2563eb;"><i class="bi bi-piggy-bank"></i></div>
+                    </div>
+                    <div class="kpi-label">Saldo Previsto</div>
+                    <div class="kpi-value" style="color: #2563eb;">@Model.SaldoPrevisto.ToString("C", culture)</div>
+                    <div class="kpi-sub mt-3">
+                        <span><i class="bi bi-graph-up-arrow me-1"></i> Projetado</span>
+                        <span class="fw-bold text-dark">@Model.SaldoPrevisto.ToString("C")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-12 col-xl-8">
+            <div class="app-card" style="min-height: 600px;">
+
+                <div class="d-flex justify-content-between align-items-center p-4 border-bottom border-light">
+                    <div>
+                        <h5 class="fw-bold mb-1">Transações Recentes</h5>
+                        <p class="text-muted small mb-0">Gerencie suas entradas e saídas</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-success rounded-pill fw-bold btn-sm px-3" onclick="abrirModalLancamento(2)">
+                            <i class="bi bi-plus-lg me-1"></i> Receita
+                        </button>
+                        <button class="btn btn-outline-danger rounded-pill fw-bold btn-sm px-3" onclick="abrirModalLancamento(1)">
+                            <i class="bi bi-dash-lg me-1"></i> Despesa
+                        </button>
+                    </div>
+                </div>
+
+                <div class="transaction-list">
+                    @if (Model.Transacoes != null && Model.Transacoes.Any())
+                    {
+                        foreach (var item in Model.Transacoes)
+                        {
+                            var pai = item.LancamentoPai;
+                            var isReceita = pai.TipoLancamento == 2;
+                            var colorClass = isReceita ? "text-success" : "text-danger";
+                            var iconClass = isReceita ? "bi-arrow-up-right" : "bi-arrow-down-left";
+                            var boxClass = isReceita ? "receita" : "despesa";
+                            var statusText = item.Status == 2 ? "Pago" : "Pendente";
+                            var statusBadge = item.Status == 2 ? "status-pago" : "status-pendente";
+                            var descricao = string.IsNullOrEmpty(pai.Documento) ? (string.IsNullOrEmpty(pai.Observacao) ? "Sem Descrição" : pai.Observacao) : pai.Documento;
+                            var categoria = pai.Tipo?.Nome ?? "Geral";
+
+                            <div class="trans-item">
+                                <div class="d-flex align-items-center flex-grow-1">
+                                    <div class="icon-box @boxClass"><i class="bi @iconClass"></i></div>
+                                    <div class="ms-2">
+                                        <div class="fw-bold text-dark mb-1">@descricao</div>
+                                        <div class="d-flex gap-2">
+                                            <span class="badge-pill-modern tag-category">@categoria</span>
+                                            <span class="badge-pill-modern @statusBadge">@statusText</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-end ms-4">
+                                    <div class="fw-bold @colorClass fs-5">@item.ValorParcela.ToString("C", culture)</div>
+                                    <div class="text-muted small">@item.DataVencimento.ToString("dd MMM", culture)</div>
+                                </div>
+                                <div class="ms-4">
+                                    <button class="btn btn-link text-muted p-0"><i class="bi bi-three-dots-vertical"></i></button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 mt-5">
+                            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                                <i class="bi bi-inbox fs-1 text-muted opacity-50"></i>
+                            </div>
+                            <h6 class="fw-bold text-muted">Tudo limpo por aqui!</h6>
+                            <p class="text-muted small">Nenhuma transação encontrada para este período.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="app-card p-4">
+
+                <ul class="nav right-panel-tabs mb-4" id="rightPanelTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="graficos-tab" data-bs-toggle="tab" data-bs-target="#graficos-pane" type="button">Análise</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="contas-tab" data-bs-toggle="tab" data-bs-target="#contas-pane" type="button">Minhas Contas</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+
+                    <div class="tab-pane fade show active" id="graficos-pane">
+                        <div class="d-flex justify-content-center mb-4 mt-2">
+                            <div style="height: 240px; width: 240px; position: relative;">
+                                <canvas id="doughnutChart"></canvas>
+                                <div class="position-absolute top-50 start-50 translate-middle text-center" style="pointer-events: none;">
+                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Total Saídas</small>
+                                    <span class="fw-bolder fs-5 text-dark">@Model.DespesasPeriodo.ToString("C0", culture)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-3 small text-uppercase text-muted ls-1">Por Categoria</h6>
+                        <div class="d-flex flex-column gap-3">
+                            @if (Model.DespesasPorCategoria != null && Model.DespesasPorCategoria.Any())
+                            {
+                                int i = 0;
+                                string[] colors = new[] { "#3B82F6", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6" };
+                                foreach (var cat in Model.DespesasPorCategoria.Take(5))
+                                {
+                                    var pct = Model.DespesasPeriodo > 0 ? (cat.Value / Model.DespesasPeriodo) * 100 : 0;
+                                    var color = colors[i % colors.Length];
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width: 10px; height: 10px; border-radius: 50%; background-color: @color;"></div>
+                                            <span class="fw-semibold text-dark small">@cat.Key</span>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold small">@cat.Value.ToString("C")</div>
+                                            <div class="text-muted" style="font-size: 0.7rem;">@pct.ToString("F0")%</div>
+                                        </div>
+                                    </div>
+                                    i++;
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="contas-pane">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="text-muted small fw-bold text-uppercase">Saldo Disponível</span>
+                            <span class="fw-bold text-success fs-5">@Model.SaldoPrevisto.ToString("C")</span>
+                        </div>
+
+                        <div class="accounts-list">
+                            @{
+                                var contas = ViewBag.Contas as List<ContaBancariaModel>;
+                            }
+                            @if (contas != null && contas.Any())
+                            {
+                                foreach (var conta in contas)
+                                {
+                                    var bgBank = conta.Banco.ToLower().Contains("nubank") ? "#820AD1" :
+                                    (conta.Banco.ToLower().Contains("ita") ? "#ec7000" : "#64748B");
+                                    var iniciais = conta.Banco.Length >= 2 ? conta.Banco.Substring(0, 2).ToUpper() : "BK";
+
+                                    <div class="bank-row d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bank-icon" style="background-color: @bgBank">@iniciais</div>
+                                            <div>
+                                                <div class="fw-bold text-dark lh-1">@conta.Banco</div>
+                                                <small class="text-muted">@conta.NomeConta</small>
+                                            </div>
+                                        </div>
+                                        <div class="fw-bold text-dark">@conta.SaldoAtual.GetValueOrDefault().ToString("C")</div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-center text-muted small">Nenhuma conta cadastrada.</p>
+                            }
+                        </div>
+
+                        <a href="/Contas/Consulta" class="btn btn-light w-100 fw-bold text-primary mt-3 rounded-pill py-2 border shadow-sm">
+                            <i class="bi bi-gear-wide-connected me-2"></i> Gerenciar Contas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="LancamentoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4" id="LancamentoModalContent"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('doughnutChart').getContext('2d');
+        const modernColors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataValues,
+                    backgroundColor: modernColors,
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '80%',
+                plugins: { legend: { display: false }, tooltip: { enabled: true } }
+            }
+        });
+
+        function abrirModalLancamento(tipo = 1) {
+             $('#LancamentoModalContent').html('<div class="p-5 text-center"><div class="spinner-border text-primary"></div></div>');
+             $('#LancamentoModal').modal('show');
+             $('#LancamentoModalContent').load(`/Lancamentos/CriarPartial?tipo=${tipo}`);
+        }
+    </script>
+}

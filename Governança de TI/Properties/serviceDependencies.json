@@ -1,17 +1,23 @@
 {
-  "dependencies": {
-    "secrets1": {
-      "type": "secrets"
-    },
-    "mssql1": {
-      "type": "mssql",
-      "connectionId": "ConnectionStrings:DefaultConnection1",
-      "dynamicId": null
-    },
-    "mssql2": {
-      "type": "mssql",
-      "connectionId": "ConnectionStrings:DefaultConnection2",
-      "dynamicId": null
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
     }
+  },
+
+  "AllowedHosts": "*",
+
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=tcp:sqlserver-tecgren.database.windows.net,1433;Initial Catalog=dbProjetoTecGren;Persist Security Info=False;User ID=admindb;Password=@Lituku5;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  },
+
+  "SmtpSettings": {
+    "Server": "smtp.gmail.com",
+    "Port": 587,
+    "SenderName": "Sistema de Governança de TI",
+    "SenderEmail": "mercadosilas105@gmail.com",
+    "Username": "mercadosilas105@gmail.com",
+    "Password": "wgbc gqsp ttuf qvun"
   }
 }

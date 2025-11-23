@@ -4,6 +4,7 @@ using Governança_de_TI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Governança_de_TI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251122192643_CriaRotinaSaldoDiario")]
+    partial class CriaRotinaSaldoDiario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,11 +48,11 @@ namespace Governança_de_TI.Migrations
                     b.Property<string>("NumeroConta")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("SaldoAtual")
+                    b.Property<decimal>("SaldoAtual")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("SaldoInicial")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("StatusConta")
                         .HasColumnType("int");

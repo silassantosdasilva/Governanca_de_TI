@@ -1,0 +1,321 @@
+﻿@using Governança_de_TI.DTOs
+@model LancamentoDTO
+
+@{
+    Layout = null;
+    // Define se é Receita (2) ou Despesa (1)
+    bool isReceita = Model.TipoLancamento == 2;
+    string tipoTexto = isReceita ? "Receita" : "Despesa";
+    string corTema = isReceita ? "success" : "danger"; // Verde ou Vermelho
+    string iconeTitulo = isReceita ? "bi-graph-up-arrow" : "bi-graph-down-arrow";
+}
+
+<style>
+    /* === Estilo Visual App (Baseado nas Imagens) === */
+    .modal-content-app {
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    }
+
+    .modal-header-app {
+        border-bottom: none;
+        padding: 24px 30px 10px 30px;
+        background: #fff;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .modal-title-app {
+        font-weight: 800;
+        font-size: 1.3rem;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #9ca3af;
+        margin: 25px 0 15px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .section-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .dot-green {
+        background-color: #10B981;
+    }
+
+    .dot-purple {
+        background-color: #8B5CF6;
+    }
+
+    /* Inputs Grandes e Arredondados */
+    .form-control-app, .form-select-app {
+        background-color: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 1rem;
+        color: #374151;
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+        .form-control-app:focus, .form-select-app:focus {
+            border-color: var(--tg-primary, #8A2BE2);
+            box-shadow: 0 0 0 4px rgba(138, 43, 226, 0.1);
+            outline: none;
+        }
+
+    .form-label-app {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .input-helper {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-top: 4px;
+    }
+
+    /* Card de Toggle (Pago/Não Pago) */
+    .status-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .status-card:hover {
+            border-color: #d1d5db;
+            background-color: #f9fafb;
+        }
+
+        .status-card.active {
+            border-color: var(--tg-primary, #8A2BE2);
+            background-color: #f5f3ff;
+        }
+
+    .switch-app {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+    }
+
+        .switch-app input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #EF4444;
+    }
+        /* Vermelho para "Não Recebido" */
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+    /* Botões de Ação */
+    .btn-save-big {
+        background-color: @(isReceita ? "#10B981" : "#EF4444");
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-top: 20px;
+        transition: transform 0.1s;
+    }
+
+        .btn-save-big:hover {
+            opacity: 0.9;
+            color: white;
+        }
+
+        .btn-save-big:active {
+            transform: scale(0.98);
+        }
+
+    .btn-cancel {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-top: 12px;
+    }
+</style>
+
+<div class="modal-header modal-header-app">
+    <h5 class="modal-title-app">
+        <div class="icon-circle bg-@corTema bg-opacity-10 text-@corTema p-2 rounded-circle">
+            <i class="bi @iconeTitulo"></i>
+        </div>
+        Adicionar @tipoTexto
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="formLancamento" class="p-4 pt-0">
+
+    <input type="hidden" asp-for="TipoLancamento" value="@(isReceita ? 2 : 1)" />
+
+    <div class="section-label"><span class="section-dot dot-green"></span> Informações Básicas</div>
+
+    <div class="mb-3">
+        <label asp-for="Valor" class="form-label-app">Valor</label>
+        <input type="number" step="0.01" asp-for="Valor" class="form-control-app" placeholder="Digite o valor (Ex: 150,00)" required />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Documento" class="form-label-app">Descrição</label>
+        <input type="text" asp-for="Documento" class="form-control-app" placeholder="Ex: Compra no supermercado" required />
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label asp-for="IdTipo" class="form-label-app">Categoria</label>
+            <select asp-for="IdTipo" class="form-select-app" asp-items="ViewBag.Categorias">
+                <option value="">Escolha uma categoria</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label-app">Subcategoria</label>
+            <select class="form-select-app" disabled>
+                <option>Selecione uma categoria primeiro</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section-label"><span class="section-dot dot-purple"></span> Configurações de Transação</div>
+
+    <div class="status-card" onclick="document.getElementById('chkStatus').click()">
+        <div>
+            <div class="fw-bold text-dark" id="statusLabel">@(isReceita ? "Recebida" : "Paga")</div>
+            <div class="small text-muted">Status do pagamento/recebimento</div>
+        </div>
+        <label class="switch-app">
+            <input type="checkbox" id="chkStatus" onchange="toggleStatus(this)">
+            <span class="slider"></span>
+        </label>
+        <input type="hidden" asp-for="Status" id="inputStatus" value="2" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DataFluxo" class="form-label-app">Data de Vencimento</label>
+        <div class="position-relative">
+            <input type="date" asp-for="DataFluxo" class="form-control-app" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            <i class="bi bi-calendar-event position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+        </div>
+        <div class="input-helper">Quando a transação deve ser paga/recebida</div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="IdConta" class="form-label-app">Conta</label>
+        <select asp-for="IdConta" class="form-select-app" asp-items="ViewBag.Contas">
+            <option value="">Não informado</option>
+        </select>
+        <div class="input-helper">Escolha a conta para esta transação</div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="IdPessoa" class="form-label-app">Pessoa Responsável</label>
+        <select asp-for="IdPessoa" class="form-select-app" asp-items="ViewBag.Pessoas">
+            <option value="">Identifique alguém</option>
+        </select>
+    </div>
+
+    <div class="d-flex gap-3 mb-3">
+        <div class="form-check form-switch p-0 d-flex align-items-center gap-2 border rounded-4 p-2 px-3 w-100">
+            <input class="form-check-input m-0" type="checkbox" id="chkFixa">
+            <label class="form-check-label small fw-bold text-muted" for="chkFixa">@(isReceita ? "Receita" : "Despesa") Fixa</label>
+        </div>
+        <div class="form-check form-switch p-0 d-flex align-items-center gap-2 border rounded-4 p-2 px-3 w-100">
+            <input class="form-check-input m-0" type="checkbox" id="chkRepetir">
+            <label class="form-check-label small fw-bold text-muted" for="chkRepetir">Repetir</label>
+        </div>
+    </div>
+
+
+    <button type="button" class="btn-save-app btn-save-big" onclick="submitLancamento()">
+        <i class="bi @(isReceita ? "bi-arrow-up" : "bi-arrow-down") me-2"></i> Salvar @tipoTexto
+    </button>
+
+    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+
+</form>
+
+<script>
+    function toggleStatus(checkbox) {
+        const label = document.getElementById('statusLabel');
+        const input = document.getElementById('inputStatus');
+        const isReceita = '@isReceita' === 'True';
+
+        if (checkbox.checked) {
+            // Toggle ATIVADO (Vermelho na imagem) -> Significa PENDENTE/NÃO RECEBIDO
+            label.innerText = isReceita ? "Não Foi Recebida" : "Não Foi Paga";
+            label.classList.add("text-danger");
+            input.value = "1"; // 1 = Pendente
+        } else {
+            // Toggle DESATIVADO (Cinza/Verde) -> Significa REALIZADO
+            label.innerText = isReceita ? "Recebida" : "Paga";
+            label.classList.remove("text-danger");
+            input.value = "2"; // 2 = Pago
+        }
+    }
+
+    function submitLancamento() {
+        // Lógica de envio via AJAX (Reutilizar a do ContasController mas apontando para Lancamentos)
+        // ...
+    }
+</script>

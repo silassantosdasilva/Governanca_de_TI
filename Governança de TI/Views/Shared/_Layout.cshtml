@@ -163,6 +163,44 @@
                     </a>
                 </li>
 
+                @* =========== NOVO MÓDULO FINANCEIRO =========== *@
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link has-submenu">
+                        <i class="bi bi-currency-dollar text-success"></i><span>Financeiro (ESG)</span>
+                        <i class="bi bi-chevron-down ms-auto toggle-icon"></i>
+                    </a>
+                    <div class="submenu-panel">
+                        <ul class="submenu-list">
+                            @* Tela Principal - Extrato e Dashboard *@
+                            <li><a asp-controller="Extrato" asp-action="Consulta" class="submenu-link"><i class="bi bi-journal-check"></i><span>Extrato e Fluxo</span></a></li>
+
+                            @* NOVO LINK: Lançamentos *@
+                            <li><a href="~/Extrato/Consulta#NovoLancamento" class="submenu-link" id="linkNovoLancamento"><i class="bi bi-send"></i><span>Lançar Transação</span></a></li>
+
+                            <li><hr class="dropdown-divider my-1"></li>
+
+                            @* Cadastros Base *@
+                            <li>
+                                <a asp-controller="Pessoas" asp-action="Consulta" class="submenu-link">
+                                    <i class="bi bi-person-lines-fill"></i><span>Pessoas (Cl./Forn.)</span>
+                                </a>
+                            </li>
+                            <li><a asp-controller="Contas" asp-action="Consulta" class="submenu-link"><i class="bi bi-wallet"></i><span>Contas Bancárias</span></a></li>
+
+                            @* --- NOVO BOTÃO ADICIONADO AQUI --- *@
+                            <li>
+                                <a asp-controller="SaldoDiario" asp-action="Index" class="submenu-link">
+                                    <i class="bi bi-calendar-check"></i><span>Histórico de Saldos</span>
+                                </a>
+                            </li>
+
+                            <li><a asp-controller="Tipos" asp-action="Consulta" class="submenu-link"><i class="bi bi-tags"></i><span>Tipos/Categorias</span></a></li>
+                        </ul>
+                    </div>
+                </li>
+                @* =================================================== *@
+
+
                 <li class="sidebar-nav-item">
                     <a href="#" class="sidebar-nav-link has-submenu">
                         <i class="bi bi-tools"></i><span>Ferramentas</span>
@@ -264,7 +302,7 @@
                     </div>
                 </div>
 
-            
+
             </header>
 
             <main class="content-area p-4">
@@ -305,10 +343,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/WizardModal.js" asp-append-version="true"></script> 
-    <script src="~/js/globalErrorLogger.js"></script>
+    <script src="~/js/WizardModal.js" asp-append-version="true"></script>
+    <script src="~/js/globalErrorLogger.js" asp-append-version="true"></script>
     <script src="~/js/validacao-global.js" asp-append-version="true"></script>
-    @* NOovo *@
 
     <!-- =========================================================
          JS DO LAYOUT
@@ -316,325 +353,341 @@
          - Sidebar (expandir/recolher, mobile, submenu)
          ========================================================= -->
     <script>
-       document.addEventListener("DOMContentLoaded", function () {
-
-            const btnAbrirLogs = document.getElementById("btnAbrirLogs");
-            const logsContainer = document.getElementById("logsContainer");
-            const btnLimparLogs = document.getElementById("btnLimparLogs");
-            const modalLogs = new bootstrap.Modal(document.getElementById("logsModal"));
-
-            if (btnAbrirLogs) {
-                btnAbrirLogs.addEventListener("click", async (e) => {
-                    e.preventDefault();
-                    logsContainer.innerHTML = `
-                        <div class="text-center text-muted py-5">
-                            <div class="spinner-border text-primary mb-2"></div><br/>
-                            Carregando registros de log...
-                        </div>`;
-                    modalLogs.show();
-
-                    try {
-                        const resp = await fetch("/Logs/ListarUltimos");
-                        if (!resp.ok) throw new Error("Erro ao carregar logs.");
-                        const html = await resp.text();
-                        logsContainer.innerHTML = html;
-                    } catch (err) {
-                        logsContainer.innerHTML = `<div class="alert alert-danger text-center">${err.message}</div>`;
-                    }
-                });
-            }
-
-            if (btnLimparLogs) {
-                btnLimparLogs.addEventListener("click", async () => {
-                    if (!confirm("Deseja realmente apagar todos os logs?")) return;
-                    try {
-                         const resp = await fetch("/Logs/Limpar", { method: "POST" })
-                        if (resp.ok) {
-                            logsContainer.innerHTML = `<div class="alert alert-success text-center">Logs apagados com sucesso.</div>`;
-                        } else {
-                            throw new Error("Erro ao apagar logs.");
-                        }
-                    } catch {
-                        logsContainer.innerHTML = `<div class="alert alert-danger text-center">Falha ao apagar logs.</div>`;
-                    }
-                });
-            }
-        });
-
-        window.addEventListener("beforeunload", () => {
-         document.getElementById("global-loader").classList.add("show");
-        });
-        window.addEventListener("load", () => {
-            document.getElementById("global-loader").classList.remove("show");
-        });
-        // ===========================
-        // THEME (Bootstrap 5.3)
-        // ===========================
         document.addEventListener("DOMContentLoaded", function () {
-            const toggle = document.getElementById("darkModeToggle");
-            const icon = toggle.querySelector("i");
-            const label = toggle.querySelector(".toggle-label");
-            const htmlTag = document.documentElement;
 
-            // Recupera o tema salvo (default: light)
-            const savedTheme = localStorage.getItem("theme") || "light";
-            applyTheme(savedTheme);
+             const btnAbrirLogs = document.getElementById("btnAbrirLogs");
+             const logsContainer = document.getElementById("logsContainer");
+             const btnLimparLogs = document.getElementById("btnLimparLogs");
+             const modalLogs = new bootstrap.Modal(document.getElementById("logsModal"));
 
-            toggle.addEventListener("click", () => {
-                const next = htmlTag.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
-                applyTheme(next);
-                localStorage.setItem("theme", next);
-            });
+             if (btnAbrirLogs) {
+                 btnAbrirLogs.addEventListener("click", async (e) => {
+                     e.preventDefault();
+                     logsContainer.innerHTML = `
+                         <div class="text-center text-muted py-5">
+                             <div class="spinner-border text-primary mb-2"></div><br/>
+                             Carregando registros de log...
+                         </div>`;
+                     modalLogs.show();
 
-            function applyTheme(theme) {
-                htmlTag.setAttribute("data-bs-theme", theme);
-                if (theme === "dark") {
-                    icon.classList.replace("bi-moon", "bi-brightness-high");
-                    label.textContent = "Modo Claro";
-                } else {
-                    icon.classList.replace("bi-brightness-high", "bi-moon");
-                    label.textContent = "Modo Escuro";
-                }
-            }
-        });
+                     try {
+                         const resp = await fetch("/Logs/ListarUltimos");
+                         if (!resp.ok) throw new Error("Erro ao carregar logs.");
+                         const html = await resp.text();
+                         logsContainer.innerHTML = html;
+                     } catch (err) {
+                         logsContainer.innerHTML = `<div class="alert alert-danger text-center">${err.message}</div>`;
+                     }
+                 });
+             }
 
-        // ===========================
-        // SIDEBAR (Desktop + Mobile)
-        // ===========================
-        (function ($) {
-            'use strict';
+             if (btnLimparLogs) {
+                 btnLimparLogs.addEventListener("click", async () => {
+                     if (!confirm("Deseja realmente apagar todos os logs?")) return;
+                     try {
+                          const resp = await fetch("/Logs/Limpar", { method: "POST" })
+                         if (resp.ok) {
+                             logsContainer.innerHTML = `<div class="alert alert-success text-center">Logs apagados com sucesso.</div>`;
+                         } else {
+                             throw new Error("Erro ao apagar logs.");
+                         }
+                     } catch {
+                         logsContainer.innerHTML = `<div class="alert alert-danger text-center">Falha ao apagar logs.</div>`;
+                     }
+                 });
+             }
+         });
 
-            // Referências
-            const $sidebar      = $('.sidebar');
-            const $collapseBtn  = $('.sidebar-collapse');
-            const $mobileToggle = $('#sidebar-toggle');
-            const $overlay      = $('#sidebar-overlay');
-            const $doc          = $(document);
+         window.addEventListener("beforeunload", () => {
+            document.getElementById("global-loader").classList.add("show");
+         });
+         window.addEventListener("load", () => {
+             document.getElementById("global-loader").classList.remove("show");
+         });
+         // ===========================
+         // THEME (Bootstrap 5.3)
+         // ===========================
+         document.addEventListener("DOMContentLoaded", function () {
+             const toggle = document.getElementById("darkModeToggle");
+             const icon = toggle.querySelector("i");
+             const label = toggle.querySelector(".toggle-label");
+             const htmlTag = document.documentElement;
 
-            // Classes de estado
-            const CLASS_EXPANDED = 'sidebar-expanded';
-            const CLASS_OPEN     = 'is-open';
+             // Recupera o tema salvo (default: light)
+             const savedTheme = localStorage.getItem("theme") || "light";
+             applyTheme(savedTheme);
 
-            // --------- Funções base ----------
-            function expandSidebar() {
-                $sidebar.addClass(CLASS_EXPANDED);
-                $collapseBtn.find('i').removeClass('bi-chevron-double-right').addClass('bi-chevron-double-left');
-            }
+             toggle.addEventListener("click", () => {
+                 const next = htmlTag.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+                 applyTheme(next);
+                 localStorage.setItem("theme", next);
+             });
 
-            function collapseSidebar() {
-                $sidebar.removeClass(CLASS_EXPANDED);
-                closeAllSubmenus();
-                $collapseBtn.find('i').removeClass('bi-chevron-double-left').addClass('bi-chevron-double-right');
-            }
+             function applyTheme(theme) {
+                 htmlTag.setAttribute("data-bs-theme", theme);
+                 if (theme === "dark") {
+                     icon.classList.replace("bi-moon", "bi-brightness-high");
+                     label.textContent = "Modo Claro";
+                 } else {
+                     icon.classList.replace("bi-brightness-high", "bi-moon");
+                     label.textContent = "Modo Escuro";
+                 }
+             }
+         });
 
-            function openMobileSidebar() {
-                $sidebar.addClass(CLASS_OPEN);
-                $overlay.addClass('is-visible');
-            }
+         // ===========================
+         // SIDEBAR (Desktop + Mobile)
+         // ===========================
+         (function ($) {
+             'use strict';
 
-            function closeMobileSidebar() {
-                $sidebar.removeClass(CLASS_OPEN);
-                $overlay.removeClass('is-visible');
-            }
+             // Referências
+             const $sidebar    = $('.sidebar');
+             const $collapseBtn  = $('.sidebar-collapse');
+             const $mobileToggle = $('#sidebar-toggle');
+             const $overlay    = $('#sidebar-overlay');
+             const $doc        = $(document);
 
-            function toggleChevron($link, isOpen) {
-                const $icon = $link.find('.toggle-icon');
-                if ($icon.length) {
-                    $icon.toggleClass('bi-chevron-down', !isOpen);
-                    $icon.toggleClass('bi-chevron-up', isOpen);
-                }
-            }
+             // Classes de estado
+             const CLASS_EXPANDED = 'sidebar-expanded';
+             const CLASS_OPEN     = 'is-open';
 
-            function closeAllSubmenus() {
-                $('.sidebar-nav-item.active')
-                    .removeClass('active')
-                    .find('.submenu-panel')
-                    .stop(true, true)
-                    .slideUp(150)
-                    .prev('.sidebar-nav-link.has-submenu')
-                    .each(function () { toggleChevron($(this), false); });
-            }
+             // --------- Funções base ----------
+             function expandSidebar() {
+                 $sidebar.addClass(CLASS_EXPANDED);
+                 $collapseBtn.find('i').removeClass('bi-chevron-double-right').addClass('bi-chevron-double-left');
+             }
 
-            // Estado inicial
-            $('.submenu-panel').hide();
-            $('.sidebar-nav-item').removeClass('active');
+             function collapseSidebar() {
+                 $sidebar.removeClass(CLASS_EXPANDED);
+                 closeAllSubmenus();
+                 $collapseBtn.find('i').removeClass('bi-chevron-double-left').addClass('bi-chevron-double-right');
+             }
 
-            // Botão recolher/expandir (desktop)
-            $collapseBtn.on('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $sidebar.toggleClass(CLASS_EXPANDED);
-                $(this).find('i').toggleClass('bi-chevron-double-left bi-chevron-double-right');
-                if (!$sidebar.hasClass(CLASS_EXPANDED)) closeAllSubmenus();
-            });
+             function openMobileSidebar() {
+                 $sidebar.addClass(CLASS_OPEN);
+                 $overlay.addClass('is-visible');
+             }
 
-            // Toggle Mobile (hamburger)
-            $mobileToggle.on('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
-                else openMobileSidebar();
-            });
+             function closeMobileSidebar() {
+                 $sidebar.removeClass(CLASS_OPEN);
+                 $overlay.removeClass('is-visible');
+             }
 
-            // Overlay fecha Mobile
-            $overlay.on('click', () => closeMobileSidebar());
+             function toggleChevron($link, isOpen) {
+                 const $icon = $link.find('.toggle-icon');
+                 if ($icon.length) {
+                     $icon.toggleClass('bi-chevron-down', !isOpen);
+                     $icon.toggleClass('bi-chevron-up', isOpen);
+                 }
+             }
 
-            // Clique em itens do menu
-            $doc.on('click', '.sidebar-nav-link', function (e) {
-                const $link = $(this);
-                const $item = $link.closest('.sidebar-nav-item');
-                const $submenu = $item.children('.submenu-panel');
+             function closeAllSubmenus() {
+                 $('.sidebar-nav-item.active')
+                     .removeClass('active')
+                     .find('.submenu-panel')
+                     .stop(true, true)
+                     .slideUp(150)
+                     .prev('.sidebar-nav-link.has-submenu')
+                     .each(function () { toggleChevron($(this), false); });
+             }
 
-                if ($link.hasClass('has-submenu')) {
-                    e.preventDefault();
-                    e.stopPropagation();
+             // Estado inicial
+             $('.submenu-panel').hide();
+             $('.sidebar-nav-item').removeClass('active');
 
-                    // Garante expansão no desktop ao abrir submenu
-                    if (!$sidebar.hasClass(CLASS_EXPANDED)) {
-                        expandSidebar();
-                    }
+             // Botão recolher/expandir (desktop)
+             $collapseBtn.on('click', function (e) {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 $sidebar.toggleClass(CLASS_EXPANDED);
+                 $(this).find('i').toggleClass('bi-chevron-double-left bi-chevron-double-right');
+                 if (!$sidebar.hasClass(CLASS_EXPANDED)) closeAllSubmenus();
+             });
 
-                    const isActive = $item.hasClass('active');
-                    closeAllSubmenus();
+             // Toggle Mobile (hamburger)
+             $mobileToggle.on('click', function (e) {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
+                 else openMobileSidebar();
+             });
 
-                    if (!isActive) {
-                        $item.addClass('active');
-                        $submenu.stop(true, true).slideDown(200);
-                        toggleChevron($link, true);
-                    } else {
-                        $item.removeClass('active');
-                        $submenu.stop(true, true).slideUp(200);
-                        toggleChevron($link, false);
-                    }
-                } else {
-                    // Itens simples: mantém padrão de expandir e fechar submenus
-                    expandSidebar();
-                    closeAllSubmenus();
-                }
-            });
+             // Overlay fecha Mobile
+             $overlay.on('click', () => closeMobileSidebar());
 
-            // Clique fora fecha tudo (desktop + mobile)
-            $doc.on('click', function (e) {
-                const clickInsideSidebar = $(e.target).closest('.sidebar').length > 0;
-                const clickHamburger = $(e.target).closest('#sidebar-toggle').length > 0;
+             // Clique em itens do menu
+             $doc.on('click', '.sidebar-nav-link', function (e) {
+                 const $link = $(this);
+                 const $item = $link.closest('.sidebar-nav-item');
+                 const $submenu = $item.children('.submenu-panel');
 
-                if (!clickInsideSidebar && !clickHamburger) {
-                    closeAllSubmenus();
-                    if ($sidebar.hasClass(CLASS_EXPANDED)) collapseSidebar();
-                    if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
-                }
-            });
+                 if ($link.hasClass('has-submenu')) {
+                     e.preventDefault();
+                     e.stopPropagation();
 
-            // Impede fechamento ao clicar dentro do submenu
-            $doc.on('click', '.submenu-panel', function (e) { e.stopPropagation(); });
+                     // Garante expansão no desktop ao abrir submenu
+                     if (!$sidebar.hasClass(CLASS_EXPANDED)) {
+                         expandSidebar();
+                     }
 
-            // Expor utilitários globais (opcional)
-            window.TGSidebar = { expandSidebar, collapseSidebar, openMobileSidebar, closeMobileSidebar, closeAllSubmenus };
-        })(jQuery);
-                document.addEventListener("DOMContentLoaded", () => {
-            const loader = document.getElementById("global-loader");
-            if (loader) {
-                // Mostra brevemente e oculta após 800ms
-                loader.classList.add("show");
-                setTimeout(() => {
-                    loader.classList.remove("show");
-                    loader.style.display = "none";
-                }, 800);
-            }
-        });
-          // ===== LOADER GLOBAL =====
-        document.addEventListener("DOMContentLoaded", () => {
-            const loader = document.getElementById("global-loader");
-            if (loader) {
-                // Mostra brevemente e oculta após 800ms
-                loader.classList.add("active");
-                setTimeout(() => {
-                    loader.classList.remove("active");
-                }, 800);
-            }
-        });
+                     const isActive = $item.hasClass('active');
+                     closeAllSubmenus();
 
-        function showLoader() {
-            const loader = document.getElementById("global-loader");
-            loader.classList.add("active");
-        }
+                     if (!isActive) {
+                         $item.addClass('active');
+                         $submenu.stop(true, true).slideDown(200);
+                         toggleChevron($link, true);
+                     } else {
+                         $item.removeClass('active');
+                         $submenu.stop(true, true).slideUp(200);
+                         toggleChevron($link, false);
+                     }
+                 } else {
+                     // Itens simples: mantém padrão de expandir e fechar submenus
+                     expandSidebar();
+                     closeAllSubmenus();
+                 }
+             });
 
-        function hideLoader() {
-            const loader = document.getElementById("global-loader");
-            loader.classList.remove("active");
-        }
+             // Clique fora fecha tudo (desktop + mobile)
+             $doc.on('click', function (e) {
+                 const clickInsideSidebar = $(e.target).closest('.sidebar').length > 0;
+                 const clickHamburger = $(e.target).closest('#sidebar-toggle').length > 0;
 
-        // Exibe durante carregamentos de página
-        window.addEventListener("beforeunload", showLoader);
-        window.addEventListener("load", hideLoader);
+                 if (!clickInsideSidebar && !clickHamburger) {
+                     closeAllSubmenus();
+                     if ($sidebar.hasClass(CLASS_EXPANDED)) collapseSidebar();
+                     if ($sidebar.hasClass(CLASS_OPEN)) closeMobileSidebar();
+                 }
+             });
 
-        window.showFeedbackModal = function (type, message) {
-            const icon = document.getElementById("feedbackIcon");
-            const msg = document.getElementById("feedbackMessage");
-            const modalEl = document.getElementById("feedbackModal");
+             // Impede fechamento ao clicar dentro do submenu
+             $doc.on('click', '.submenu-panel', function (e) { e.stopPropagation(); });
 
-            // Define ícone e cor
-            switch (type) {
-                case "success":
-                    icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
-                    break;
-                case "error":
-                    icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
-                    break;
-                case "warning":
-                    icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>';
-                    break;
-                default:
-                    icon.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i>';
-                    break;
-            }
+             // Expor utilitários globais (opcional)
+             window.TGSidebar = { expandSidebar, collapseSidebar, openMobileSidebar, closeMobileSidebar, closeAllSubmenus };
+         })(jQuery);
 
-            msg.textContent = message;
+         // ===== Lógica do link de Lançamento (Abre o modal de Extrato) =====
+         document.addEventListener("DOMContentLoaded", function () {
+             const $linkNovoLancamento = $('#linkNovoLancamento');
 
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+             // Verifica se o hash está presente na URL ao carregar a página
+             if (window.location.hash === '#NovoLancamento') {
+                 $linkNovoLancamento.trigger('click'); // Simula o clique para abrir o modal
+             }
 
-            setTimeout(() => modal.hide(), 2500);
-        };
-              // ===== SOM SUAVE =====
-        const feedbackSound = new Audio('/sounds/notification.mp3');
+             $linkNovoLancamento.on('click', function(e) {
+                 // Se o link estiver sendo clicado e já estivermos na página Extrato/Consulta
+                 if (window.location.pathname.endsWith('/Extrato/Consulta')) {
+                     e.preventDefault();
 
-        window.showFeedbackModal = function (type, message) {
-            const icon = document.getElementById("feedbackIcon");
-            const msg = document.getElementById("feedbackMessage");
-            const modalEl = document.getElementById("feedbackModal");
+                     // Dispara o clique no botão de Novo Lançamento da View Extrato/Consulta.cshtml
+                     const btnNovoLancamento = document.getElementById('btnNovoLancamento');
+                     if (btnNovoLancamento) {
+                         $(btnNovoLancamento).trigger('click');
+                     } else {
+                         // Se o botão não existir (página não carregada), apenas navega
+                         window.location.href = $(this).attr('href');
+                     }
+                 }
+                 // Se não estiver na página Extrato/Consulta, o link navega normalmente
+             });
+         });
 
-            switch (type) {
-                case "success": icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>'; break;
-                case "error": icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>'; break;
-                case "warning": icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>'; break;
-                default: icon.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i>'; break;
-            }
+         // ===== LOADER GLOBAL =====
+         document.addEventListener("DOMContentLoaded", () => {
+             const loader = document.getElementById("global-loader");
+             if (loader) {
+                 // Mostra brevemente e oculta após 800ms
+                 loader.classList.add("active");
+                 setTimeout(() => {
+                     loader.classList.remove("active");
+                 }, 800);
+             }
+         });
 
-            msg.textContent = message;
+         function showLoader() {
+             const loader = document.getElementById("global-loader");
+             loader.classList.add("active");
+         }
 
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-            feedbackSound.currentTime = 0;
-            feedbackSound.play().catch(() => {});
+         function hideLoader() {
+             const loader = document.getElementById("global-loader");
+             loader.classList.remove("active");
+         }
 
-            setTimeout(() => modal.hide(), 2600);
-        };
+         // Exibe durante carregamentos de página
+         window.addEventListener("beforeunload", showLoader);
+         window.addEventListener("load", hideLoader);
 
-        // ===== FEEDBACK VIA TEMPDATA =====
-        @if (TempData["SuccessMessage"] != null)
-        {
-                <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('success','@TempData["SuccessMessage"]');});</text>
-        }
-        @if (TempData["ErrorMessage"] != null)
-        {
-                <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('error','@TempData["ErrorMessage"]');});</text>
-        }
-        @if (TempData["WarningMessage"] != null)
-        {
-                <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('warning','@TempData["WarningMessage"]');});</text>
-        }
+         window.showFeedbackModal = function (type, message) {
+             const icon = document.getElementById("feedbackIcon");
+             const msg = document.getElementById("feedbackMessage");
+             const modalEl = document.getElementById("feedbackModal");
 
+             // Define ícone e cor
+             switch (type) {
+                 case "success":
+                     icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                     break;
+                 case "error":
+                     icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                     break;
+                 case "warning":
+                     icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>';
+                     break;
+                 default:
+                     icon.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i>';
+                     break;
+             }
+
+             msg.textContent = message;
+
+             const modal = new bootstrap.Modal(modalEl);
+             modal.show();
+
+             setTimeout(() => modal.hide(), 2500);
+         };
+             // ===== SOM SUAVE =====
+         const feedbackSound = new Audio('/sounds/notification.mp3');
+
+         window.showFeedbackModal = function (type, message) {
+             const icon = document.getElementById("feedbackIcon");
+             const msg = document.getElementById("feedbackMessage");
+             const modalEl = document.getElementById("feedbackModal");
+
+             switch (type) {
+                 case "success": icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>'; break;
+                 case "error": icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>'; break;
+                 case "warning": icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning"></i>'; break;
+                 default: icon.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i>'; break;
+             }
+
+             msg.textContent = message;
+
+             const modal = new bootstrap.Modal(modalEl);
+             modal.show();
+             feedbackSound.currentTime = 0;
+             feedbackSound.play().catch(() => {});
+
+             setTimeout(() => modal.hide(), 2600);
+         };
+
+         // ===== FEEDBACK VIA TEMPDATA =====
+         @if (TempData["SuccessMessage"] != null)
+         {
+                     <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('success','@TempData["SuccessMessage"]');});</text>
+         }
+         @if (TempData["ErrorMessage"] != null)
+         {
+                     <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('error','@TempData["ErrorMessage"]');});</text>
+         }
+         @if (TempData["WarningMessage"] != null)
+         {
+                     <text>document.addEventListener('DOMContentLoaded',()=>{showFeedbackModal('warning','@TempData["WarningMessage"]');});</text>
+         }
 
 
     </script>

@@ -1,0 +1,223 @@
+﻿@using Governança_de_TI.Models
+@model ContaBancariaModel
+
+@{
+    Layout = null;
+    bool isEditing = Model != null && Model.IdConta != Guid.Empty;
+    string title = isEditing ? "Editar Conta" : "Nova Conta";
+    string action = isEditing ? "editar" : "criar";
+
+    string nomeValue = isEditing ? Model.NomeConta : "";
+    string bancoValue = isEditing ? Model.Banco : "";
+    string agenciaValue = isEditing ? Model.Agencia : "";
+    string numeroValue = isEditing ? Model.NumeroConta : "";
+    string saldoInicialValue = isEditing ? Model.SaldoInicial.ToString("F2") : "0,00";
+
+    // TRATAMENTO PARA DECIMAL NULLABLE (decimal?)
+    // Se for nulo, exibe 0,00. Se não, exibe o valor formatado.
+    string saldoAtualValue = isEditing && Model.SaldoAtual.HasValue
+                             ? Model.SaldoAtual.Value.ToString("F2")
+                             : "0,00";
+
+    string idValue = isEditing ? Model.IdConta.ToString() : "";
+}
+
+<style>
+    /* Ajustes do Modal para parecer App */
+    .modal-header {
+        border-bottom: none;
+        padding: 24px 24px 10px 24px;
+    }
+
+    .modal-title {
+        font-weight: 800;
+        color: #222;
+        font-size: 1.4rem;
+    }
+
+    .app-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #999;
+        margin-top: 5px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Input estilo "Moderno/App" */
+    .form-control-app, .form-select-app {
+        background-color: #f3f4f6;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 500;
+        width: 100%;
+        outline: none;
+        transition: 0.2s;
+        color: #333;
+    }
+
+        .form-control-app:focus, .form-select-app:focus {
+            background-color: #fff;
+            border-color: #8A2BE2;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+        }
+
+        /* Estilo para campo Readonly (Saldo Atual) */
+        .form-control-app[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            font-weight: 700;
+        }
+
+    .form-label-small {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 4px;
+        margin-left: 4px;
+    }
+
+    /* Botão Salvar Largo e Arredondado */
+    .btn-save-app {
+        background-color: #00C851; /* Verde TechGreen */
+        color: white;
+        border-radius: 50px;
+        padding: 12px;
+        font-weight: 600;
+        width: 100%;
+        border: none;
+        margin-top: 10px;
+        font-size: 1rem;
+        transition: transform 0.1s;
+    }
+
+        .btn-save-app:hover {
+            background-color: #00a844;
+            color: white;
+        }
+
+        .btn-save-app:active {
+            transform: scale(0.98);
+        }
+
+    .btn-close-custom {
+        background-color: #f3f4f6;
+        border-radius: 50%;
+        padding: 10px;
+    }
+</style>
+
+<div class="modal-header">
+    <div class="d-flex flex-column w-100">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h5 class="modal-title">@title</h5>
+                <p class="text-muted small mb-0">Preencha os dados bancários</p>
+            </div>
+            <button type="button" class="btn-close btn-close-custom" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Salvar" asp-controller="Conta" method="post" id="formConta" class="p-4 pt-2">
+    @* Input Hidden gerado via Tag Helper *@
+    @if (isEditing)
+    {
+        <input type="hidden" asp-for="IdConta" />
+    }
+
+    @* Input Hidden para DataCadastro para não perder no Post *@
+    <input type="hidden" asp-for="DataCadastro" />
+
+    <div class="app-label mb-3">Informações Gerais</div>
+
+    <div class="row g-3 mb-2">
+        <div class="col-12 col-md-6">
+            <label asp-for="NomeConta" class="form-label-small">Nome da Conta (Apelido)</label>
+            <input asp-for="NomeConta" class="form-control-app" placeholder="Ex: Nubank Principal" required/>
+            <span asp-validation-for="NomeConta" class="text-danger"></span>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label asp-for="Banco" class="form-label-small">Instituição</label>
+            <input asp-for="Banco" class="form-control-app" placeholder="Ex: Nubank, Itaú..." required />
+            <span asp-validation-for="Banco" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-6">
+            <label asp-for="TipoConta" class="form-label-small">Tipo</label>
+            @* O asp-for seleciona automaticamente o value correto baseado no Model *@
+            <select asp-for="TipoConta" class="form-select-app" required>
+                <option value="1">Corrente</option>
+                <option value="2">Poupança</option>
+                <option value="3">Investimento</option>
+            </select>
+            <span asp-validation-for="TipoConta" class="text-danger"></span>
+        </div>
+        <div class="col-6 col-md-6">
+            <label asp-for="StatusConta" class="form-label-small">Status</label >
+            <select asp-for="StatusConta" class="form-select-app" required>
+                <option value="1">Ativa</option>
+                <option value="2">Inativa</option>
+            </select>
+            <span asp-validation-for="StatusConta" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="app-label mb-3 mt-4">Detalhes Bancários</div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-5 col-md-4">
+            <label asp-for="Agencia" class="form-label-small">Agência</label>
+            <input asp-for="Agencia" class="form-control-app" placeholder="0000" />
+            <span asp-validation-for="Agencia" class="text-danger"></span>
+        </div>
+        <div class="col-7 col-md-8">
+            <label asp-for="NumeroConta" class="form-label-small">Número da Conta</label>
+            <input asp-for="NumeroConta" class="form-control-app" placeholder="00000-0" />
+            <span asp-validation-for="NumeroConta" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="app-label mb-3 mt-4 text-success">Financeiro</div>
+
+    <div class="row g-3">
+        <div class="col-6">
+            <label asp-for="SaldoInicial" class="form-label-small text-muted">Saldo Inicial</label>
+            <input asp-for="SaldoInicial" class="form-control-app fw-bold text-dark" placeholder="0,00" />
+            <small class="text-muted d-block mt-1" style="font-size: 0.65rem;">* Valor de partida.</small>
+        </div>
+
+        <div class="col-6">
+            <label asp-for="SaldoAtual" class="form-label-small text-success">Saldo Atual</label>
+
+            @* Campo visível apenas leitura *@
+            <input type="text"
+                   class="form-control-app fw-bold text-success"
+                   value="@(Model?.SaldoAtual?.ToString("F2") ?? "0,00")"
+                   readonly
+                   title="Calculado automaticamente" />
+
+            @* Campo Hidden para garantir que o valor volte no POST *@
+            <input type="hidden" asp-for="SaldoAtual" />
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <button type="submit" class="btn-save-app shadow-sm">
+            <i class="bi bi-check2-circle me-2"></i> Salvar Conta
+        </button>
+    </div>
+
+</form>
+@* Script necessário para ativar a validação no cliente dentro do Modal *@
+<script>
+    // Reativação da validação Unobtrusive do jQuery após injeção do HTML via AJAX
+    if (window.jQuery && $.validator && $.validator.unobtrusive) {
+        $.validator.unobtrusive.parse('#formConta');
+    }
+</script>
