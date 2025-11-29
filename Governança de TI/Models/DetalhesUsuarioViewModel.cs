@@ -1,4 +1,4 @@
-﻿using Governança_de_TI.Models;
+﻿using Governança_de_TI.Models.Usuario;
 using System.Collections.Generic;
 
 namespace Governança_de_TI.ViewModels

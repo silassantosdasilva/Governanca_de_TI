@@ -1,5 +1,5 @@
 ﻿using Governança_de_TI.Data;
-using Governança_de_TI.Models;
+using Governança_de_TI.Models.TecgreenModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 

@@ -1,5 +1,8 @@
 ﻿@using Governança_de_TI.DTOs
+@using Governança_de_TI.Models
 @using System.Globalization
+@using System.Linq
+@using Governança_de_TI.Models.Financeiro
 @model ExtratoViewModel
 
 @{
@@ -9,369 +12,108 @@
 
 @section Styles {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <style>
-        /* === TEMA PREMIUM MODERN === */
-        :root {
-            --bg-app: #EFF2F7; /* Cinza azulado suave */
-            --card-bg: #FFFFFF;
-            --text-primary: #1e293b;
-            --text-secondary: #64748B;
-            --radius-xl: 24px;
-            --radius-md: 12px;
-            /* Sombras Suaves */
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-            /* Cores */
-            --color-blue: #3B82F6;
-            --color-green: #10B981;
-            --color-red: #EF4444;
-        }
-
-        body {
-            background-color: var(--bg-app);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--text-primary);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* === CARDS FLUTUANTES === */
-        .app-card {
-            background: var(--card-bg);
-            border: none;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-md);
-            height: 100%;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-            .app-card:hover {
-                transform: translateY(-4px);
-                box-shadow: var(--shadow-hover);
-            }
-
-        /* KPI Styles */
-        .kpi-card-content {
-            padding: 1.5rem;
-        }
-
-        .kpi-icon-wrapper {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-        }
-
-        .kpi-blue .kpi-icon-wrapper {
-            background: #DBEAFE;
-            color: var(--color-blue);
-        }
-
-        .kpi-green .kpi-icon-wrapper {
-            background: #D1FAE5;
-            color: var(--color-green);
-        }
-
-        .kpi-red .kpi-icon-wrapper {
-            background: #FEE2E2;
-            color: var(--color-red);
-        }
-
-        .kpi-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .kpi-value {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin: 0.25rem 0;
-            color: var(--text-primary);
-        }
-
-        .kpi-sub {
-            background: #F8FAFC;
-            border-radius: var(--radius-md);
-            padding: 8px 12px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* === BARRA DE FILTROS === */
-        .filter-bar {
-            background: var(--card-bg);
-            padding: 1rem 1.5rem;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 2rem;
-        }
-
-        .btn-nav-custom {
-            background: #F1F5F9;
-            border: none;
-            border-radius: 50px;
-            padding: 8px 20px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            transition: 0.2s;
-        }
-
-            .btn-nav-custom:hover {
-                background: #E2E8F0;
-                color: var(--text-primary);
-            }
-
-            .btn-nav-custom.active {
-                background: var(--text-primary);
-                color: white;
-            }
-
-        /* NOVO: Input de Datas Customizado */
-        .date-picker-group {
-            background: #ffffff;
-            border: 1px solid #E2E8F0;
-            border-radius: 50px;
-            padding: 5px 15px;
-            display: flex;
-            align-items: center;
-            box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.02);
-        }
-
-        .date-input-clean {
-            border: none;
-            background: transparent;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            outline: none;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            width: 130px;
-        }
-
-        /* === LISTA DE TRANSAÇÕES === */
-        .trans-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 24px;
-            border-bottom: 1px solid #F1F5F9;
-            transition: background 0.2s;
-        }
-
-            .trans-item:last-child {
-                border-bottom: none;
-            }
-
-            .trans-item:hover {
-                background-color: #F8FAFC;
-            }
-
-        .icon-box {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            margin-right: 16px;
-        }
-
-            .icon-box.receita {
-                background: #DCFCE7;
-                color: #15803d;
-            }
-
-            .icon-box.despesa {
-                background: #FEE2E2;
-                color: #b91c1c;
-            }
-
-        .badge-pill-modern {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-pago {
-            background: #DCFCE7;
-            color: #166534;
-        }
-
-        .status-pendente {
-            background: #FEE2E2;
-            color: #991B1B;
-        }
-
-        .tag-category {
-            background: #E0F2FE;
-            color: #0369A1;
-        }
-
-        /* === CONTAS E ABAS === */
-        .right-panel-tabs {
-            border-bottom: 2px solid #F1F5F9;
-            margin-bottom: 1.5rem;
-        }
-
-            .right-panel-tabs .nav-link {
-                border: none;
-                background: transparent;
-                color: var(--text-secondary);
-                font-weight: 600;
-                padding-bottom: 12px;
-                margin-bottom: -2px;
-                border-bottom: 3px solid transparent;
-            }
-
-                .right-panel-tabs .nav-link.active {
-                    color: var(--color-blue);
-                    border-bottom-color: var(--color-blue);
-                }
-
-        .bank-row {
-            padding: 16px;
-            border-radius: 16px;
-            background: #F8FAFC;
-            margin-bottom: 12px;
-            border: 1px solid transparent;
-            transition: 0.2s;
-        }
-
-            .bank-row:hover {
-                background: white;
-                border-color: #E2E8F0;
-                box-shadow: var(--shadow-sm);
-            }
-
-        .bank-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 0.9rem;
-            color: white;
-            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.1);
-        }
-    </style>
+    <link href="/css/Extrato.css" rel="stylesheet" />
 }
+<div class="container-fluid px-3 px-md-4 pb-5 pt-3">
 
-<div class="container-fluid px-4 pb-5 pt-3">
-
-    <div class="filter-bar d-flex flex-wrap align-items-center justify-content-between gap-3">
-
-        <form method="get" class="d-flex flex-wrap align-items-center gap-3 flex-grow-1">
-
-            <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1 border">
+    <!-- BARRA DE FILTROS -->
+    <div class="filter-bar">
+        
+        <!-- Formulário -->
+        <form method="get" class="d-flex align-items-center gap-3 filter-form-desktop flex-grow-1" style="max-width: 100%;">
+            
+            <!-- Navegação de Mês -->
+            <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1 border justify-content-between month-nav-container">
                 <button type="submit" name="navegar" value="-1" class="btn btn-sm btn-light rounded-circle"><i class="bi bi-chevron-left"></i></button>
-                <div class="px-3 fw-bold fs-5 text-capitalize text-center" style="min-width: 140px;">
-                    @Model.DataInicio.ToString("MMMM", culture) <span class="text-muted fw-normal fs-6">@Model.DataInicio.Year</span>
+                <div class="px-3 fw-bold fs-6 text-capitalize text-center text-nowrap">
+                    @Model.DataInicio.ToString("MMMM", culture) <span class="text-muted fw-normal">@Model.DataInicio.Year</span>
                 </div>
                 <button type="submit" name="navegar" value="1" class="btn btn-sm btn-light rounded-circle"><i class="bi bi-chevron-right"></i></button>
             </div>
-
-            <div class="d-none d-lg-flex gap-2">
+            
+            <!-- Filtros Rápidos -->
+            <div class="d-none d-md-flex gap-2 flex-shrink-0">
                 <button type="submit" name="periodo" value="hoje" class="btn-nav-custom @(Model.FiltroPeriodo == "hoje" ? "active" : "")">Hoje</button>
                 <button type="submit" name="periodo" value="mes" class="btn-nav-custom @(Model.FiltroPeriodo == "mes" ? "active" : "")">Mês</button>
-                <button type="submit" name="periodo" value="ano" class="btn-nav-custom @(Model.FiltroPeriodo == "ano" ? "active" : "")">Ano</button>
             </div>
 
-            <div class="date-picker-group ms-auto me-auto d-flex">
-                <i class="bi bi-calendar3 text-muted me-2 small"></i>
+            <!-- Seletor de Data -->
+            <div class="date-input-container">
+                <i class="bi bi-calendar3 text-muted me-2 d-none d-sm-inline"></i>
                 <input type="date" name="dataInicio" class="date-input-clean" value="@Model.DataInicio.ToString("yyyy-MM-dd")">
-                <span class="text-muted mx-1 small">até</span>
+                <span class="text-muted mx-2 small">até</span>
                 <input type="date" name="dataFim" class="date-input-clean" value="@Model.DataFim.ToString("yyyy-MM-dd")">
-                <button type="submit" class="btn btn-primary rounded-circle btn-sm ms-2 p-1 px-2 shadow-sm" title="Filtrar">
-                    <i class="bi bi-check2"></i>
-                </button>
+                <button type="submit" class="btn btn-sm text-primary ms-1 p-0 border-0 bg-transparent"><i class="bi bi-search fs-6"></i></button>
             </div>
-        </form>
 
-        <div class="d-flex gap-3">
-            <div class="input-group d-none d-xl-flex" style="width: 250px;">
-                <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" class="form-control border-start-0 rounded-end-pill" placeholder="Buscar...">
-            </div>
-            <button class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" onclick="location.reload()">
-                <i class="bi bi-arrow-clockwise me-2"></i> Atualizar
-            </button>
-        </div>
+        </form>
+        
+        <!-- Botão Atualizar (Ajustado para "Flutuar" à direita no Desktop) -->
+        <button class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm flex-shrink-0 btn-refresh-responsive" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise"></i> <span class="d-none d-md-inline ms-1">Atualizar</span>
+        </button>
+
     </div>
 
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="app-card kpi-blue">
-                <div class="kpi-card-content">
-                    <div class="d-flex justify-content-between">
-                        <div class="kpi-icon-wrapper"><i class="bi bi-wallet2"></i></div>
-                        <i class="bi bi-three-dots text-muted cursor-pointer"></i>
+    <!-- RESTANTE DO LAYOUT (KPIs, LISTA, GRÁFICO) - MANTIDO -->
+    <div class="row g-3 mb-4">
+        <!-- Saldo Anterior -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="app-card">
+                <div class="kpi-card-body">
+                    <div>
+                        <div class="kpi-header"><div class="kpi-icon-square bg-blue-light"><i class="bi bi-wallet2"></i></div></div>
+                        <span class="kpi-label">Saldo Anterior</span>
+                        <div class="kpi-value-big text-dark">@Model.SaldoPeriodoAnterior.ToString("C", culture)</div>
                     </div>
-                    <div class="kpi-label">Saldo Anterior</div>
-                    <div class="kpi-value">@Model.SaldoPeriodoAnterior.ToString("C", culture)</div>
-                    <div class="kpi-sub mt-3">
-                        <span><i class="bi bi-calendar me-1"></i> Até ontem</span>
+                    <div class="kpi-footer-bar"><i class="bi bi-calendar"></i> Até ontem</div>
+                </div>
+            </div>
+        </div>
+        <!-- Entradas -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="app-card">
+                <div class="kpi-card-body">
+                    <div>
+                        <div class="kpi-header"><div class="kpi-icon-square bg-green-light"><i class="bi bi-arrow-up-right"></i></div></div>
+                        <span class="kpi-label">Entradas</span>
+                        <div class="kpi-value-big text-green-modern">@Model.ReceitasPeriodo.ToString("C", culture)</div>
+                    </div>
+                    <div class="kpi-footer-row">
+                        <span class="kpi-status-text text-green-modern"><i class="bi bi-check-circle-fill"></i> Confirmado</span>
+                        <span class="kpi-status-value">@Model.ReceitasPeriodo.ToString("C")</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="app-card kpi-green">
-                <div class="kpi-card-content">
-                    <div class="d-flex justify-content-between"><div class="kpi-icon-wrapper"><i class="bi bi-arrow-up-right"></i></div></div>
-                    <div class="kpi-label">Entradas</div>
-                    <div class="kpi-value text-success">@Model.ReceitasPeriodo.ToString("C", culture)</div>
-                    <div class="kpi-sub mt-3">
-                        <span class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i> Confirmado</span>
-                        <span class="fw-bold text-dark">@Model.ReceitasPeriodo.ToString("C")</span>
+        <!-- Saídas -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="app-card">
+                <div class="kpi-card-body">
+                    <div>
+                        <div class="kpi-header"><div class="kpi-icon-square bg-red-light"><i class="bi bi-arrow-down-left"></i></div></div>
+                        <span class="kpi-label">Saídas</span>
+                        <div class="kpi-value-big text-red-modern">@Model.DespesasPeriodo.ToString("C", culture)</div>
+                    </div>
+                    <div class="kpi-footer-row">
+                        <span class="kpi-status-text text-red-modern"><i class="bi bi-exclamation-circle-fill"></i> A Pagar</span>
+                        <span class="kpi-status-value">@Model.DespesasPeriodo.ToString("C")</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="app-card kpi-red">
-                <div class="kpi-card-content">
-                    <div class="d-flex justify-content-between"><div class="kpi-icon-wrapper"><i class="bi bi-arrow-down-left"></i></div></div>
-                    <div class="kpi-label">Saídas</div>
-                    <div class="kpi-value text-danger">@Model.DespesasPeriodo.ToString("C", culture)</div>
-                    <div class="kpi-sub mt-3">
-                        <span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i> A Pagar</span>
-                        <span class="fw-bold text-dark">@Model.DespesasPeriodo.ToString("C")</span>
+        <!-- Previsto -->
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="app-card">
+                <div class="kpi-card-body">
+                    <div>
+                        <div class="kpi-header"><div class="kpi-icon-square bg-blue-light"><i class="bi bi-piggy-bank"></i></div></div>
+                        <span class="kpi-label">Saldo Previsto</span>
+                        <div class="kpi-value-big text-blue-modern">@Model.SaldoPrevisto.ToString("C", culture)</div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="app-card kpi-blue">
-                <div class="kpi-card-content">
-                    <div class="d-flex justify-content-between">
-                        <div class="kpi-icon-wrapper" style="background: #eff6ff; color: #2563eb;"><i class="bi bi-piggy-bank"></i></div>
-                    </div>
-                    <div class="kpi-label">Saldo Previsto</div>
-                    <div class="kpi-value" style="color: #2563eb;">@Model.SaldoPrevisto.ToString("C", culture)</div>
-                    <div class="kpi-sub mt-3">
-                        <span><i class="bi bi-graph-up-arrow me-1"></i> Projetado</span>
-                        <span class="fw-bold text-dark">@Model.SaldoPrevisto.ToString("C")</span>
+                    <div class="kpi-footer-row">
+                        <span class="kpi-status-text text-blue-modern"><i class="bi bi-graph-up-arrow"></i> Projetado</span>
+                        <span class="kpi-status-value">@Model.SaldoPrevisto.ToString("C")</span>
                     </div>
                 </div>
             </div>
@@ -379,165 +121,134 @@
     </div>
 
     <div class="row g-4">
-
+        <!-- LISTA DE TRANSAÇÕES -->
         <div class="col-12 col-xl-8">
-            <div class="app-card" style="min-height: 600px;">
-
-                <div class="d-flex justify-content-between align-items-center p-4 border-bottom border-light">
-                    <div>
-                        <h5 class="fw-bold mb-1">Transações Recentes</h5>
-                        <p class="text-muted small mb-0">Gerencie suas entradas e saídas</p>
-                    </div>
+            <div class="app-card">
+                <div class="d-flex justify-content-between align-items-center p-3 p-md-4 border-bottom">
+                    <h5 class="fw-bold mb-0 fs-6 fs-md-5">Transações</h5>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-outline-success rounded-pill fw-bold btn-sm px-3" onclick="abrirModalLancamento(2)">
-                            <i class="bi bi-plus-lg me-1"></i> Receita
-                        </button>
-                        <button class="btn btn-outline-danger rounded-pill fw-bold btn-sm px-3" onclick="abrirModalLancamento(1)">
-                            <i class="bi bi-dash-lg me-1"></i> Despesa
-                        </button>
+                        <button class="btn btn-outline-success rounded-pill fw-bold btn-sm px-3 btn-sm-mobile" onclick="abrirModalLancamento(2)">+ <span class="d-none d-md-inline">Receita</span></button>
+                        <button class="btn btn-outline-danger rounded-pill fw-bold btn-sm px-3 btn-sm-mobile" onclick="abrirModalLancamento(1)">- <span class="d-none d-md-inline">Despesa</span></button>
                     </div>
                 </div>
 
-                <div class="transaction-list">
-                    @if (Model.Transacoes != null && Model.Transacoes.Any())
+                <div class="transaction-list-wrapper custom-scroll">
+                    @if (Model.Parcelas != null && Model.Parcelas.Any())
                     {
-                        foreach (var item in Model.Transacoes)
+                        foreach (var item in Model.Parcelas)
                         {
                             var pai = item.LancamentoPai;
                             var isReceita = pai.TipoLancamento == 2;
                             var colorClass = isReceita ? "text-success" : "text-danger";
+                            var bgIcon = isReceita ? "bg-green-soft" : "bg-red-soft";
                             var iconClass = isReceita ? "bi-arrow-up-right" : "bi-arrow-down-left";
-                            var boxClass = isReceita ? "receita" : "despesa";
-                            var statusText = item.Status == 2 ? "Pago" : "Pendente";
-                            var statusBadge = item.Status == 2 ? "status-pago" : "status-pendente";
-                            var descricao = string.IsNullOrEmpty(pai.Documento) ? (string.IsNullOrEmpty(pai.Observacao) ? "Sem Descrição" : pai.Observacao) : pai.Documento;
-                            var categoria = pai.Tipo?.Nome ?? "Geral";
+                            var descricao = string.IsNullOrEmpty(pai.Documento) ? "Sem Descrição" : pai.Documento;
+                            var nomeCategoria = pai.Tipo?.Nome ?? "Geral";
+                            var nomeSub = pai.SubCategoria?.Nome;
+                            var textoCategoriaCompleta = string.IsNullOrEmpty(nomeSub) ? nomeCategoria : $"{nomeCategoria}"; 
+                            var nomeConta = pai.Conta?.NomeConta ?? "Conta não def.";
+                            var formaPagto = string.IsNullOrEmpty(pai.FormaPagamento) ? "N/A" : pai.FormaPagamento;
+                            var textoCondicao = "À Vista";
+                            var badgeCondicaoClass = "badge-blue";
+                            var Pessoa = pai.Pessoa?.Nome ?? "N/A";
+                            if (pai.Condicao == 2) {
+                                textoCondicao = $"{item.NumeroParcela}/{pai.NumeroParcelas}";
+                                badgeCondicaoClass = "badge-purple";
+                            }
+                            var isPago = item.Status == 2;
+                            var statusText = isPago ? "PAGO" : "PENDENTE";
+                            var statusClass = isPago ? "status-paid" : "status-pending";
 
-                            <div class="trans-item">
-                                <div class="d-flex align-items-center flex-grow-1">
-                                    <div class="icon-box @boxClass"><i class="bi @iconClass"></i></div>
-                                    <div class="ms-2">
-                                        <div class="fw-bold text-dark mb-1">@descricao</div>
-                                        <div class="d-flex gap-2">
-                                            <span class="badge-pill-modern tag-category">@categoria</span>
-                                            <span class="badge-pill-modern @statusBadge">@statusText</span>
+                            <div class="trans-item-modern">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box-lg @bgIcon me-2 me-md-3">
+                                        <i class="bi @iconClass"></i>
+                                    </div>
+                                    <div class="flex-grow-1" style="min-width: 0;">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="fw-bold text-dark mb-0 fs-6 text-truncate trans-title" style="max-width: 60%;">@descricao</h6>
+                                            <span class="fw-bolder fs-6 fs-md-5 @colorClass trans-value">@item.ValorParcela.ToString("C", culture)</span>
+                                        </div>
+                                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                            <div class="meta-text text-truncate" title="Categoria"><i class="bi bi-tag-fill text-secondary"></i> @textoCategoriaCompleta</div>
+                                            <div class="meta-text d-none d-md-flex" title="Conta"><i class="bi bi-wallet-fill text-secondary"></i> @nomeConta</div>
+                                        </div>
+                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                            <span class="badge-detail badge-gray d-none d-sm-inline-flex">@formaPagto</span>
+                                            @if(pai.Condicao == 2) {
+                                                <span class="badge-detail @badgeCondicaoClass">@textoCondicao</span>
+                                            }
+                                            <span class="badge-detail badge-orange">@item.DataVencimento.ToString("dd/MM")</span>
+                                            <span class="status-pill @statusClass ms-auto" style="font-size: 0.65rem;">@statusText</span>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="text-end ms-4">
-                                    <div class="fw-bold @colorClass fs-5">@item.ValorParcela.ToString("C", culture)</div>
-                                    <div class="text-muted small">@item.DataVencimento.ToString("dd MMM", culture)</div>
-                                </div>
-                                <div class="ms-4">
-                                    <button class="btn btn-link text-muted p-0"><i class="bi bi-three-dots-vertical"></i></button>
+                                    <div class="dropdown ms-2">
+                                        <button class="btn btn-link text-secondary p-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg">
+                                            <li><button class="dropdown-item" onclick="abrirModalLancamento(0, '@pai.IdLancamento')"><i class="bi bi-pencil me-2"></i> Editar</button></li>
+                                            <li><button class="dropdown-item text-danger" onclick="excluirLancamento('@pai.IdLancamento')"><i class="bi bi-trash me-2"></i> Excluir</button></li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         }
                     }
                     else
                     {
-                        <div class="text-center py-5 mt-5">
-                            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
-                                <i class="bi bi-inbox fs-1 text-muted opacity-50"></i>
-                            </div>
-                            <h6 class="fw-bold text-muted">Tudo limpo por aqui!</h6>
-                            <p class="text-muted small">Nenhuma transação encontrada para este período.</p>
-                        </div>
+                        <div class="text-center py-5"><i class="bi bi-inbox fs-1 text-muted opacity-25"></i><p class="mt-3 text-muted fw-bold">Nada encontrado</p></div>
                     }
                 </div>
             </div>
         </div>
 
+        <!-- PAINEL DIREITO -->
         <div class="col-12 col-xl-4">
-            <div class="app-card p-4">
-
-                <ul class="nav right-panel-tabs mb-4" id="rightPanelTab" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active" id="graficos-tab" data-bs-toggle="tab" data-bs-target="#graficos-pane" type="button">Análise</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" id="contas-tab" data-bs-toggle="tab" data-bs-target="#contas-pane" type="button">Minhas Contas</button>
-                    </li>
+            <div class="app-card p-4 h-100">
+                 <ul class="nav right-panel-tabs mb-4" id="rightPanelTab" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" id="graficos-tab" data-bs-toggle="tab" data-bs-target="#graficos-pane" type="button">Análise</button></li>
+                    <li class="nav-item"><button class="nav-link" id="contas-tab" data-bs-toggle="tab" data-bs-target="#contas-pane" type="button">Contas</button></li>
                 </ul>
-
                 <div class="tab-content">
-
+                     <!-- Gráficos -->
                     <div class="tab-pane fade show active" id="graficos-pane">
-                        <div class="d-flex justify-content-center mb-4 mt-2">
-                            <div style="height: 240px; width: 240px; position: relative;">
-                                <canvas id="doughnutChart"></canvas>
-                                <div class="position-absolute top-50 start-50 translate-middle text-center" style="pointer-events: none;">
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Total Saídas</small>
-                                    <span class="fw-bolder fs-5 text-dark">@Model.DespesasPeriodo.ToString("C0", culture)</span>
-                                </div>
+                        <div class="chart-toggle">
+                            <button class="chart-toggle-btn active expense" onclick="toggleChartData('expense')">Saídas</button>
+                            <button class="chart-toggle-btn income" onclick="toggleChartData('income')">Entradas</button>
+                        </div>
+                        <div class="position-relative mx-auto mb-4" style="height: 200px; width: 200px;">
+                            <canvas id="doughnutChart"></canvas>
+                            <div class="position-absolute top-50 start-50 translate-middle text-center" style="pointer-events: none;">
+                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem;" id="chartLabel">Saídas</small>
+                                <span class="fw-bolder fs-6 text-dark" id="chartTotal">@Model.DespesasPeriodo.ToString("C0", culture)</span>
                             </div>
                         </div>
-
-                        <h6 class="fw-bold mb-3 small text-uppercase text-muted ls-1">Por Categoria</h6>
-                        <div class="d-flex flex-column gap-3">
-                            @if (Model.DespesasPorCategoria != null && Model.DespesasPorCategoria.Any())
-                            {
-                                int i = 0;
-                                string[] colors = new[] { "#3B82F6", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6" };
-                                foreach (var cat in Model.DespesasPorCategoria.Take(5))
-                                {
-                                    var pct = Model.DespesasPeriodo > 0 ? (cat.Value / Model.DespesasPeriodo) * 100 : 0;
-                                    var color = colors[i % colors.Length];
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div style="width: 10px; height: 10px; border-radius: 50%; background-color: @color;"></div>
-                                            <span class="fw-semibold text-dark small">@cat.Key</span>
-                                        </div>
-                                        <div class="text-end">
-                                            <div class="fw-bold small">@cat.Value.ToString("C")</div>
-                                            <div class="text-muted" style="font-size: 0.7rem;">@pct.ToString("F0")%</div>
-                                        </div>
-                                    </div>
-                                    i++;
-                                }
-                            }
-                        </div>
+                        <div class="custom-scroll pe-2" style="max-height: 280px;" id="categoryListContainer"></div>
                     </div>
-
+                    <!-- Contas -->
                     <div class="tab-pane fade" id="contas-pane">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <span class="text-muted small fw-bold text-uppercase">Saldo Disponível</span>
-                            <span class="fw-bold text-success fs-5">@Model.SaldoPrevisto.ToString("C")</span>
-                        </div>
-
-                        <div class="accounts-list">
-                            @{
-                                var contas = ViewBag.Contas as List<ContaBancariaModel>;
-                            }
+                        <div class="accounts-list custom-scroll" style="max-height: 400px;">
+                            @{ var contas = ViewBag.Contas as List<ContaBancariaModel>; }
                             @if (contas != null && contas.Any())
                             {
                                 foreach (var conta in contas)
                                 {
-                                    var bgBank = conta.Banco.ToLower().Contains("nubank") ? "#820AD1" :
-                                    (conta.Banco.ToLower().Contains("ita") ? "#ec7000" : "#64748B");
+                                    var bgBank = conta.Banco.ToLower().Contains("nubank") ? "#820AD1" : "#64748B";
                                     var iniciais = conta.Banco.Length >= 2 ? conta.Banco.Substring(0, 2).ToUpper() : "BK";
-
                                     <div class="bank-row d-flex align-items-center justify-content-between">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="bank-icon" style="background-color: @bgBank">@iniciais</div>
-                                            <div>
-                                                <div class="fw-bold text-dark lh-1">@conta.Banco</div>
-                                                <small class="text-muted">@conta.NomeConta</small>
-                                            </div>
+                                            <div><div class="fw-bold text-dark lh-1">@conta.Banco</div><small class="text-muted">@conta.NomeConta</small></div>
                                         </div>
                                         <div class="fw-bold text-dark">@conta.SaldoAtual.GetValueOrDefault().ToString("C")</div>
                                     </div>
                                 }
                             }
-                            else
-                            {
-                                <p class="text-center text-muted small">Nenhuma conta cadastrada.</p>
-                            }
                         </div>
-
-                        <a href="/Contas/Consulta" class="btn btn-light w-100 fw-bold text-primary mt-3 rounded-pill py-2 border shadow-sm">
-                            <i class="bi bi-gear-wide-connected me-2"></i> Gerenciar Contas
-                        </a>
+                        <div class="mt-3">
+                            <a href="/Contas/Consulta" class="btn btn-light w-100 fw-bold text-primary rounded-pill py-2 border shadow-sm">
+                                <i class="bi bi-gear-wide-connected me-2"></i> Gerenciar Contas
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -545,6 +256,7 @@
     </div>
 </div>
 
+<!-- Modal -->
 <div class="modal fade" id="LancamentoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 rounded-4" id="LancamentoModalContent"></div>
@@ -555,31 +267,172 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const ctx = document.getElementById('doughnutChart').getContext('2d');
-        const modernColors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6'];
 
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: dataValues,
-                    backgroundColor: modernColors,
-                    borderWidth: 0,
-                    hoverOffset: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '80%',
-                plugins: { legend: { display: false }, tooltip: { enabled: true } }
-            }
-        });
+        // Preparar dados (Serializados do C#)
+        // Assumindo que seu model tem ReceitasPorCategoria (se não tiver, o gráfico de entradas ficará vazio mas não quebrará)
+        // Usei a safe navigation ?. e nullish coalescing ?? para evitar erros.
+        const expenseData = {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DespesasPorCategoria?.Keys.ToList() ?? new List<string>())),
+            values: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DespesasPorCategoria?.Values.ToList() ?? new List<decimal>())),
+            total: '@Model.DespesasPeriodo.ToString("C0", culture)',
+            totalLabel: 'Saídas'
+        };
 
-        function abrirModalLancamento(tipo = 1) {
-             $('#LancamentoModalContent').html('<div class="p-5 text-center"><div class="spinner-border text-primary"></div></div>');
-             $('#LancamentoModal').modal('show');
-             $('#LancamentoModalContent').load(`/Lancamentos/CriarPartial?tipo=${tipo}`);
+        // NOTA: Os dados de ReceitasPorCategoria no seu código C# estão no Model, não no ViewBag, mas para a View funcionar com ambos os casos, mantive a serialização do Model.
+        const incomeData = {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ReceitasPorCategoria?.Keys.ToList() ?? new List<string>())),
+            values: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ReceitasPorCategoria?.Values.ToList() ?? new List<decimal>())),
+            total: '@Model.ReceitasPeriodo.ToString("C0", culture)',
+            totalLabel: 'Entradas'
+        };
+
+        const chartColors = ['#3B82F6', '#F59E0B', '#10B981', '#EF4444', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6', '#F97316', '#06B6D4'];
+
+        let chartInstance;
+
+        function initChart(dataObj) {
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: dataObj.labels,
+                    datasets: [{
+                        data: dataObj.values,
+                        backgroundColor: chartColors,
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '82%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Atualiza texto central
+            document.getElementById('chartLabel').innerText = dataObj.totalLabel;
+            document.getElementById('chartTotal').innerText = dataObj.total;
+
+            // Atualiza Lista
+            renderCategoryList(dataObj);
         }
+
+        function renderCategoryList(dataObj) {
+            const container = document.getElementById('categoryListContainer');
+            container.innerHTML = '';
+
+            if(dataObj.labels.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted small py-4">Sem dados para exibir</div>';
+                return;
+            }
+
+            let html = '';
+            dataObj.labels.forEach((label, index) => {
+                const val = dataObj.values[index];
+                // Calcula porcentagem aproximada
+                const totalNum = dataObj.values.reduce((a, b) => a + b, 0);
+                const pct = totalNum > 0 ? (val / totalNum * 100).toFixed(1) : 0;
+                const color = chartColors[index % chartColors.length];
+
+                // Formata moeda (básico)
+                const money = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                html += `
+                    <div class="category-list-item">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 12px; height: 12px; border-radius: 4px; background-color: ${color};"></div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">${label}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">${pct}%</div>
+                            </div>
+                        </div>
+                        <span class="fw-bold text-secondary">${money}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = `<div class="d-flex flex-column gap-2">${html}</div>`;
+        }
+
+        // Função de Toggle
+        window.toggleChartData = function(type) {
+            const btns = document.querySelectorAll('.chart-toggle-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if(type === 'expense') {
+                document.querySelector('.chart-toggle-btn.expense').classList.add('active');
+                initChart(expenseData);
+            } else {
+                document.querySelector('.chart-toggle-btn.income').classList.add('active');
+                initChart(incomeData);
+            }
+        }
+
+        // Inicializa com Despesas
+        initChart(expenseData);
+        renderCategoryList(expenseData);
+        function abrirModalLancamento(tipo, id = null) {
+                // Mostra spinner de carregamento
+                $('#LancamentoModalContent').html('<div class="p-5 text-center"><div class="spinner-border text-primary"></div></div>');
+                $('#LancamentoModal').modal('show');
+
+                // Monta a URL correta para a Controller
+                // Ex: /Lancamentos/CriarPartial?tipo=1&id=GUID-AQUI
+                let url = `/Lancamentos/CriarPartial?tipo=${tipo}`;
+
+                // Se tiver ID, adiciona na URL (Modo Edição)
+                if (id) {
+                    url += `&id=${id}`;
+                }
+
+                // Carrega o conteúdo via AJAX
+                $('#LancamentoModalContent').load(url, function(response, status, xhr) {
+                    if (status == "error") {
+                        $('#LancamentoModalContent').html('<div class="p-4 text-center text-danger">Erro ao carregar formulário.</div>');
+                    }
+                });
+            }
+
+                   // Função para Excluir (Cancelamento)
+        function excluirLancamento(id) {
+            if(confirm("Tem certeza que deseja excluir este lançamento? Esta ação irá estornar o saldo se houver pagamentos.")) {
+                $.ajax({
+                    url: `/api/financeiro/lancamentos/${id}/cancelar`,
+                    type: 'PATCH',
+                    success: function(res) {
+                        if(res.success) {
+                            location.reload();
+                        } else {
+                            alert("Erro: " + res.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        let msg = "Erro desconhecido. (Código: " + xhr.status + ").";
+
+                        // --- CORREÇÃO DE TRATAMENTO DE ERRO AQUI ---
+                        if (xhr.responseText) {
+                            try {
+                                // Tenta analisar o texto da resposta
+                                let res = JSON.parse(xhr.responseText);
+                                msg = res.message || `Erro do Servidor (Status ${xhr.status})`;
+                            } catch (e) {
+                                // Se falhar a análise JSON (Content-Length: 0 ou malformado)
+                                msg = "Falha de comunicação ou Lançamento já cancelado/inconsistente.";
+                            }
+                        } else if (xhr.status == 400) {
+                             // Se o corpo estiver vazio, mas sabemos que 400 é um erro de regra de negócio (já cancelado)
+                             msg = "Requisição inválida. O lançamento pode já estar cancelado ou possui dados inconsistentes.";
+                        }
+                        // --- FIM DA CORREÇÃO ---
+
+                        alert(msg);
+                    }
+                });
+            }
+        }
+
+        window.carregarLancamentos = function() { location.reload(); }
     </script>
 }

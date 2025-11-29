@@ -1,11 +1,12 @@
-﻿@model (Governança_de_TI.Models.DashboardWidgetModel widget, object dados)
+﻿@using Governança_de_TI.Models.TecgreenModels
+@model (DashboardWidgetModel widget, object dados)
 @{
     var tipo = Model.widget.TipoVisualizacao;
 }
 
 @if (tipo == "Total")
 {
-    var valor = (Model.dados as Governança_de_TI.Models.DashboardWidgetModel)?.Resultado
+    var valor = (Model.dados as DashboardWidgetModel)?.Resultado
               ?? (Model.dados as dynamic)?.Valor
               ?? 0;
     <div class="card h-100 border-0 shadow-sm text-center p-4">

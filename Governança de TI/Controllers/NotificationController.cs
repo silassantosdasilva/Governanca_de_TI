@@ -1,5 +1,5 @@
 ﻿using Governança_de_TI.Data;
-using Governança_de_TI.Models;
+using Governança_de_TI.Models.Gamificacao;
 using Governança_de_TI.ViewModels; // Garanta que este namespace está correto
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -58,11 +58,11 @@ namespace Governança_de_TI.Controllers
                                     .AsNoTracking()
                                     .FirstOrDefaultAsync(g => g.UsuarioId == usuarioId);
 
-            if (gamificacao == null)
-            {
-                // Especifica que o modelo é do namespace Models
-                gamificacao = new Models.GamificacaoModel { Pontos = 0, Nivel = "Iniciante" };
-            }
+            //if (gamificacao == null)
+            //{
+            //    // Especifica que o modelo é do namespace Models
+            //    gamificacao = new Models.GamificacaoModel { Pontos = 0, Nivel = "Iniciante" };
+            //}
 
             // Lógica de cálculo
             string icone = "🌱"; int pontosProximoNivel = 100; int pontosNivelAtual = 0; string mensagem = "Faltam 100 pontos!";

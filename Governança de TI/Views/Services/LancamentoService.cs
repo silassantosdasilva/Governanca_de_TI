@@ -1,6 +1,5 @@
 ﻿// Services/LancamentoService.cs - REESCRITO PARA ACESSAR O CONTEXTO DIRETAMENTE
 
-using Governança_de_TI.DTOs;
 using Governança_de_TI.Services; // IAuditService
 using Governança_de_TI.Data; // ApplicationDbContext
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Governança_de_TI.Models.Financeiro;
+using Governança_de_TI.DTOs.Financeiro;
 
 // NOTE: O enum TipoOperacao foi movido para o namespace Global ou para a classe Auxiliar.
 public enum TipoOperacao { Credito, Debito }

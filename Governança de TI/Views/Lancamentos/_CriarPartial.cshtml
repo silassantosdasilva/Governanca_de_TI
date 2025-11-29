@@ -1,21 +1,20 @@
 ﻿@using Governança_de_TI.DTOs
+@using Governança_de_TI.DTOs.Financeiro
 @model LancamentoDTO
 
 @{
     Layout = null;
-    // Define se é Receita (2) ou Despesa (1)
     bool isReceita = Model.TipoLancamento == 2;
     string tipoTexto = isReceita ? "Receita" : "Despesa";
-    string corTema = isReceita ? "success" : "danger"; // Verde ou Vermelho
+    string corTema = isReceita ? "success" : "danger";
     string iconeTitulo = isReceita ? "bi-graph-up-arrow" : "bi-graph-down-arrow";
 }
 
 <style>
-    /* === Estilo Visual App (Baseado nas Imagens) === */
+    /* === Estilos do App === */
     .modal-content-app {
         border-radius: 24px;
         border: none;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
     }
 
     .modal-header-app {
@@ -61,7 +60,11 @@
         background-color: #8B5CF6;
     }
 
-    /* Inputs Grandes e Arredondados */
+    .dot-blue {
+        background-color: #3B82F6;
+    }
+
+    /* Inputs */
     .form-control-app, .form-select-app {
         background-color: #fff;
         border: 1px solid #e5e7eb;
@@ -69,7 +72,6 @@
         padding: 14px 16px;
         font-size: 1rem;
         color: #374151;
-        transition: all 0.2s;
         width: 100%;
     }
 
@@ -93,7 +95,7 @@
         margin-top: 4px;
     }
 
-    /* Card de Toggle (Pago/Não Pago) */
+    /* Status Card */
     .status-card {
         border: 1px solid #e5e7eb;
         border-radius: 16px;
@@ -103,11 +105,10 @@
         align-items: center;
         justify-content: space-between;
         cursor: pointer;
-        transition: all 0.2s;
+        user-select: none;
     }
 
         .status-card:hover {
-            border-color: #d1d5db;
             background-color: #f9fafb;
         }
 
@@ -116,11 +117,13 @@
             background-color: #f5f3ff;
         }
 
+    /* Switch */
     .switch-app {
         position: relative;
         display: inline-block;
         width: 48px;
         height: 26px;
+        margin-bottom: 0;
     }
 
         .switch-app input {
@@ -129,6 +132,7 @@
             height: 0;
         }
 
+    /* Slider Padrão (Sem marcar - Pendente) = Vermelho */
     .slider {
         position: absolute;
         cursor: pointer;
@@ -136,7 +140,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #ccc;
+        background-color: #EF4444;
         transition: .4s;
         border-radius: 34px;
     }
@@ -153,15 +157,16 @@
             border-radius: 50%;
         }
 
+    /* Slider Marcado (Pago) = Verde */
     input:checked + .slider {
-        background-color: #EF4444;
+        background-color: #10B981;
     }
-        /* Vermelho para "Não Recebido" */
+
         input:checked + .slider:before {
             transform: translateX(22px);
         }
 
-    /* Botões de Ação */
+    /* Botões */
     .btn-save-big {
         background-color: @(isReceita ? "#10B981" : "#EF4444");
         color: white;
@@ -172,16 +177,11 @@
         font-weight: 700;
         font-size: 1rem;
         margin-top: 20px;
-        transition: transform 0.1s;
     }
 
         .btn-save-big:hover {
             opacity: 0.9;
             color: white;
-        }
-
-        .btn-save-big:active {
-            transform: scale(0.98);
         }
 
     .btn-cancel {
@@ -193,6 +193,61 @@
         border-radius: 12px;
         font-weight: 600;
         margin-top: 12px;
+    }
+
+    /* Botão ADD Pequeno */
+    .btn-add-mini {
+        width: 50px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: var(--tg-primary, #8A2BE2);
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+    }
+
+        .btn-add-mini:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+    /* Scroll Customizado */
+    .scroll-container {
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden;
+        padding-right: 10px;
+        padding-bottom: 10px;
+        margin-right: -5px;
+    }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+            .scroll-container::-webkit-scrollbar-thumb:hover {
+                background: #a8a8a8;
+            }
+
+    /* Centralização dos Modais Internos */
+    .overlay-center {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 </style>
 
@@ -207,115 +262,333 @@
 </div>
 
 <form id="formLancamento" class="p-4 pt-0">
+    <!-- O Tipo (Receita/Despesa) é importante para salvar a categoria corretamente -->
+    <input type="hidden" name="TipoLancamento" value="@(isReceita ? 2 : 1)" />
 
-    <input type="hidden" asp-for="TipoLancamento" value="@(isReceita ? 2 : 1)" />
+    <div class="scroll-container">
+        <!-- SEÇÃO 1: BÁSICO -->
+        <div class="section-label mt-2"><span class="section-dot dot-green"></span> Informações Básicas</div>
 
-    <div class="section-label"><span class="section-dot dot-green"></span> Informações Básicas</div>
-
-    <div class="mb-3">
-        <label asp-for="Valor" class="form-label-app">Valor</label>
-        <input type="number" step="0.01" asp-for="Valor" class="form-control-app" placeholder="Digite o valor (Ex: 150,00)" required />
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Documento" class="form-label-app">Descrição</label>
-        <input type="text" asp-for="Documento" class="form-control-app" placeholder="Ex: Compra no supermercado" required />
-    </div>
-
-    <div class="row g-3 mb-3">
-        <div class="col-md-6">
-            <label asp-for="IdTipo" class="form-label-app">Categoria</label>
-            <select asp-for="IdTipo" class="form-select-app" asp-items="ViewBag.Categorias">
-                <option value="">Escolha uma categoria</option>
-            </select>
+        <div class="mb-3">
+            <label asp-for="Valor" class="form-label-app">Valor Total</label>
+            <input type="number" step="0.01" asp-for="Valor" class="form-control-app" placeholder="0,00" required />
         </div>
-        <div class="col-md-6">
-            <label class="form-label-app">Subcategoria</label>
-            <select class="form-select-app" disabled>
-                <option>Selecione uma categoria primeiro</option>
-            </select>
+
+        <div class="mb-3">
+            <label asp-for="Documento" class="form-label-app">Descrição</label>
+            <input type="text" asp-for="Documento" class="form-control-app" placeholder="Ex: Supermercado" required />
         </div>
-    </div>
 
-    <div class="section-label"><span class="section-dot dot-purple"></span> Configurações de Transação</div>
-
-    <div class="status-card" onclick="document.getElementById('chkStatus').click()">
-        <div>
-            <div class="fw-bold text-dark" id="statusLabel">@(isReceita ? "Recebida" : "Paga")</div>
-            <div class="small text-muted">Status do pagamento/recebimento</div>
+        <!-- CATEGORIA E SUBCATEGORIA (COM BOTÕES +) -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="IdTipo" class="form-label-app">Categoria</label>
+                <div class="d-flex gap-2">
+                    <select asp-for="IdTipo" class="form-select-app" asp-items="ViewBag.Categorias" onchange="carregarSubcategorias(this.value)">
+                        <option value="">Selecione...</option>
+                    </select>
+                    <button type="button" class="btn-add-mini" onclick="abrirModalCategoria()" title="Nova Categoria">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-app">Subcategoria</label>
+                <div class="d-flex gap-2">
+                    <select id="IdSubcategoria" name="IdSubcategoria" class="form-select-app" disabled>
+                        <option value="">Selecione a categoria...</option>
+                    </select>
+                    <button type="button" class="btn-add-mini" onclick="abrirModalSubcategoria()" title="Nova Subcategoria">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <label class="switch-app">
-            <input type="checkbox" id="chkStatus" onchange="toggleStatus(this)">
-            <span class="slider"></span>
-        </label>
-        <input type="hidden" asp-for="Status" id="inputStatus" value="2" />
-    </div>
 
-    <div class="mb-3">
-        <label asp-for="DataFluxo" class="form-label-app">Data de Vencimento</label>
-        <div class="position-relative">
+        <!-- SEÇÃO 2: PAGAMENTO -->
+        <div class="section-label"><span class="section-dot dot-blue"></span> Pagamento</div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label-app">Forma</label>
+                <select name="FormaPagamento" class="form-select-app">
+                    <option value="PIX">PIX</option>
+                    <option value="Boleto">Boleto</option>
+                    <option value="CartaoCredito">Cartão Crédito</option>
+                    <option value="CartaoDebito">Cartão Débito</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="TED">TED</option>
+                    <option value="Cheque">Cheque</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label-app">Condição</label>
+                <select id="condicaoPagamento" name="CondicaoPagamento" class="form-select-app" onchange="toggleParcelas(this)">
+                    <option value="Avista">À Vista</option>
+                    <option value="Parcelado">Parcelado</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- ÁREA DE PARCELAMENTO (Layout corrigido) -->
+        <div id="areaParcelamento" class="mb-3 bg-light p-3 rounded-4 border" style="display:none;">
+            <div class="row g-3">
+                <div class="col-6">
+                    <label class="form-label-app small">Parcelas</label>
+                    <input type="number" name="QtdParcelas" class="form-control-app" placeholder="Ex: 12" min="2">
+                </div>
+                <div class="col-6">
+                    <label class="form-label-app small">Intervalo (Dias)</label>
+                    <input type="number" name="FrequenciaDias" class="form-control-app" placeholder="30" value="30">
+                </div>
+            </div>
+        </div>
+
+        <!-- SEÇÃO 3: CONFIGURAÇÕES -->
+        <div class="section-label"><span class="section-dot dot-purple"></span> Configurações</div>
+
+        <!-- SWITCH DE STATUS (Lógica invertida: Check=Pago, Uncheck=Pendente) -->
+        <div class="status-card" onclick="if(!event.target.closest('.switch-app')) document.getElementById('chkStatus').click()">
+            <div>
+                <div class="fw-bold text-success" id="statusLabel">@(isReceita ? "Recebida (Efetivada)" : "Paga (Efetivada)")</div>
+                <div class="small text-muted">A transação já foi efetivada?</div>
+            </div>
+            <label class="switch-app">
+                <input type="checkbox" id="chkStatus" checked onchange="toggleStatus(this)">
+                <span class="slider"></span>
+            </label>
+            <input type="hidden" asp-for="Status" id="inputStatus" value="2" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DataFluxo" class="form-label-app">Vencimento</label>
             <input type="date" asp-for="DataFluxo" class="form-control-app" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-            <i class="bi bi-calendar-event position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
         </div>
-        <div class="input-helper">Quando a transação deve ser paga/recebida</div>
-    </div>
 
-    <div class="mb-3">
-        <label asp-for="IdConta" class="form-label-app">Conta</label>
-        <select asp-for="IdConta" class="form-select-app" asp-items="ViewBag.Contas">
-            <option value="">Não informado</option>
-        </select>
-        <div class="input-helper">Escolha a conta para esta transação</div>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="IdPessoa" class="form-label-app">Pessoa Responsável</label>
-        <select asp-for="IdPessoa" class="form-select-app" asp-items="ViewBag.Pessoas">
-            <option value="">Identifique alguém</option>
-        </select>
-    </div>
-
-    <div class="d-flex gap-3 mb-3">
-        <div class="form-check form-switch p-0 d-flex align-items-center gap-2 border rounded-4 p-2 px-3 w-100">
-            <input class="form-check-input m-0" type="checkbox" id="chkFixa">
-            <label class="form-check-label small fw-bold text-muted" for="chkFixa">@(isReceita ? "Receita" : "Despesa") Fixa</label>
+        <div class="mb-3">
+            <label asp-for="IdConta" class="form-label-app">Conta</label>
+            <select asp-for="IdConta" class="form-select-app" asp-items="ViewBag.Contas">
+                <option value="">Não informado</option>
+            </select>
         </div>
-        <div class="form-check form-switch p-0 d-flex align-items-center gap-2 border rounded-4 p-2 px-3 w-100">
-            <input class="form-check-input m-0" type="checkbox" id="chkRepetir">
-            <label class="form-check-label small fw-bold text-muted" for="chkRepetir">Repetir</label>
+
+        <div class="mb-3">
+            <label asp-for="IdPessoa" class="form-label-app">Pessoa / Fornecedor</label>
+            <select asp-for="IdPessoa" class="form-select-app" asp-items="ViewBag.Pessoas">
+                <option value="">Selecione...</option>
+            </select>
         </div>
+
+        <!-- Botões de Ação -->
+        <div class="px-2">
+            <button type="button" class="btn-save-app btn-save-big" onclick="submitLancamento()">
+                <i class="bi @(isReceita ? "bi-arrow-up" : "bi-arrow-down") me-2"></i> Salvar @tipoTexto
+            </button>
+            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+
+        <div style="height: 20px;"></div>
     </div>
-
-
-    <button type="button" class="btn-save-app btn-save-big" onclick="submitLancamento()">
-        <i class="bi @(isReceita ? "bi-arrow-up" : "bi-arrow-down") me-2"></i> Salvar @tipoTexto
-    </button>
-
-    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-
 </form>
 
+<!-- MODAIS DE CADASTRO RÁPIDO -->
+<div id="modalNovaCategoria" class="position-absolute top-0 start-0 w-100 h-100 bg-white rounded-4 p-4 overlay-center" style="display:none; z-index: 1055;">
+    <h5 class="modal-title-app mb-4"><i class="bi bi-tag"></i> Nova Categoria</h5>
+    <div class="mb-3">
+        <label class="form-label-app">Nome da Categoria</label>
+        <input type="text" id="newCatName" class="form-control-app" placeholder="Ex: Transporte" />
+    </div>
+    <button type="button" class="btn-save-app btn-save-big mt-2" onclick="salvarNovaCategoria()">Salvar</button>
+    <button type="button" class="btn-cancel" onclick="$('#modalNovaCategoria').fadeOut()">Voltar</button>
+</div>
+
+<div id="modalNovaSubcategoria" class="position-absolute top-0 start-0 w-100 h-100 bg-white rounded-4 p-4 overlay-center" style="display:none; z-index: 1055;">
+    <h5 class="modal-title-app mb-4"><i class="bi bi-tags"></i> Nova Subcategoria</h5>
+    <div class="alert alert-light border small text-muted mb-3">
+        Vinculada à categoria: <strong id="lblCatVinculada">-</strong>
+    </div>
+    <input type="hidden" id="newSubCatPaiId" />
+    <div class="mb-3">
+        <label class="form-label-app">Nome da Subcategoria</label>
+        <input type="text" id="newSubCatName" class="form-control-app" placeholder="Ex: Uber / Táxi" />
+    </div>
+    <button type="button" class="btn-save-app btn-save-big mt-2" onclick="salvarNovaSubcategoria()">Salvar</button>
+    <button type="button" class="btn-cancel" onclick="$('#modalNovaSubcategoria').fadeOut()">Voltar</button>
+</div>
+
 <script>
+    // --- CARREGAMENTO DE SUBCATEGORIAS ---
+    function carregarSubcategorias(idCategoria) {
+        var subSelect = $('#IdSubcategoria');
+
+        if (!idCategoria) {
+            subSelect.empty().append('<option value="">Selecione a categoria...</option>').prop('disabled', true);
+            return;
+        }
+
+        subSelect.empty().append('<option value="">Carregando...</option>').prop('disabled', true);
+
+        $.ajax({
+            url: '/Lancamentos/GetSubcategorias',
+            type: 'GET',
+            data: { categoriaId: idCategoria },
+            success: function (data) {
+                subSelect.empty().append('<option value="">Selecione...</option>');
+
+                if (data && data.length > 0) {
+                    $.each(data, function (index, item) {
+                        subSelect.append($('<option>', { value: item.id, text: item.nome }));
+                    });
+                    subSelect.prop('disabled', false);
+                } else {
+                    subSelect.append('<option value="">Nenhuma subcategoria</option>');
+                    subSelect.prop('disabled', false);
+                }
+            },
+            error: function () {
+                subSelect.empty().append('<option value="">Erro ao carregar</option>');
+            }
+        });
+    }
+
+    // --- MODAIS DE CADASTRO RÁPIDO ---
+    function abrirModalCategoria() {
+        $('#newCatName').val('');
+        $('#modalNovaCategoria').fadeIn();
+    }
+
+    function salvarNovaCategoria() {
+        var nome = $('#newCatName').val();
+        var tipo = $('input[name="TipoLancamento"]').val();
+
+        if(!nome) return alert("Digite o nome da categoria!");
+
+        var btn = $('#modalNovaCategoria .btn-save-big');
+        var originalText = btn.html();
+        btn.prop('disabled', true).html('Salvando...');
+
+        $.post('/Lancamentos/SalvarCategoriaRapida', { nome: nome, tipo: tipo }, function(res){
+             if(res.success) {
+                 var newOption = new Option(res.nome, res.id, true, true);
+                 $('#IdTipo').append(newOption).trigger('change');
+                 $('#modalNovaCategoria').fadeOut();
+             } else {
+                 alert(res.message);
+             }
+             btn.prop('disabled', false).html(originalText);
+        }).fail(function() {
+             alert('Erro ao salvar categoria.');
+             btn.prop('disabled', false).html(originalText);
+        });
+    }
+
+    function abrirModalSubcategoria() {
+        var catId = $('#IdTipo').val();
+        var catNome = $('#IdTipo option:selected').text();
+
+        if(!catId) {
+            alert("Selecione uma Categoria Pai primeiro!");
+            return;
+        }
+
+        $('#newSubCatPaiId').val(catId);
+        $('#lblCatVinculada').text(catNome);
+        $('#newSubCatName').val('');
+        $('#modalNovaSubcategoria').fadeIn();
+    }
+
+    function salvarNovaSubcategoria() {
+        var nome = $('#newSubCatName').val();
+        var paiId = $('#newSubCatPaiId').val();
+
+        if(!nome) return alert("Digite o nome da subcategoria!");
+
+        var btn = $('#modalNovaSubcategoria .btn-save-big');
+        var originalText = btn.html();
+        btn.prop('disabled', true).html('Salvando...');
+
+        $.post('/Lancamentos/SalvarSubcategoriaRapida', { nome: nome, idTipo: paiId }, function(res){
+             if(res.success) {
+                 var newOption = new Option(res.nome, res.id, true, true);
+                 $('#IdSubcategoria').append(newOption);
+                 $('#IdSubcategoria option:contains("Nenhuma subcategoria")').remove();
+                 $('#modalNovaSubcategoria').fadeOut();
+             } else {
+                 alert(res.message);
+             }
+             btn.prop('disabled', false).html(originalText);
+        }).fail(function() {
+             alert('Erro ao salvar subcategoria.');
+             btn.prop('disabled', false).html(originalText);
+        });
+    }
+
+    // --- INTERFACE (Parcelas, Status) ---
+    function toggleParcelas(select) {
+        const area = document.getElementById('areaParcelamento');
+        if (select.value === 'Parcelado') {
+            area.style.display = 'block';
+            setTimeout(() => area.querySelector('input').focus(), 100);
+            document.querySelector('.scroll-container').scrollTop += 100;
+        } else {
+            area.style.display = 'none';
+        }
+    }
+
     function toggleStatus(checkbox) {
         const label = document.getElementById('statusLabel');
         const input = document.getElementById('inputStatus');
         const isReceita = '@isReceita' === 'True';
 
         if (checkbox.checked) {
-            // Toggle ATIVADO (Vermelho na imagem) -> Significa PENDENTE/NÃO RECEBIDO
-            label.innerText = isReceita ? "Não Foi Recebida" : "Não Foi Paga";
-            label.classList.add("text-danger");
-            input.value = "1"; // 1 = Pendente
+            label.innerText = isReceita ? "Recebida (Efetivada)" : "Paga (Efetivada)";
+            label.className = "fw-bold text-success";
+            input.value = "2";
         } else {
-            // Toggle DESATIVADO (Cinza/Verde) -> Significa REALIZADO
-            label.innerText = isReceita ? "Recebida" : "Paga";
-            label.classList.remove("text-danger");
-            input.value = "2"; // 2 = Pago
+            label.innerText = isReceita ? "Não Recebida (Pendente)" : "Não Paga (Pendente)";
+            label.className = "fw-bold text-danger";
+            input.value = "1";
         }
     }
 
     function submitLancamento() {
-        // Lógica de envio via AJAX (Reutilizar a do ContasController mas apontando para Lancamentos)
-        // ...
+        var form = $('#formLancamento')[0];
+        var formData = new FormData(form);
+
+        var object = {};
+        formData.forEach(function(value, key){
+            object[key] = value;
+        });
+
+        // === CORREÇÃO DO VALOR ===
+        if (object.Valor) {
+            object.ValorOriginal = object.Valor;
+        }
+
+        var btn = $('.px-2 .btn-save-big');
+        var originalText = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Salvando...');
+
+        $.ajax({
+            url: '/api/financeiro/lancamentos',
+            type: 'POST',
+            data: JSON.stringify(object),
+            contentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                if (response.success) {
+                    $('#LancamentoModal').modal('hide');
+                    if(typeof carregarLancamentos === 'function') { carregarLancamentos(); } else { location.reload(); }
+                } else {
+                    alert('Erro: ' + response.message);
+                    btn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function (xhr) {
+                var msg = 'Erro ao salvar.';
+                if(xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                alert(msg);
+                btn.prop('disabled', false).html(originalText);
+            }
+        });
     }
 </script>

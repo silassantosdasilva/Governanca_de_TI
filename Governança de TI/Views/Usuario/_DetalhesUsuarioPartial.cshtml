@@ -1,6 +1,8 @@
-﻿@model Governança_de_TI.Models.UsuarioModel
+﻿@using Governança_de_TI.Models.Auditoria
+@using Governança_de_TI.Models.Usuario
+@model UsuarioModel
 @{
-    var atividadesRecentes = ViewBag.Atividades as List<Governança_de_TI.Models.AuditLogModel> ?? new();
+    var atividadesRecentes = ViewBag.Atividades as List<AuditLogModel> ?? new();
 }
 
 <!-- ===================== DETALHES DO USUÁRIO ===================== -->

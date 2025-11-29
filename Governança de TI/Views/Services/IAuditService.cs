@@ -1,5 +1,6 @@
 ﻿using Governança_de_TI.Data;
 using Governança_de_TI.Models;
+using Governança_de_TI.Models.Auditoria;
 using System.Threading.Tasks;
 
 namespace Governança_de_TI.Services

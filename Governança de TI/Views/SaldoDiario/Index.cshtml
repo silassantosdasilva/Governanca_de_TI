@@ -1,7 +1,8 @@
-﻿@model List<Governança_de_TI.Models.SaldoDiarioModel>
+﻿@using Governança_de_TI.Models.Financeiro
+@model List<SaldoDiarioModel>
 @{
     ViewData["Title"] = "Gerenciamento de Saldos";
-    var listaSaldos = Model != null ? Model.ToList() : new List<Governança_de_TI.Models.SaldoDiarioModel>();
+    var listaSaldos = Model != null ? Model.ToList() : new List<SaldoDiarioModel>();
 }
 
 @section Styles {

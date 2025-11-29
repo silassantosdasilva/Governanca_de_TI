@@ -12,7 +12,8 @@ using System.Security.Claims;
 using System.Security.Cryptography; // Mantido apenas para o método de migração SHA256
 using System.Text; // Mantido apenas para o método de migração SHA256
 using System.Threading.Tasks;
-using BCrypt.Net; // Importar o BCrypt
+using BCrypt.Net;
+using Governança_de_TI.Models.Usuario; // Importar o BCrypt
 
 namespace Governança_de_TI.Controllers
 {
@@ -59,37 +60,33 @@ namespace Governança_de_TI.Controllers
                 return View(model);
             }
 
-            // === [INÍCIO DA LÓGICA DE MIGRAÇÃO DE HASH] ===
+            
             if (!VerifyPassword(model.Senha, user.Senha, out bool needsRehash))
             {
                 ModelState.AddModelError(string.Empty, "E-mail ou senha inválidos.");
                 return View(model);
             }
 
-            // O utilizador é válido.
-            // Atualiza a data de último login e, se necessário, o hash da senha.
+            
+           
             user.DataUltimoLogin = DateTime.Now;
             if (needsRehash)
             {
-                // A senha bateu com o SHA256 antigo. Vamos atualizá-la para BCrypt.
+                
                 user.Senha = BCrypt.Net.BCrypt.HashPassword(model.Senha);
             }
 
             _context.Update(user);
             await _context.SaveChangesAsync();
-            // === [FIM DA LÓGICA DE MIGRAÇÃO] ===
+  
 
-
-            // === [CRIAÇÃO DE CLAIMS] ===
-
-            // === [CRIAÇÃO DE CLAIMS] ===
             var claims = new List<Claim>
                 {
               new Claim(ClaimTypes.Name, user.Email),
               new Claim("FullName", user.Nome ?? string.Empty),
               new Claim(ClaimTypes.Role, user.Perfil ?? string.Empty),
               new Claim("CaminhoFotoPerfil", user.CaminhoFotoPerfil ?? string.Empty),
-              new Claim("Perfil", user.Perfil), // <-- ESSA LINHA É NECESSÁRIA
+              new Claim("Perfil", user.Perfil),
             };
 
             // Cria a identidade e autentica o usuário

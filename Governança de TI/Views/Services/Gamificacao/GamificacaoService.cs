@@ -1,5 +1,6 @@
 ﻿using Governança_de_TI.Data;
 using Governança_de_TI.Models;
+using Governança_de_TI.Models.Gamificacao;
 using Governança_de_TI.Services;
 using Governança_de_TI.Views.Services.Gamificacao;
 using Microsoft.EntityFrameworkCore;

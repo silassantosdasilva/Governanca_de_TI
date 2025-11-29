@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Governança_de_TI.DTOs;
+using Governança_de_TI.DTOs.Financeiro;
 
 // Assumindo a interface IExtratoRepository para acesso a dados.
 public class ExtratoService : IExtratoService

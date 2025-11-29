@@ -1,6 +1,6 @@
 ﻿// Services/Interfaces/ILancamentoService.cs
 
-using Governança_de_TI.DTOs;
+using Governança_de_TI.DTOs.Financeiro;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

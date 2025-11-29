@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Governança_de_TI.Data;
 using Governança_de_TI.Models;
+using Governança_de_TI.Models.Auditoria;
 
 namespace Governança_de_TI.Services
 {

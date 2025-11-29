@@ -38,6 +38,9 @@ namespace Governança_de_TI.Migrations
                     b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("IdContaBancaria")
+                        .HasColumnType("int");
+
                     b.Property<string>("NomeConta")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -62,7 +65,7 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("ContasBancarias");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.AuditLogModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Auditoria.AuditLogModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -93,7 +96,261 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("AuditLogs");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.ConsumoEnergiaModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Auditoria.LogModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Detalhes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Mensagem")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Origem")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Logs");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.LancamentoFinanceiroModel", b =>
+                {
+                    b.Property<Guid>("IdLancamento")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Condicao")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataEmissao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataFluxo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Documento")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FormaPagamento")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("IdConta")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("IdLancamentoFinanceiro")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdLancamentoFinanceiro"));
+
+                    b.Property<Guid>("IdPessoa")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("IdSubcategoria")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IdTipo")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("IntervaloDias")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumeroParcelas")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observacao")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SequenciaDocumento")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TipoLancamento")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Valor")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("ValorOriginal")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("IdLancamento");
+
+                    b.HasIndex("IdConta");
+
+                    b.HasIndex("IdPessoa");
+
+                    b.HasIndex("IdSubcategoria");
+
+                    b.HasIndex("IdTipo");
+
+                    b.ToTable("LancamentoFinanceiro");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.SaldoDiarioModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Data")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("IdConta")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("SaldoFinal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdConta");
+
+                    b.ToTable("SaldoDiario");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.TpLancamento.SubCategoriaModel", b =>
+                {
+                    b.Property<Guid>("IdSubcategoria")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("IdSubcategoriaInt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSubcategoriaInt"));
+
+                    b.Property<Guid>("IdTipo")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("IdSubcategoria");
+
+                    b.HasIndex("IdTipo");
+
+                    b.ToTable("SubCategoria");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.TpLancamento.TipoLancamentoModel", b =>
+                {
+                    b.Property<Guid>("IdTipo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("IdTipoLancamento")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTipoLancamento"));
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdTipo");
+
+                    b.ToTable("TipoLancamento");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Gamificacao.GamificacaoModel", b =>
+                {
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nivel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Pontos")
+                        .HasColumnType("int");
+
+                    b.HasKey("UsuarioId");
+
+                    b.ToTable("Gamificacoes");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Gamificacao.PremioModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("IconeBootstrap")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("PontosNecessarios")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Premios");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Gamificacao.UsuarioPremioModel", b =>
+                {
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PremioId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DataConquista")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UsuarioId", "PremioId");
+
+                    b.HasIndex("PremioId");
+
+                    b.ToTable("UsuarioPremios");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.ConsumoEnergiaModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -112,7 +369,7 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("ConsumosEnergia");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.DashboardWidgetModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.DashboardWidgetModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -180,7 +437,7 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("DashboardWidgets");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.DepartamentoModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.DepartamentoModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -198,7 +455,7 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("Departamentos");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.DescarteModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.DescarteModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -264,7 +521,7 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("Descartes");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.EquipamentoModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.EquipamentoModel", b =>
                 {
                     b.Property<int>("CodigoItem")
                         .ValueGeneratedOnAdd()
@@ -339,114 +596,7 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("Equipamentos");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.GamificacaoModel", b =>
-                {
-                    b.Property<int>("UsuarioId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nivel")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Pontos")
-                        .HasColumnType("int");
-
-                    b.HasKey("UsuarioId");
-
-                    b.ToTable("Gamificacoes");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.LogModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DataRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Detalhes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Mensagem")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Origem")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Tipo")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Logs");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.PremioModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("IconeBootstrap")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("PontosNecessarios")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Premios");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.SaldoDiarioModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Data")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("IdConta")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("SaldoFinal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdConta");
-
-                    b.ToTable("SaldoDiario");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.TipoEquipamentoModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.TipoEquipamentoModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -464,7 +614,7 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("TiposEquipamento");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Usuario.UsuarioModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -520,101 +670,6 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioPremioModel", b =>
-                {
-                    b.Property<int>("UsuarioId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PremioId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DataConquista")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("UsuarioId", "PremioId");
-
-                    b.HasIndex("PremioId");
-
-                    b.ToTable("UsuarioPremios");
-                });
-
-            modelBuilder.Entity("LancamentoFinanceiroModel", b =>
-                {
-                    b.Property<Guid>("IdLancamento")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Condicao")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ContaIdConta")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("DataEmissao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataFluxo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Documento")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FormaPagamento")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("IdConta")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IdPessoa")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IdTipo")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("IntervaloDias")
-                        .HasColumnType("int");
-
-                    b.Property<int>("NumeroParcelas")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Observacao")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("PessoaIdPessoa")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("SequenciaDocumento")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("TipoIdTipo")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("TipoLancamento")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Valor")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<decimal>("ValorOriginal")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.HasKey("IdLancamento");
-
-                    b.HasIndex("ContaIdConta");
-
-                    b.HasIndex("PessoaIdPessoa");
-
-                    b.HasIndex("TipoIdTipo");
-
-                    b.ToTable("LancamentosFinanceiros");
-                });
-
             modelBuilder.Entity("LancamentoParcelaModel", b =>
                 {
                     b.Property<Guid>("IdParcela")
@@ -632,6 +687,12 @@ namespace Governança_de_TI.Migrations
 
                     b.Property<Guid>("IdLancamento")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("IdParcelaFinanceiro")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdParcelaFinanceiro"));
 
                     b.Property<int>("NumeroParcela")
                         .HasColumnType("int");
@@ -691,6 +752,12 @@ namespace Governança_de_TI.Migrations
                     b.Property<string>("EnderecoUF")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("IdPessoaInt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPessoaInt"));
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -712,27 +779,9 @@ namespace Governança_de_TI.Migrations
                     b.ToTable("Pessoas");
                 });
 
-            modelBuilder.Entity("TipoLancamentoModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Auditoria.AuditLogModel", b =>
                 {
-                    b.Property<Guid>("IdTipo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Tipo")
-                        .HasColumnType("int");
-
-                    b.HasKey("IdTipo");
-
-                    b.ToTable("TiposLancamento");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.AuditLogModel", b =>
-                {
-                    b.HasOne("Governança_de_TI.Models.UsuarioModel", "Usuario")
+                    b.HasOne("Governança_de_TI.Models.Usuario.UsuarioModel", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -741,44 +790,40 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.DescarteModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.LancamentoFinanceiroModel", b =>
                 {
-                    b.HasOne("Governança_de_TI.Models.EquipamentoModel", "Equipamento")
+                    b.HasOne("ContaBancariaModel", "Conta")
                         .WithMany()
-                        .HasForeignKey("EquipamentoId")
+                        .HasForeignKey("IdConta")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Equipamento");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.EquipamentoModel", b =>
-                {
-                    b.HasOne("Governança_de_TI.Models.TipoEquipamentoModel", "TipoEquipamento")
+                    b.HasOne("PessoaModel", "Pessoa")
                         .WithMany()
-                        .HasForeignKey("TipoEquipamentoId")
+                        .HasForeignKey("IdPessoa")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Governança_de_TI.Models.UsuarioModel", "Usuario")
+                    b.HasOne("Governança_de_TI.Models.Financeiro.TpLancamento.SubCategoriaModel", "SubCategoria")
                         .WithMany()
-                        .HasForeignKey("UsuarioId");
+                        .HasForeignKey("IdSubcategoria");
 
-                    b.Navigation("TipoEquipamento");
+                    b.HasOne("Governança_de_TI.Models.Financeiro.TpLancamento.TipoLancamentoModel", "Tipo")
+                        .WithMany()
+                        .HasForeignKey("IdTipo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Usuario");
+                    b.Navigation("Conta");
+
+                    b.Navigation("Pessoa");
+
+                    b.Navigation("SubCategoria");
+
+                    b.Navigation("Tipo");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.GamificacaoModel", b =>
-                {
-                    b.HasOne("Governança_de_TI.Models.UsuarioModel", "Usuario")
-                        .WithOne("Gamificacao")
-                        .HasForeignKey("Governança_de_TI.Models.GamificacaoModel", "UsuarioId");
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("Governança_de_TI.Models.SaldoDiarioModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.SaldoDiarioModel", b =>
                 {
                     b.HasOne("ContaBancariaModel", "ContaBancaria")
                         .WithMany()
@@ -789,24 +834,35 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("ContaBancaria");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.TpLancamento.SubCategoriaModel", b =>
                 {
-                    b.HasOne("Governança_de_TI.Models.DepartamentoModel", "Departamento")
-                        .WithMany()
-                        .HasForeignKey("DepartamentoId");
+                    b.HasOne("Governança_de_TI.Models.Financeiro.TpLancamento.TipoLancamentoModel", "Categoria")
+                        .WithMany("SubCategorias")
+                        .HasForeignKey("IdTipo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Departamento");
+                    b.Navigation("Categoria");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioPremioModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Gamificacao.GamificacaoModel", b =>
                 {
-                    b.HasOne("Governança_de_TI.Models.PremioModel", "Premio")
+                    b.HasOne("Governança_de_TI.Models.Usuario.UsuarioModel", "Usuario")
+                        .WithOne("Gamificacao")
+                        .HasForeignKey("Governança_de_TI.Models.Gamificacao.GamificacaoModel", "UsuarioId");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Gamificacao.UsuarioPremioModel", b =>
+                {
+                    b.HasOne("Governança_de_TI.Models.Gamificacao.PremioModel", "Premio")
                         .WithMany("UsuariosQueConquistaram")
                         .HasForeignKey("PremioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Governança_de_TI.Models.UsuarioModel", "Usuario")
+                    b.HasOne("Governança_de_TI.Models.Usuario.UsuarioModel", "Usuario")
                         .WithMany("UsuarioPremios")
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -817,36 +873,46 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("LancamentoFinanceiroModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.DescarteModel", b =>
                 {
-                    b.HasOne("ContaBancariaModel", "Conta")
+                    b.HasOne("Governança_de_TI.Models.TecgreenModels.EquipamentoModel", "Equipamento")
                         .WithMany()
-                        .HasForeignKey("ContaIdConta")
+                        .HasForeignKey("EquipamentoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PessoaModel", "Pessoa")
+                    b.Navigation("Equipamento");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.TecgreenModels.EquipamentoModel", b =>
+                {
+                    b.HasOne("Governança_de_TI.Models.TecgreenModels.TipoEquipamentoModel", "TipoEquipamento")
                         .WithMany()
-                        .HasForeignKey("PessoaIdPessoa")
+                        .HasForeignKey("TipoEquipamentoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TipoLancamentoModel", "Tipo")
+                    b.HasOne("Governança_de_TI.Models.Usuario.UsuarioModel", "Usuario")
                         .WithMany()
-                        .HasForeignKey("TipoIdTipo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UsuarioId");
 
-                    b.Navigation("Conta");
+                    b.Navigation("TipoEquipamento");
 
-                    b.Navigation("Pessoa");
+                    b.Navigation("Usuario");
+                });
 
-                    b.Navigation("Tipo");
+            modelBuilder.Entity("Governança_de_TI.Models.Usuario.UsuarioModel", b =>
+                {
+                    b.HasOne("Governança_de_TI.Models.TecgreenModels.DepartamentoModel", "Departamento")
+                        .WithMany()
+                        .HasForeignKey("DepartamentoId");
+
+                    b.Navigation("Departamento");
                 });
 
             modelBuilder.Entity("LancamentoParcelaModel", b =>
                 {
-                    b.HasOne("LancamentoFinanceiroModel", "LancamentoPai")
+                    b.HasOne("Governança_de_TI.Models.Financeiro.LancamentoFinanceiroModel", "LancamentoPai")
                         .WithMany("Parcelas")
                         .HasForeignKey("IdLancamento")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -855,21 +921,26 @@ namespace Governança_de_TI.Migrations
                     b.Navigation("LancamentoPai");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.PremioModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.LancamentoFinanceiroModel", b =>
+                {
+                    b.Navigation("Parcelas");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Financeiro.TpLancamento.TipoLancamentoModel", b =>
+                {
+                    b.Navigation("SubCategorias");
+                });
+
+            modelBuilder.Entity("Governança_de_TI.Models.Gamificacao.PremioModel", b =>
                 {
                     b.Navigation("UsuariosQueConquistaram");
                 });
 
-            modelBuilder.Entity("Governança_de_TI.Models.UsuarioModel", b =>
+            modelBuilder.Entity("Governança_de_TI.Models.Usuario.UsuarioModel", b =>
                 {
                     b.Navigation("Gamificacao");
 
                     b.Navigation("UsuarioPremios");
-                });
-
-            modelBuilder.Entity("LancamentoFinanceiroModel", b =>
-                {
-                    b.Navigation("Parcelas");
                 });
 #pragma warning restore 612, 618
         }

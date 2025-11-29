@@ -1,6 +1,6 @@
 ﻿// Services/Interfaces/IExtratoService.cs
 
-using Governança_de_TI.DTOs;
+using Governança_de_TI.DTOs.Financeiro;
 using System.Threading.Tasks;
 
 public interface IExtratoService

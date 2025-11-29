@@ -1,12 +1,12 @@
 ﻿
 using Governança_de_TI.Data;
 using Governança_de_TI.Models;
-using Governança_de_TI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Governança_de_TI.DTOs.Financeiro;
 
 namespace Governança_de_TI.Repositories
 {

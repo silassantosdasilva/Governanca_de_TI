@@ -1,6 +1,6 @@
 ﻿using BCrypt.Net;
 using Governança_de_TI.Data;
-using Governança_de_TI.Models;
+using Governança_de_TI.Models.Usuario;
 using Governança_de_TI.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;

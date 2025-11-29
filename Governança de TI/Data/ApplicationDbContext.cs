@@ -1,6 +1,11 @@
 ﻿// Adicione as referências para as Models que criamos (assumindo que estão no namespace Governança_de_TI.Models)
 // using Governança_de_TI.Models; 
-using Governança_de_TI.Models;
+using Governança_de_TI.Models.Auditoria;
+using Governança_de_TI.Models.Financeiro;
+using Governança_de_TI.Models.Financeiro.TpLancamento;
+using Governança_de_TI.Models.Gamificacao;
+using Governança_de_TI.Models.TecgreenModels;
+using Governança_de_TI.Models.Usuario;
 using Microsoft.EntityFrameworkCore;
 using System.Linq; // Necessário para a configuração do relacionamento 1:N
 
@@ -33,8 +38,10 @@ namespace Governança_de_TI.Data
         public DbSet<PessoaModel> Pessoas { get; set; }
         public DbSet<ContaBancariaModel> ContasBancarias { get; set; }
         public DbSet<TipoLancamentoModel> TiposLancamento { get; set; }
+        public DbSet<SubCategoriaModel> SubCategorias { get; set; }
         public DbSet<LancamentoFinanceiroModel> LancamentosFinanceiros { get; set; }
         public DbSet<LancamentoParcelaModel> LancamentosParcelas { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

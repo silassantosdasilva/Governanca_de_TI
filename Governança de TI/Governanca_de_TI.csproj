@@ -61,4 +61,13 @@
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.10" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\css\Extrato\" />
+    <Folder Include="wwwroot\css\Index\" />
+    <Folder Include="wwwroot\css\Landing\" />
+    <Folder Include="wwwroot\css\TechGrenn\" />
+    <Folder Include="wwwroot\css\Usuario\" />
+    <Folder Include="wwwroot\css\_Layout\" />
+  </ItemGroup>
+
 </Project>
